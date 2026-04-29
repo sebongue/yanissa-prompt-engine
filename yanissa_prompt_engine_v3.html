@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Yanissa World — Prompt Engine v3</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0e0e0e;--bg2:#161616;--bg3:#1f1f1f;--bg4:#2a2a2a;--b:#2e2e2e;--b2:#3a3a3a;--t:#f0f0f0;--t2:#aaa;--t3:#666;--g:#b8f04a;--gd:#8ab830;--gbg:#1a2a0a;--am:#f0c050;--ambg:#2a2000;--bl:#60b0f0;--blbg:#0a1a2a;--r:8px;--rl:12px;--sw:230px}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--t);font-size:13px;line-height:1.5}
+.app{display:grid;grid-template-columns:var(--sw) 1fr;min-height:100vh}
+.sb{background:var(--bg2);border-right:1px solid var(--b);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{display:flex;flex-direction:column;min-height:100vh}
+.mhdr{padding:14px 22px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;background:var(--bg);z-index:10;flex-shrink:0}
+.mc{flex:1;padding:18px 22px;overflow-y:auto}
+.logo{padding:16px 18px;border-bottom:1px solid var(--b)}
+.logo-mark{font-size:9px;font-weight:700;letter-spacing:.15em;color:var(--g);text-transform:uppercase;margin-bottom:2px}
+.logo-name{font-size:14px;font-weight:700}
+.logo-sub{font-size:9px;color:var(--t3)}
+.lr{display:flex;gap:3px;margin-top:8px}
+.lb{flex:1;padding:4px;border-radius:4px;border:1px solid var(--b);background:transparent;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;cursor:pointer;color:var(--t3);transition:all .15s}
+.lb.on{background:var(--g);color:#0e0e0e;border-color:var(--g)}
+.nav{padding:8px 0;flex:1}
+.ns{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:0 16px;margin:10px 0 4px}
+.ni{display:flex;align-items:center;gap:7px;padding:7px 16px;cursor:pointer;font-size:12px;font-weight:500;color:var(--t2);transition:all .15s;border-left:2px solid transparent;user-select:none}
+.ni:hover{color:var(--t);background:var(--bg3)}
+.ni.on{color:var(--g);background:var(--gbg);border-left-color:var(--g)}
+.ndot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.nbadge{margin-left:auto;font-size:9px;font-weight:600;background:var(--bg4);color:var(--t3);padding:1px 5px;border-radius:9px}
+.htitle{font-size:15px;font-weight:700}
+.hsub{font-size:10px;color:var(--t3);margin-top:1px}
+.hright{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mlbl{font-size:10px;color:var(--t3)}
+.minp{background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);padding:5px 8px;color:var(--t);font-family:'Syne',sans-serif;font-size:11px;width:120px;outline:none}
+.minp:focus{border-color:var(--g)}
+.mobbar{display:none;background:var(--bg2);border-bottom:1px solid var(--b);padding:10px 14px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30}
+.mobtitle{font-size:12px;font-weight:700;color:var(--g)}
+.mobbtn{background:transparent;border:1px solid var(--b);border-radius:var(--r);padding:5px 9px;color:var(--t2);font-family:'Syne',sans-serif;font-size:11px;cursor:pointer}
+.mobnav{display:none;background:var(--bg2);border-bottom:1px solid var(--b);padding:6px 0;position:sticky;top:44px;z-index:29}
+.mobnav.open{display:block}
+.panel{display:none}.panel.on{display:block}
+.fs{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:15px;margin-bottom:11px}
+.fst{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:11px}
+.fsub{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:10px 0 6px;padding-top:9px;border-top:1px solid var(--b)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.fr.f1{grid-template-columns:1fr}
+.fr.f3{grid-template-columns:1fr 1fr 1fr}
+.fl{font-size:10px;font-weight:600;color:var(--t2);margin-bottom:4px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.req{color:var(--g);font-size:9px}
+.hint{font-size:9px;color:var(--t3);margin-left:auto;font-weight:400}
+select,input[type=text],textarea{width:100%;background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);padding:7px 9px;color:var(--t);font-family:'Syne',sans-serif;font-size:12px;outline:none;transition:border .15s;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+select:focus,input:focus,textarea:focus{border-color:var(--g)}
+textarea{resize:vertical;min-height:56px;line-height:1.5}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:4px 10px;border-radius:15px;border:1px solid var(--b);background:var(--bg3);font-size:11px;font-weight:600;cursor:pointer;color:var(--t2);transition:all .15s;user-select:none}
+.pill:hover{border-color:var(--b2)}
+.py{border-color:#b8f04a!important;background:#1a2a0a!important;color:#b8f04a!important}
+.pa{border-color:#f0c050!important;background:#2a2000!important;color:#f0c050!important}
+.pr{border-color:#60b0f0!important;background:#0a1a2a!important;color:#60b0f0!important}
+.pgm{border-color:#f06060!important;background:#2a0a0a!important;color:#f06060!important}
+.pg{border-color:#c0a0ff!important;background:#1a0a2a!important;color:#c0a0ff!important}
+.pon{border-color:var(--am)!important;background:var(--ambg)!important;color:var(--am)!important}
+.trow{display:flex;gap:5px;flex-wrap:wrap}
+.tbtn{display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:var(--r);border:1px solid var(--b);background:var(--bg3);cursor:pointer;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--t2);transition:all .15s;user-select:none}
+.tbtn:hover{border-color:var(--b2)}
+.tbon{border-color:var(--g)!important;background:var(--gbg)!important;color:var(--g)!important}
+.tdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.prow{display:flex;gap:4px;flex-wrap:wrap}
+.pbtn{padding:3px 9px;border-radius:4px;border:1px solid var(--b);background:transparent;cursor:pointer;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--t3);transition:all .15s;user-select:none}
+.pbtn:hover{border-color:var(--b2);color:var(--t2)}
+.pbtn.on{background:var(--bg3);border-color:var(--b2);color:var(--t)}
+.tabs{display:flex;gap:3px;margin-bottom:8px;flex-wrap:wrap}
+.tab{padding:4px 9px;border-radius:4px;border:1px solid var(--b);background:transparent;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;cursor:pointer;color:var(--t3);transition:all .15s}
+.tab.on{background:var(--bg3);border-color:var(--b2);color:var(--t)}
+.upz{border:1px dashed var(--b2);border-radius:var(--r);padding:13px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg3)}
+.upz:hover,.upz.has{border-color:var(--g);background:var(--gbg)}
+.upz input{display:none}
+.upztxt{font-size:11px;color:var(--t3);line-height:1.5}
+.upztxt.ok{color:var(--g);font-weight:600}
+.gbar{display:flex;gap:7px;margin-top:13px;flex-wrap:wrap}
+.bgen{flex:1;min-width:140px;background:var(--g);color:#0e0e0e;border:none;border-radius:var(--r);padding:10px 14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.bgen:hover{background:#c8ff5a}
+.bgen:active{transform:scale(.98)}
+.bsec{background:transparent;border:1px solid var(--b);border-radius:var(--r);padding:10px 12px;font-family:'Syne',sans-serif;font-size:11px;color:var(--t3);cursor:pointer;transition:all .15s}
+.bsec:hover{border-color:var(--b2);color:var(--t2)}
+.out-tabs{display:flex;border-bottom:1px solid var(--b);overflow-x:auto}
+.otab{padding:8px 13px;cursor:pointer;font-size:11px;font-weight:600;color:var(--t3);border-bottom:2px solid transparent;transition:all .15s;user-select:none;white-space:nowrap;flex-shrink:0}
+.otab:hover{color:var(--t2)}
+.otab.on{color:var(--g);border-bottom-color:var(--g)}
+.out-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;margin-top:13px;display:none}
+.out-box.vis{display:block}
+.out-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 13px;border-bottom:1px solid var(--b);background:var(--bg3);flex-wrap:wrap;gap:6px}
+.out-acts{display:flex;gap:5px;padding:8px 0;flex-shrink:0}
+.bcp{background:var(--g);color:#0e0e0e;border:none;border-radius:4px;padding:4px 9px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;cursor:pointer}
+.bcp:hover{background:#c8ff5a}
+.bsv{background:transparent;border:1px solid var(--b2);border-radius:4px;padding:4px 9px;font-family:'Syne',sans-serif;font-size:10px;color:var(--t2);cursor:pointer}
+.bsv:hover{border-color:var(--g);color:var(--g)}
+.out-pane{display:none}.out-pane.on{display:block}
+.out-txt{font-family:'DM Mono',monospace;font-size:10.5px;line-height:1.75;color:#d0e8b0;padding:13px;white-space:pre-wrap;max-height:340px;overflow-y:auto}
+.instr-txt{font-family:'Syne',sans-serif;font-size:12px;line-height:1.7;color:var(--t2);padding:13px}
+.instr-step{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--b)}
+.instr-step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.sn{width:22px;height:22px;border-radius:50%;background:var(--g);color:#0e0e0e;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sb2{flex:1}
+.st{font-size:12px;font-weight:700;color:var(--t);margin-bottom:3px}
+.sd{font-size:11px;color:var(--t2);line-height:1.6}
+.sa{background:var(--bg4);border:1px solid var(--b2);border-radius:5px;padding:5px 9px;font-size:11px;font-family:'DM Mono',monospace;color:var(--am);margin-top:5px;display:inline-block;white-space:pre-wrap;line-height:1.5}
+.ntog{display:flex;align-items:center;gap:7px;cursor:pointer;padding:5px 0;user-select:none}
+.tt{width:28px;height:15px;background:var(--bg4);border-radius:8px;position:relative;transition:.2s;border:1px solid var(--b2)}
+.tt.on{background:var(--gd);border-color:var(--gd)}
+.tk{width:10px;height:10px;background:var(--t3);border-radius:50%;position:absolute;top:1.5px;left:2px;transition:.2s}
+.tt.on .tk{left:14px;background:#0e0e0e}
+.tlbl{font-size:11px;color:var(--t2)}
+.info{background:var(--gbg);border:1px solid var(--gd);border-radius:var(--r);padding:7px 11px;font-size:11px;color:#8ab830;margin-bottom:11px;line-height:1.4}
+.warn{background:#2a2000;border:1px solid #4a3800;border-radius:var(--r);padding:6px 10px;font-size:10px;color:#a08020;margin-top:6px;line-height:1.5}
+.snote{background:#1a1a08;border:1px solid #383808;border-radius:var(--r);padding:6px 10px;font-size:10px;color:#909030;margin-top:6px;line-height:1.5}
+.wf{display:flex;align-items:center;gap:4px;margin:8px 0;flex-wrap:wrap}
+.wf-s{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:6px 10px;font-size:10px;font-weight:600;color:var(--t2);flex:1;min-width:80px;text-align:center;line-height:1.4}
+.wf-s.active{border-color:var(--g);color:var(--g);background:var(--gbg)}
+.wf-a{color:var(--t3);font-size:12px;flex-shrink:0}
+.hl{display:flex;flex-direction:column;gap:6px}
+.hi{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:10px 12px;cursor:pointer;transition:border .15s}
+.hi:hover{border-color:var(--b2)}
+.hitop{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+.htype{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 5px;border-radius:3px}
+.hts{background:var(--gbg);color:var(--g)}.htsh{background:var(--blbg);color:var(--bl)}.htc{background:var(--ambg);color:var(--am)}
+.hmem{font-size:10px;color:var(--t3)}.htime{font-size:10px;color:var(--t3);margin-left:auto}
+.hprev{font-size:11px;color:var(--t2);font-family:'DM Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hempty{text-align:center;padding:32px 16px;color:var(--t3);font-size:12px}
+.hfrow{display:flex;gap:5px;margin-bottom:11px;flex-wrap:wrap}
+.hf{font-size:10px;padding:3px 7px;border-radius:11px;border:1px solid var(--b);background:transparent;color:var(--t3);cursor:pointer;transition:all .15s}
+.hf.on{background:var(--bg3);color:var(--t);border-color:var(--b2)}
+.cr{display:flex;align-items:center;gap:6px;padding:5px 0;font-size:11px;color:var(--t2);border-bottom:1px solid var(--b);cursor:pointer;user-select:none}
+.cr:last-child{border-bottom:none}
+.cb{width:13px;height:13px;border-radius:3px;border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--g)}
+.cb.on{background:var(--gbg);border-color:var(--gd)}
+.cr.done{color:var(--t3);text-decoration:line-through}
+.sdiv{height:1px;background:var(--b);margin:12px 0}
+@media(max-width:680px){
+.app{grid-template-columns:1fr}.sb{display:none}.mobbar{display:flex}
+.mhdr{padding:10px 14px}.mc{padding:13px}
+.fr{grid-template-columns:1fr!important}.fr.f3{grid-template-columns:1fr 1fr!important}
+.htitle{font-size:14px}.hsub{display:none}.mlbl{display:none}.minp{width:110px}
+.gbar{flex-direction:column}.bgen{min-width:unset}
+.wf{flex-direction:column;align-items:stretch}.wf-a{align-self:center}
+}
+@media(max-width:380px){.fr.f3{grid-template-columns:1fr!important}.prow{gap:3px}.pbtn{font-size:9px;padding:3px 6px}}
+</style>
+</head>
+<body>
+<div class="mobbar">
+  <div class="mobtitle">YW Prompt Engine v3</div>
+  <button class="mobbtn" onclick="toggleMob()">☰ Menu</button>
+</div>
+<div class="mobnav" id="mobnav">
+  <div class="ni" onclick="goPanel('scene');closeMob()"><div class="ndot"></div><span data-k="nav_scene">Scene</span></div>
+  <div class="ni" onclick="goPanel('sheet');closeMob()"><div class="ndot"></div><span data-k="nav_sheet">Character sheet</span></div>
+  <div class="ni" onclick="goPanel('conv');closeMob()"><div class="ndot"></div><span data-k="nav_conv">Conversion</span></div>
+  <div class="ni" onclick="goPanel('hist');closeMob()"><div class="ndot"></div><span data-k="nav_hist">History</span></div>
+  <div class="ni" onclick="goPanel('check');closeMob()"><div class="ndot"></div><span data-k="nav_check">Checklist</span></div>
+</div>
+<div class="app">
+<div class="sb">
+  <div class="logo">
+    <div class="logo-mark">Yanissa World</div>
+    <div class="logo-name">Prompt Engine</div>
+    <div class="logo-sub">Team Edition v3.0</div>
+    <div class="lr">
+      <button class="lb on" onclick="setLang('en',this)">EN</button>
+      <button class="lb" onclick="setLang('fr',this)">FR</button>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="ns" data-k="nav_gen">Generate</div>
+    <div class="ni on" onclick="goPanel('scene')"><div class="ndot"></div><span data-k="nav_scene">Scene prompt</span></div>
+    <div class="ni" onclick="goPanel('sheet')"><div class="ndot"></div><span data-k="nav_sheet">Character sheet</span></div>
+    <div class="ni" onclick="goPanel('conv')"><div class="ndot"></div><span data-k="nav_conv">Puppet conversion</span></div>
+    <div class="ns" data-k="nav_team">Team</div>
+    <div class="ni" onclick="goPanel('hist')"><div class="ndot"></div><span data-k="nav_hist">History</span> <span class="nbadge" id="hcount">0</span></div>
+    <div class="ni" onclick="goPanel('check')"><div class="ndot"></div><span data-k="nav_check">Checklist</span></div>
+  </div>
+</div>
+<div class="main">
+<div class="mhdr">
+  <div><div class="htitle" id="htitle">Scene prompt</div><div class="hsub" id="hsub">Build scene prompts for the full pipeline</div></div>
+  <div class="hright"><div class="mlbl" data-k="member_lbl">Team member</div><input class="minp" id="membname" placeholder="Your name"></div>
+</div>
+<div class="mc">
+
+<!-- SCENE -->
+<div id="panel-scene" class="panel on">
+<div class="info" data-k="scene_info">Output always in English. Type in French or English — auto-translated.</div>
+<div class="fs">
+  <div class="fst" data-k="pipeline_title">Production pipeline</div>
+  <div class="wf">
+    <div class="wf-s active" data-k="wf1">1. Gemini<br><span style="font-weight:400;font-size:9px" data-k="wf1s">Test & refine</span></div>
+    <div class="wf-a">→</div>
+    <div class="wf-s" data-k="wf2">2. Nano Banana<br><span style="font-weight:400;font-size:9px" data-k="wf2s">Generate image</span></div>
+    <div class="wf-a">→</div>
+    <div class="wf-s" data-k="wf3">3. Seedance 2.0<br><span style="font-weight:400;font-size:9px" data-k="wf3s">Animate video</span></div>
+  </div>
+  <div class="fst" style="margin-top:10px;margin-bottom:7px" data-k="platform_label">Platform / format</div>
+  <div class="prow">
+    <div class="pbtn on" onclick="setPlat(this,'tiktok')">TikTok 9:16</div>
+    <div class="pbtn" onclick="setPlat(this,'insta')">Instagram 1:1</div>
+    <div class="pbtn" onclick="setPlat(this,'yt')">YouTube 16:9</div>
+    <div class="pbtn" onclick="setPlat(this,'neutral')" data-k="plat_neutral">Neutral</div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="loc_title">Location & setting</div>
+  <div class="fl" style="margin-bottom:6px" data-k="bg_mode_label">Background reference</div>
+  <div class="tabs" id="bg-tabs">
+    <button class="tab on" onclick="setBgTab(this,'desc')" data-k="bg_desc">Describe it</button>
+    <button class="tab" onclick="setBgTab(this,'photo')" data-k="bg_photo_tab">Upload photo</button>
+    <button class="tab" onclick="setBgTab(this,'both')" data-k="bg_both">Both</button>
+  </div>
+  <div id="bg-desc">
+    <div class="fl"><span data-k="loc_label">Location</span> <span class="req">required</span> <span class="hint" data-k="loc_hint">French or English</span></div>
+    <textarea id="s-loc" rows="2" placeholder="e.g. Toit d'immeuble à Brixton, barrières métalliques rouillées... / Rooftop in Brixton, rusted metal railings, red brick roofs, overcast sky..."></textarea>
+  </div>
+  <div id="bg-photo" style="display:none">
+    <div class="fl" data-k="bg_photo_label">Pinterest / background reference photo</div>
+    <div class="upz" onclick="document.getElementById('bgfile').click()" id="bgzone">
+      <input type="file" id="bgfile" accept="image/*" onchange="handleUp(this,'bgzone','bgtxt')">
+      <div class="upztxt" id="bgtxt" data-k="bg_upload_hint">Click to upload background reference photo</div>
+    </div>
+    <div class="warn" data-k="bg_photo_warn">Photo used for composition reference only. The engine generates a separate background-first prompt to translate it into Yanissa World miniature set style.</div>
+  </div>
+  <div id="bg-both" style="display:none">
+    <div class="fl"><span data-k="loc_label">Location description</span> <span class="hint" data-k="loc_hint">French or English</span></div>
+    <textarea id="s-loc2" rows="2" placeholder="e.g. Même lieu que la photo — rues londoniennes pluvieuses, style Notting Hill..."></textarea>
+    <div class="fl" style="margin-top:8px" data-k="bg_photo_label">Background reference photo</div>
+    <div class="upz" onclick="document.getElementById('bgfile2').click()" id="bgzone2">
+      <input type="file" id="bgfile2" accept="image/*" onchange="handleUp(this,'bgzone2','bgtxt2')">
+      <div class="upztxt" id="bgtxt2" data-k="bg_upload_hint">Click to upload background reference photo</div>
+    </div>
+  </div>
+  <div class="fr" style="margin-top:10px">
+    <div>
+      <div class="fl" data-k="time_label">Time of day</div>
+      <select id="s-time">
+        <option value="overcast" data-k="t_overcast">Overcast / grey</option>
+        <option value="golden" data-k="t_golden">Golden hour</option>
+        <option value="night" data-k="t_night">Night</option>
+        <option value="midday" data-k="t_midday">Midday / bright</option>
+        <option value="dawn" data-k="t_dawn">Dawn / blue hour</option>
+        <option value="dusk" data-k="t_dusk">Dusk / magic hour</option>
+      </select>
+    </div>
+    <div>
+      <div class="fl" data-k="colour_label">Colour palette</div>
+      <select id="s-colour">
+        <option value="standard" data-k="col_std">Standard Yanissa World</option>
+        <option value="forest" data-k="col_forest">Forest greens + golds</option>
+        <option value="pool" data-k="col_pool">90s pool blues</option>
+        <option value="nightneon" data-k="col_night">Night neon</option>
+        <option value="warm" data-k="col_warm">Warm ambers</option>
+        <option value="mono" data-k="col_mono">Monochrome</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="chars_title">Characters</div>
+  <div class="fl" style="margin-bottom:5px" data-k="chars_select">Select characters</div>
+  <div class="pills" id="cpills">
+    <div class="pill" onclick="toggleChar(this,'yanissa')">Yanissa</div>
+    <div class="pill" onclick="toggleChar(this,'ashley')">Ashley</div>
+    <div class="pill" onclick="toggleChar(this,'rita')">Rita</div>
+    <div class="pill" onclick="toggleChar(this,'grandmino')">Grand Minö</div>
+    <div class="pill" onclick="toggleChar(this,'gadget')">Gadget</div>
+    <div class="pill" onclick="toggleChar(this,'new')" data-k="cp_new">+ New</div>
+  </div>
+  <div id="new-char-row" style="display:none;margin-top:8px">
+    <div class="fl"><span data-k="newchar_label">New character</span> <span class="hint" data-k="newchar_hint">Soul ID name + notes</span></div>
+    <input type="text" id="s-newchar" placeholder="e.g. COACH_MARISOL_SOUL_ID — Cuban-American fitness coach, Miami energy">
+  </div>
+  <div class="fr f1" style="margin-top:9px">
+    <div>
+      <div class="fl"><span data-k="arrange_label">Arrangement</span> <span class="hint" data-k="arrange_hint">who is where</span></div>
+      <input type="text" id="s-arrange" placeholder="e.g. Left: Rita, Centre: Yanissa, Right: Ashley — all facing forward">
+    </div>
+  </div>
+  <div class="snote" data-k="scale_note">Scale lock: equal real-life height enforced. Hair lengths locked to character defaults unless overridden below.</div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="outfit_title">Outfit / costume</div>
+  <div class="tabs" id="outfit-tabs">
+    <button class="tab on" onclick="setTabContent('outfit-tabs',['ot-text','ot-img','ot-def'],'ot-text',this)" data-k="outfit_text">Text</button>
+    <button class="tab" onclick="setTabContent('outfit-tabs',['ot-text','ot-img','ot-def'],'ot-img',this)" data-k="outfit_image">Image ref</button>
+    <button class="tab" onclick="setTabContent('outfit-tabs',['ot-text','ot-img','ot-def'],'ot-def',this)" data-k="outfit_default">Default</button>
+  </div>
+  <div id="ot-text">
+    <div class="fsub" data-k="out_top">Top / jacket</div>
+    <input type="text" id="s-top" placeholder="e.g. Yanissa: green Adidas track jacket. Rita: white oversized tee. Ashley: Brasil jersey">
+    <div class="fsub" data-k="out_pants">Pants / bottoms</div>
+    <input type="text" id="s-pants" placeholder="e.g. All three: black Adidas track trousers">
+    <div class="fsub" data-k="out_shoes">Shoes</div>
+    <input type="text" id="s-shoes" placeholder="e.g. Yanissa: white Adidas Superstar. Rita: white clean trainers">
+    <div class="fsub" data-k="out_hat">Hat / headwear</div>
+    <input type="text" id="s-hat" placeholder="e.g. Rita: black snapback cap. Others: none">
+    <div class="fsub" data-k="out_hair">Hair override <span class="hint" data-k="out_hair_hint">blank = defaults locked</span></div>
+    <input type="text" id="s-hair" placeholder="e.g. Ashley: high ponytail (default = shoulder-length straight — only override if needed)">
+  </div>
+  <div id="ot-img" style="display:none">
+    <div class="upz" onclick="document.getElementById('outfile').click()" id="outzone">
+      <input type="file" id="outfile" accept="image/*" onchange="handleUp(this,'outzone','outtxt')">
+      <div class="upztxt" id="outtxt" data-k="outfit_upload_hint">Click to upload outfit reference image</div>
+    </div>
+    <div class="fr f1" style="margin-top:7px">
+      <div><div class="fl" data-k="outfit_note_lbl">Notes on outfit</div>
+      <input type="text" id="s-outnote" placeholder="e.g. Keep joint rings and afro. Translate fabrics to miniature wool at 1:6 scale."></div>
+    </div>
+  </div>
+  <div id="ot-def" style="display:none">
+    <div class="warn" style="margin-top:0" data-k="outfit_def_note">Default costumes: Yanissa = green Adidas tracksuit. Ashley = white Brasil jersey + black shorts. Rita = green Mexico jersey + grey sweatpants.</div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="acc_title">Accessories</div>
+  <div class="fr">
+    <div><div class="fl" data-k="acc_bag">Bag</div><input type="text" id="s-bag" placeholder="e.g. Yanissa: small black crossbody"></div>
+    <div><div class="fl" data-k="acc_sunnies">Sunglasses</div><input type="text" id="s-sunnies" placeholder="e.g. Rita: oversized vintage frames"></div>
+  </div>
+  <div class="fr">
+    <div><div class="fl" data-k="acc_jewels">Jewellery</div><input type="text" id="s-jewels" placeholder="e.g. Rita: gold chain + rosary (default)"></div>
+    <div><div class="fl" data-k="acc_phone">Phone / device</div><input type="text" id="s-phone" placeholder="e.g. Ashley: phone pressed to ear"></div>
+  </div>
+  <div class="fr f1">
+    <div><div class="fl" data-k="acc_headphones">Headphones</div><input type="text" id="s-headphones" placeholder="e.g. Yanissa: white earbuds from Walkman. Rita: large over-ear headphones around neck"></div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst">Vehicles <span style="color:var(--t3);font-weight:400;font-size:9px" data-k="veh_opt">(optional)</span></div>
+  <div class="tabs" id="veh-tabs">
+    <button class="tab on" onclick="setTabContent('veh-tabs',['vt-none','vt-text','vt-img'],'vt-none',this)" data-k="veh_none">None</button>
+    <button class="tab" onclick="setTabContent('veh-tabs',['vt-none','vt-text','vt-img'],'vt-text',this)" data-k="veh_text">Describe</button>
+    <button class="tab" onclick="setTabContent('veh-tabs',['vt-none','vt-text','vt-img'],'vt-img',this)" data-k="veh_img">Photo ref</button>
+  </div>
+  <div id="vt-none"><span style="font-size:11px;color:var(--t3)" data-k="veh_none_note">No vehicle in this scene.</span></div>
+  <div id="vt-text" style="display:none">
+    <div class="fr">
+      <div><div class="fl" data-k="veh_type">Type</div>
+        <select id="s-vehtype"><option value="car" data-k="vt_car">Car</option><option value="motorbike" data-k="vt_moto">Motorbike / scooter</option><option value="boat" data-k="vt_boat">Boat</option><option value="plane" data-k="vt_plane">Plane / helicopter</option><option value="bicycle" data-k="vt_bicycle">Bicycle</option></select>
+      </div>
+      <div><div class="fl" data-k="veh_role">Role</div>
+        <select id="s-vehrole"><option value="background element" data-k="vr_bg">Background element</option><option value="foreground / prominent" data-k="vr_fg">Foreground / prominent</option><option value="characters inside or on it" data-k="vr_in">Characters inside / on it</option></select>
+      </div>
+    </div>
+    <div class="fr f1"><div><div class="fl" data-k="veh_desc">Description</div>
+    <input type="text" id="s-vehdesc" placeholder="e.g. 1970s black London cab, chrome bumper, slight rust at wheel arches, miniature scale model"></div></div>
+  </div>
+  <div id="vt-img" style="display:none">
+    <div class="upz" onclick="document.getElementById('vehfile').click()" id="vehzone">
+      <input type="file" id="vehfile" accept="image/*" onchange="handleUp(this,'vehzone','vehtxt')">
+      <div class="upztxt" id="vehtxt" data-k="veh_upload_hint">Click to upload vehicle reference photo</div>
+    </div>
+    <div class="fr f1" style="margin-top:7px"><div><div class="fl" data-k="veh_note_lbl">Vehicle notes</div>
+    <input type="text" id="s-vehnote" placeholder="e.g. Background element. Translate to 1:6 miniature model."></div></div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="action_title">Action & mood</div>
+  <div class="fr f1">
+    <div><div class="fl"><span data-k="action_label">What are they doing?</span> <span class="req">required</span> <span class="hint" data-k="action_hint">French or English</span></div>
+    <textarea id="s-action" rows="3" placeholder="e.g. Yanissa marche lentement sous un parapluie bleu, tête baissée. / Yanissa walks slowly under a blue umbrella, head slightly down, facing away from camera."></textarea></div>
+  </div>
+  <div class="fsub" data-k="camera_title">Camera angle & distance</div>
+  <div class="fr">
+    <div><div class="fl" data-k="cam_angle">Angle</div>
+      <select id="s-camangle">
+        <option value="eye_level" data-k="ca_eye">Eye-level (puppet standard)</option>
+        <option value="low" data-k="ca_low">Low angle — looking up</option>
+        <option value="high" data-k="ca_high">High angle — bird's eye</option>
+        <option value="over_shoulder" data-k="ca_ots">Over-the-shoulder</option>
+        <option value="pov" data-k="ca_pov">POV — character's view</option>
+        <option value="dutch" data-k="ca_dutch">Dutch angle — slight tilt</option>
+        <option value="front_on" data-k="ca_front">Straight front-on portrait</option>
+        <option value="three_quarter" data-k="ca_tq">Three-quarter angle</option>
+        <option value="profile" data-k="ca_profile">Side profile</option>
+      </select>
+    </div>
+    <div><div class="fl" data-k="cam_dist">Shot distance</div>
+      <select id="s-camdist">
+        <option value="full_body" data-k="cd_full">Full body</option>
+        <option value="medium" data-k="cd_med">Medium (waist up)</option>
+        <option value="cowboy" data-k="cd_cow">Cowboy (thigh up)</option>
+        <option value="portrait" data-k="cd_port">Portrait (chest up)</option>
+        <option value="close_up" data-k="cd_cu">Close-up (face)</option>
+        <option value="extreme_cu" data-k="cd_ecu">Extreme close-up</option>
+        <option value="wide" data-k="cd_wide">Wide — all + environment</option>
+        <option value="establishing" data-k="cd_est">Establishing — full set</option>
+      </select>
+    </div>
+  </div>
+  <div class="fsub" data-k="emotion_title">Emotional state</div>
+  <div class="fr">
+    <div><div class="fl" data-k="emotion_label">Primary state</div>
+      <select id="s-emotion">
+        <option value="neutral" data-k="em_neutral">Neutral — baseline</option>
+        <option value="alert" data-k="em_alert">Alert / observing</option>
+        <option value="subdued" data-k="em_subdued">Subdued / inward</option>
+        <option value="intense" data-k="em_intense">Intense / focused</option>
+        <option value="open" data-k="em_open">Open / receptive</option>
+        <option value="performing" data-k="em_performing">Performing / singing</option>
+        <option value="joy" data-k="em_joy">Joy / elated</option>
+        <option value="tension" data-k="em_tension">Tension / conflict</option>
+        <option value="wonder" data-k="em_wonder">Wonder / discovering</option>
+        <option value="defiant" data-k="em_defiant">Defiant / confident</option>
+        <option value="melancholy" data-k="em_melancholy">Melancholy / nostalgic</option>
+        <option value="conspiring" data-k="em_conspiring">Conspiring / secretive</option>
+        <option value="exhausted" data-k="em_exhausted">Exhausted / post-perf</option>
+        <option value="determined" data-k="em_determined">Determined / resolute</option>
+      </select>
+    </div>
+    <div><div class="fl" data-k="mouth_label">Mouth / solenoid</div>
+      <select id="s-mouth">
+        <option value="neutral" data-k="mo_neutral">Neutral rest — 2mm</option>
+        <option value="closed" data-k="mo_closed">Closed / tight</option>
+        <option value="mid" data-k="mo_mid">Mid open — 4mm</option>
+        <option value="full" data-k="mo_full">Full open — 8mm (singing)</option>
+      </select>
+    </div>
+  </div>
+  <div class="fsub" data-k="sig_title">Yanissa World signature codes</div>
+  <div class="pills" id="sigpills">
+    <div class="pill" onclick="togglePill(this,'tableau')" data-k="sig_tableau">Tableau plan</div>
+    <div class="pill" onclick="togglePill(this,'4thwall')" data-k="sig_4wall">4th wall break</div>
+    <div class="pill" onclick="togglePill(this,'falling')" data-k="sig_falling">Falling object</div>
+    <div class="pill" onclick="togglePill(this,'mino_shadow')" data-k="sig_mino">Grand Minö shadow</div>
+    <div class="pill" onclick="togglePill(this,'16mm')" data-k="sig_16mm">16mm grain</div>
+    <div class="pill" onclick="togglePill(this,'miniature')" data-k="sig_mini">Miniature wide plan</div>
+  </div>
+  <div id="falling-row" style="display:none;margin-top:8px">
+    <div class="fl"><span data-k="falling_label">Falling object</span> <span class="hint" data-k="falling_hint">announces next location</span></div>
+    <input type="text" id="s-falling" placeholder="e.g. a vinyl record / une paire de lunettes de soleil dorées">
+  </div>
+  <div class="fr f1" style="margin-top:9px">
+    <div><div class="fl"><span data-k="extra_label">Extra notes</span> <span class="hint" data-k="extra_hint">props, weather, details</span></div>
+    <input type="text" id="s-extra" placeholder="e.g. Blue umbrella in Yanissa's hand, rain on pavement, earphone cable hanging from pocket"></div>
+  </div>
+  <div class="fr f1" style="margin-top:8px">
+    <div><div class="fl"><span data-k="ep_label">Episode context</span> <span class="hint" data-k="ep_hint">optional</span></div>
+      <select id="s-ep">
+        <option value="">— none —</option>
+        <option value="ep1" data-k="ep1">Ep 1 — Brixton 7h12</option>
+        <option value="ep2" data-k="ep2">Ep 2 — Notting Hill Sound</option>
+        <option value="ep3" data-k="ep3">Ep 3 — Soho After Dark</option>
+        <option value="ep4" data-k="ep4">Ep 4 — La Prod Fantôme</option>
+        <option value="ep5" data-k="ep5">Ep 5 — Bonjour Bonjour</option>
+        <option value="ep6" data-k="ep6">Ep 6 — Fête de la Musique Paris</option>
+        <option value="ep7" data-k="ep7">Ep 7 — Ibiza Calling</option>
+        <option value="ep8" data-k="ep8">Ep 8 — Bali Frequencies</option>
+        <option value="ep9" data-k="ep9">Ep 9 — Tokyo Néon</option>
+        <option value="ep10" data-k="ep10">Ep 10 — Rio Carnival</option>
+        <option value="diary" data-k="ep_diary">Yanissa World Diaries</option>
+      </select>
+    </div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="opt_title">Options</div>
+  <div class="ntog" onclick="toggleNeg()">
+    <div class="tt on" id="neg-tt"><div class="tk"></div></div>
+    <div class="tlbl" data-k="neg_label">Include full negative prompt</div>
+  </div>
+</div>
+<div class="gbar">
+  <button class="bgen" onclick="generateScene()" data-k="gen_btn">Generate all prompts</button>
+  <button class="bsec" onclick="clearScene()" data-k="clear_btn">Clear</button>
+</div>
+<div class="out-box" id="scene-out-box">
+  <div class="out-hdr">
+    <div class="out-tabs" id="scene-out-tabs">
+      <div class="otab on" onclick="switchOutTab('scene',0,this)" data-k="tab_gemini">Gemini</div>
+      <div class="otab" onclick="switchOutTab('scene',1,this)" data-k="tab_nano">Nano Banana</div>
+      <div class="otab" onclick="switchOutTab('scene',2,this)" data-k="tab_seed">Seedance 2.0</div>
+      <div class="otab" onclick="switchOutTab('scene',3,this)" data-k="tab_bg">Background first</div>
+      <div class="otab" onclick="switchOutTab('scene',4,this)">📋 Instructions FR</div>
+    </div>
+    <div class="out-acts">
+      <button class="bcp" onclick="copyActiveOut('scene')" data-k="copy_btn">Copy</button>
+      <button class="bsv" onclick="saveHist('scene')" data-k="save_btn">Save</button>
+    </div>
+  </div>
+  <div id="scene-out-0" class="out-pane on"><div class="out-txt" id="scene-txt-0"></div></div>
+  <div id="scene-out-1" class="out-pane"><div class="out-txt" id="scene-txt-1"></div></div>
+  <div id="scene-out-2" class="out-pane"><div class="out-txt" id="scene-txt-2"></div></div>
+  <div id="scene-out-3" class="out-pane"><div class="out-txt" id="scene-txt-3"></div></div>
+  <div id="scene-out-4" class="out-pane"><div class="instr-txt" id="scene-txt-4"></div></div>
+</div>
+</div>
+
+<!-- SHEET -->
+<div id="panel-sheet" class="panel">
+<div class="info" data-k="sheet_info">Generate Soul ID reference images for any character — not limited to Yanissa, Ashley, Rita.</div>
+<div class="fs">
+  <div class="fst" data-k="sheet_char_title">Character</div>
+  <div class="fr">
+    <div><div class="fl" data-k="sheet_char_type">Character type</div>
+      <select id="sh-chartype" onchange="toggleSheetChar()">
+        <option value="core" data-k="sc_core">Core character</option>
+        <option value="any" data-k="sc_any">Any Soul ID character</option>
+      </select>
+    </div>
+    <div id="sh-core-sel"><div class="fl" data-k="char_label">Character</div>
+      <select id="sh-char"><option value="yanissa">Yanissa</option><option value="ashley">Ashley</option><option value="rita">Rita</option><option value="grandmino">Grand Minö</option></select>
+    </div>
+  </div>
+  <div id="sh-any-row" style="display:none" class="fr f1">
+    <div>
+      <div class="fl"><span data-k="soul_id_label">Soul ID name</span> <span class="req">required</span></div>
+      <input type="text" id="sh-soulid" placeholder="e.g. GADGET_SOUL_ID">
+      <div class="fl" style="margin-top:7px" data-k="char_desc_label">Character description</div>
+      <textarea id="sh-chardesc" rows="2" placeholder="e.g. Parisian influencer, early 20s, pink hoodie, gold hoop earring — same Supermarionation proportions as core characters"></textarea>
+    </div>
+  </div>
+  <div class="fr" style="margin-top:8px">
+    <div><div class="fl" data-k="view_label">View type</div>
+      <select id="sh-view"><option value="full" data-k="v_full">Full body front</option><option value="portrait" data-k="v_port">Portrait — head &amp; shoulders</option><option value="face" data-k="v_face">Face close-up</option><option value="tq" data-k="v_tq">Three-quarter angle</option><option value="back" data-k="v_back">Back view</option><option value="hands" data-k="v_hands">Hands + joints detail</option></select>
+    </div>
+    <div><div class="fl" data-k="emotion_label">Emotional state</div>
+      <select id="sh-emotion"><option value="none" data-k="e_none">— none (structural) —</option><option value="neutral" data-k="e_neutral">State 1 — Neutral</option><option value="alert" data-k="e_alert">State 2 — Alert</option><option value="subdued" data-k="e_subdued">State 3 — Subdued</option><option value="open" data-k="e_open">State 4 — Open</option><option value="intense" data-k="e_intense">State 5 — Intense</option><option value="performing" data-k="e_performing">State 6 — Performing</option><option value="joy" data-k="e_joy">State 7 — Joy</option><option value="defiant" data-k="e_defiant">State 8 — Defiant</option><option value="melancholy" data-k="e_melancholy">State 9 — Melancholy</option><option value="wonder" data-k="e_wonder">State 10 — Wonder</option><option value="tension" data-k="e_tension">State 11 — Tension</option><option value="conspiring" data-k="e_conspiring">State 12 — Conspiring</option></select>
+    </div>
+  </div>
+  <div class="fr">
+    <div><div class="fl" data-k="costume_label">Costume</div>
+      <select id="sh-costume"><option value="default" data-k="cos_def">Default (master ref)</option><option value="kit" data-k="cos_kit">Alternative football kit</option><option value="custom" data-k="cos_custom">Custom (describe)</option></select>
+    </div>
+    <div><div class="fl" data-k="cos_custom_label">Custom costume</div>
+      <input type="text" id="sh-costume-txt" placeholder="e.g. White Nigeria away jersey, black jeans">
+    </div>
+  </div>
+  <div class="fr f1" style="margin-top:6px"><div><div class="fl" data-k="notes_label">Additional notes</div>
+  <input type="text" id="sh-notes" placeholder="e.g. Emphasise wrist joint rings clearly. Hair at default length."></div></div>
+  <div class="snote" data-k="sheet_scale_note">Hair defaults: Yanissa = cream-blonde afro (large fixed). Ashley = shoulder-length auburn max. Rita = past-shoulder dark brown centre-part. Override only if needed.</div>
+</div>
+<div class="gbar">
+  <button class="bgen" onclick="generateSheet()" data-k="gen_btn_sheet">Generate character sheet prompt</button>
+  <button class="bsec" onclick="clearSheet()" data-k="clear_btn">Clear</button>
+</div>
+<div class="out-box" id="sheet-out-box">
+  <div class="out-hdr">
+    <div class="out-tabs" id="sheet-out-tabs">
+      <div class="otab on" onclick="switchOutTab('sheet',0,this)" data-k="tab_gemini">Gemini</div>
+      <div class="otab" onclick="switchOutTab('sheet',1,this)" data-k="tab_nano">Nano Banana</div>
+      <div class="otab" onclick="switchOutTab('sheet',2,this)">📋 Instructions FR</div>
+    </div>
+    <div class="out-acts">
+      <button class="bcp" onclick="copyActiveOut('sheet')" data-k="copy_btn">Copy</button>
+      <button class="bsv" onclick="saveHist('sheet')" data-k="save_btn">Save</button>
+    </div>
+  </div>
+  <div id="sheet-out-0" class="out-pane on"><div class="out-txt" id="sheet-txt-0"></div></div>
+  <div id="sheet-out-1" class="out-pane"><div class="out-txt" id="sheet-txt-1"></div></div>
+  <div id="sheet-out-2" class="out-pane"><div class="instr-txt" id="sheet-txt-2"></div></div>
+</div>
+</div>
+
+<!-- CONVERSION -->
+<div id="panel-conv" class="panel">
+<div class="info" data-k="conv_info">Turn a real person into a Yanissa World puppet. Run portrait verification first, then full body.</div>
+<div class="fs">
+  <div class="fst" data-k="conv_id_title">Identity — real person</div>
+  <div class="fr">
+    <div><div class="fl" data-k="face_label">Face shape</div>
+      <select id="cv-face"><option value="oval">Oval</option><option value="round">Round</option><option value="square">Square / strong jaw</option><option value="heart">Heart / wide forehead</option><option value="long">Long / angular</option></select>
+    </div>
+    <div><div class="fl" data-k="eyes_label">Eye colour</div>
+      <select id="cv-eyes"><option value="dark brown">Dark brown</option><option value="hazel">Hazel / light brown</option><option value="green">Green</option><option value="blue">Blue</option><option value="grey">Grey</option></select>
+    </div>
+  </div>
+  <div class="fr">
+    <div><div class="fl" data-k="skin_label">Skin tone</div>
+      <select id="cv-skin"><option value="very light / pale">Very light / pale</option><option value="light / fair">Light / fair</option><option value="light-medium / warm">Light-medium / warm</option><option value="medium / olive">Medium / olive</option><option value="medium-dark / warm brown">Medium-dark / warm brown</option><option value="dark brown">Dark brown</option><option value="very dark">Very dark</option></select>
+    </div>
+    <div><div class="fl" data-k="hair_col_label">Hair colour</div>
+      <select id="cv-haircolor"><option value="black">Black</option><option value="dark brown">Dark brown</option><option value="medium brown">Medium brown</option><option value="auburn / red">Auburn / red</option><option value="blonde">Blonde</option><option value="platinum">Platinum / white-blonde</option><option value="grey / silver">Grey / silver</option></select>
+    </div>
+  </div>
+  <div class="fr">
+    <div><div class="fl" data-k="hair_style_label">Hair style</div>
+      <select id="cv-hairstyle"><option value="short close-cropped">Short — close cropped</option><option value="short textured">Short — textured</option><option value="medium straight">Medium — straight</option><option value="medium wavy">Medium — wavy</option><option value="long straight">Long — straight</option><option value="large natural afro">Large natural afro</option><option value="locs or braids">Locs / braids</option><option value="slicked back">Slicked back</option><option value="high bun">High bun</option></select>
+    </div>
+    <div><div class="fl" data-k="features_label">Distinctive features</div>
+      <input type="text" id="cv-features" placeholder="e.g. beard, glasses, strong brow, freckles">
+    </div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="conv_costume_title">Costume</div>
+  <div class="tabs" id="cv-costume-tabs">
+    <button class="tab on" onclick="setTabContent('cv-costume-tabs',['cvt-kit','cvt-text','cvt-img'],'cvt-kit',this)" data-k="kit_tab">Football kit</button>
+    <button class="tab" onclick="setTabContent('cv-costume-tabs',['cvt-kit','cvt-text','cvt-img'],'cvt-text',this)" data-k="outfit_text">Describe</button>
+    <button class="tab" onclick="setTabContent('cv-costume-tabs',['cvt-kit','cvt-text','cvt-img'],'cvt-img',this)" data-k="outfit_image">Image ref</button>
+  </div>
+  <div id="cvt-kit">
+    <div class="fr">
+      <div><div class="fl" data-k="kit_label">Football kit</div>
+        <select id="cv-kit"><option value="none">No kit — custom</option><option value="Nigeria home — green, white trim">Nigeria — green</option><option value="Jamaica — yellow and black">Jamaica — yellow &amp; black</option><option value="France — dark blue">France — dark blue</option><option value="Argentina — light blue and white stripes">Argentina — blue &amp; white</option><option value="USA — white and red">USA — white &amp; red</option><option value="Japan — dark navy blue">Japan — navy</option><option value="Senegal — white">Senegal — white</option><option value="Morocco — red">Morocco — red</option><option value="Ivory Coast — orange">Ivory Coast — orange</option><option value="Brazil — yellow and green">Brazil — yellow &amp; green</option><option value="England — white">England — white</option></select>
+      </div>
+      <div><div class="fl" data-k="acc_jewels">Accessories</div>
+        <input type="text" id="cv-acc" placeholder="e.g. gold chain, glasses, hoop earrings">
+      </div>
+    </div>
+  </div>
+  <div id="cvt-text" style="display:none">
+    <textarea id="cv-costume-txt" rows="2" placeholder="e.g. Red Adidas hoodie, black joggers, white trainers, chunky silver chain"></textarea>
+  </div>
+  <div id="cvt-img" style="display:none">
+    <div class="upz" onclick="document.getElementById('cvfile').click()" id="cvzone">
+      <input type="file" id="cvfile" accept="image/*" onchange="handleUp(this,'cvzone','cvtxt')">
+      <div class="upztxt" id="cvtxt" data-k="outfit_upload_hint">Click to upload costume reference image</div>
+    </div>
+    <div class="fr f1" style="margin-top:7px"><div><div class="fl" data-k="conv_cos_note">Notes on costume</div>
+    <input type="text" id="cv-cosnote" placeholder="e.g. Keep jacket colour, change trousers to grey sweatpants"></div></div>
+  </div>
+</div>
+<div class="fs">
+  <div class="fst" data-k="conv_out_title">Output</div>
+  <div class="fr">
+    <div><div class="fl" data-k="out_type_label">Generate as</div>
+      <select id="cv-outtype"><option value="portrait" data-k="ot_portrait">Portrait verification (first)</option><option value="full" data-k="ot_full">Full body</option></select>
+    </div>
+    <div><div class="fl" data-k="soul_label">Soul ID name</div>
+      <input type="text" id="cv-soulname" placeholder="e.g. GADGET_SOUL_ID">
+    </div>
+  </div>
+</div>
+<div class="gbar">
+  <button class="bgen" onclick="generateConv()" data-k="gen_btn_conv">Generate conversion prompt</button>
+  <button class="bsec" onclick="clearConv()" data-k="clear_btn">Clear</button>
+</div>
+<div class="out-box" id="conv-out-box">
+  <div class="out-hdr">
+    <div class="out-tabs" id="conv-out-tabs">
+      <div class="otab on" onclick="switchOutTab('conv',0,this)" data-k="tab_gemini">Gemini</div>
+      <div class="otab" onclick="switchOutTab('conv',1,this)" data-k="tab_nano">Nano Banana</div>
+      <div class="otab" onclick="switchOutTab('conv',2,this)">📋 Instructions FR</div>
+    </div>
+    <div class="out-acts">
+      <button class="bcp" onclick="copyActiveOut('conv')" data-k="copy_btn">Copy</button>
+      <button class="bsv" onclick="saveHist('conv')" data-k="save_btn">Save</button>
+    </div>
+  </div>
+  <div id="conv-out-0" class="out-pane on"><div class="out-txt" id="conv-txt-0"></div></div>
+  <div id="conv-out-1" class="out-pane"><div class="out-txt" id="conv-txt-1"></div></div>
+  <div id="conv-out-2" class="out-pane"><div class="instr-txt" id="conv-txt-2"></div></div>
+</div>
+</div>
+
+<!-- HISTORY -->
+<div id="panel-hist" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:12px;color:var(--t2)" id="hsummary">No history yet</div>
+    <button class="bsec" onclick="clearHist()" data-k="clear_hist">Clear all</button>
+  </div>
+  <div class="hfrow">
+    <div class="hf on" onclick="filterHist('all',this)" data-k="hf_all">All</div>
+    <div class="hf" onclick="filterHist('scene',this)" data-k="hf_scene">Scenes</div>
+    <div class="hf" onclick="filterHist('sheet',this)" data-k="hf_sheet">Sheets</div>
+    <div class="hf" onclick="filterHist('conv',this)" data-k="hf_conv">Conversions</div>
+  </div>
+  <div class="hl" id="hlist"><div class="hempty" data-k="hist_empty">Nothing saved yet.</div></div>
+</div>
+
+<!-- CHECKLIST -->
+<div id="panel-check" class="panel">
+  <div class="fs"><div class="fst" data-k="check_pre">Before generating in Nano Banana</div><div id="pre-cl"></div></div>
+  <div class="sdiv"></div>
+  <div class="fs"><div class="fst" data-k="check_post">After generation — verify output</div><div id="post-cl"></div></div>
+  <div style="margin-top:11px"><button class="bsec" onclick="resetCheck()" data-k="reset_check">Reset</button></div>
+</div>
+
+</div></div></div>
+<script>
+// ═══════════════════════════════════════════════════════════
+// YANISSA WORLD PROMPT ENGINE v3 — FULL LOGIC
+// Pipeline: Gemini Imagen 3 (mood board) + Nano Banana Premium (production) → Seedance 2.0
+// Gemini = Imagen 3 via gemini.google.com app, "Create image" mode, Pro model
+// Nano Banana = Higgsfield, Soul ID activated, full technical spec
+// Seedance 2.0 = Higgsfield video, takes Nano Banana output image as input frame
+// ═══════════════════════════════════════════════════════════
+
+// ── STATE ──
+let lang = 'en';
+let platform = 'tiktok';
+let bgMode = 'desc';
+let negOn = true;
+let selectedChars = new Set();
+let selectedSigs = new Set();
+let bgFileName = '', outFileName = '', vehFileName = '', cvFileName = '';
+let sceneActiveTab = 0, sheetActiveTab = 0, convActiveTab = 0;
+let histFilter = 'all';
+let hist = JSON.parse(localStorage.getItem('yw_v3_hist') || '[]');
+
+// ── TRANSLATIONS ──
+const STR = {
+en:{
+nav_gen:'Generate',nav_scene:'Scene prompt',nav_sheet:'Character sheet',
+nav_conv:'Puppet conversion',nav_team:'Team',nav_hist:'History',nav_check:'Checklist',
+member_lbl:'Team member',
+scene_info:'Gemini = mood board & background tests (free credits, Imagen 3). Nano Banana = production with Soul ID. Seedance = animate.',
+pipeline_title:'Production pipeline',
+wf1:'Gemini Imagen 3',wf1s:'Mood board & BG tests',
+wf2:'Nano Banana Premium',wf2s:'Production image',
+wf3:'Seedance 2.0',wf3s:'Animate video',
+platform_label:'Platform / format',plat_neutral:'Neutral',
+loc_title:'Location & setting',bg_mode_label:'Background reference',
+bg_desc:'Describe it',bg_photo_tab:'Upload photo',bg_both:'Both',
+loc_label:'Location',loc_hint:'French or English',
+bg_photo_label:'Pinterest / background reference photo',
+bg_upload_hint:'Click to upload background reference photo',
+bg_photo_warn:'Photo used for background testing in Gemini + composition reference in Nano Banana. Nano Banana gets a separate background-first prompt to translate into miniature set style.',
+t_overcast:'Overcast / grey',t_golden:'Golden hour',t_night:'Night',
+t_midday:'Midday / bright',t_dawn:'Dawn / blue hour',t_dusk:'Dusk / magic hour',
+col_std:'Standard Yanissa World',col_forest:'Forest greens + golds',
+col_pool:'90s pool blues',col_night:'Night neon',col_warm:'Warm ambers',col_mono:'Monochrome',
+chars_title:'Characters',chars_select:'Select characters',cp_new:'+ New',
+newchar_label:'New character',newchar_hint:'Soul ID name + notes',
+arrange_label:'Arrangement',arrange_hint:'who is where',
+scale_note:'Scale lock: equal real-life height enforced. Hair locked to character defaults unless overridden.',
+outfit_title:'Outfit / costume',outfit_text:'Text',outfit_image:'Image ref',outfit_default:'Default',
+out_top:'Top / jacket',out_pants:'Pants / bottoms',out_shoes:'Shoes',
+out_hat:'Hat / headwear',out_hair:'Hair override',out_hair_hint:'blank = defaults locked',
+outfit_upload_hint:'Click to upload outfit reference image',outfit_note_lbl:'Notes on outfit',
+outfit_def_note:'Default costumes: Yanissa = green Adidas tracksuit. Ashley = white Brasil jersey + black shorts. Rita = green Mexico jersey + grey sweatpants.',
+acc_title:'Accessories',acc_bag:'Bag',acc_sunnies:'Sunglasses',
+acc_jewels:'Jewellery',acc_phone:'Phone / device',acc_headphones:'Headphones',
+veh_opt:'optional',veh_none:'None',veh_text:'Describe',veh_img:'Photo ref',
+veh_none_note:'No vehicle in this scene.',
+veh_type:'Type',vt_car:'Car',vt_moto:'Motorbike / scooter',vt_boat:'Boat',vt_plane:'Plane / helicopter',vt_bicycle:'Bicycle',
+veh_role:'Role',vr_bg:'Background element',vr_fg:'Foreground / prominent',vr_in:'Characters inside / on it',
+veh_desc:'Description',veh_upload_hint:'Click to upload vehicle reference photo',veh_note_lbl:'Vehicle notes',
+action_title:'Action & mood',action_label:'What are they doing?',action_hint:'French or English',
+video_title:'Video / Seedance',script_label:'Dialogue / action beat',script_hint:'what happens in this shot',
+script_placeholder:'e.g. Yanissa walks slowly toward camera, looks up, slight smile. Ashley watches from behind. No dialogue.',
+duration_label:'Shot duration',
+camera_title:'Camera angle & distance',cam_angle:'Angle',cam_dist:'Shot distance',
+ca_eye:'Eye-level (puppet standard)',ca_low:'Low angle — looking up',ca_high:'High angle — bird\'s eye',
+ca_ots:'Over-the-shoulder',ca_pov:'POV — character\'s view',ca_dutch:'Dutch angle — slight tilt',
+ca_front:'Straight front-on portrait',ca_tq:'Three-quarter angle',ca_profile:'Side profile',
+cd_full:'Full body',cd_med:'Medium (waist up)',cd_cow:'Cowboy (thigh up)',
+cd_port:'Portrait (chest up)',cd_cu:'Close-up (face)',cd_ecu:'Extreme close-up',
+cd_wide:'Wide — all + environment',cd_est:'Establishing — full set',
+emotion_title:'Emotional state',emotion_label:'Primary state',
+em_neutral:'Neutral — baseline',em_alert:'Alert / observing',em_subdued:'Subdued / inward',
+em_intense:'Intense / focused',em_open:'Open / receptive',em_performing:'Performing / singing',
+em_joy:'Joy / elated',em_tension:'Tension / conflict',em_wonder:'Wonder / discovering',
+em_defiant:'Defiant / confident',em_melancholy:'Melancholy / nostalgic',
+em_conspiring:'Conspiring / secretive',em_exhausted:'Exhausted / post-perf',em_determined:'Determined / resolute',
+mouth_label:'Mouth / solenoid',mo_neutral:'Neutral rest — 2mm',mo_closed:'Closed / tight',
+mo_mid:'Mid open — 4mm',mo_full:'Full open — 8mm (singing)',
+sig_title:'Signature codes',sig_tableau:'Tableau plan',sig_4wall:'4th wall break',
+sig_falling:'Falling object',sig_mino:'Grand Minö shadow',sig_16mm:'16mm grain',sig_mini:'Miniature wide plan',
+falling_label:'Falling object',falling_hint:'announces next location',
+extra_label:'Extra notes',extra_hint:'props, weather, details',
+ep_label:'Episode context',ep_hint:'optional',
+ep1:'Ep 1 — Brixton 7h12',ep2:'Ep 2 — Notting Hill Sound',ep3:'Ep 3 — Soho After Dark',
+ep4:'Ep 4 — La Prod Fantôme',ep5:'Ep 5 — Bonjour Bonjour',ep6:'Ep 6 — Fête de la Musique Paris',
+ep7:'Ep 7 — Ibiza Calling',ep8:'Ep 8 — Bali Frequencies',ep9:'Ep 9 — Tokyo Néon',
+ep10:'Ep 10 — Rio Carnival',ep_diary:'Yanissa World Diaries',
+opt_title:'Options',neg_label:'Include full negative prompt',
+gen_btn:'Generate all prompts',clear_btn:'Clear',
+tab_gemini:'Gemini Imagen 3',tab_nano:'Nano Banana',tab_seed:'Seedance 2.0',
+tab_bg:'Background (Gemini + Nano)',copy_btn:'Copy',save_btn:'Save',
+sheet_info:'Generate Soul ID reference images. Gemini = quick mood board. Nano Banana = production reference.',
+sheet_char_title:'Character',sheet_char_type:'Character type',
+sc_core:'Core character',sc_any:'Any Soul ID character',char_label:'Character',
+soul_id_label:'Soul ID name',char_desc_label:'Character description',
+view_label:'View type',v_full:'Full body front',v_port:'Portrait — head & shoulders',
+v_face:'Face close-up',v_tq:'Three-quarter angle',v_back:'Back view',v_hands:'Hands + joints detail',
+e_none:'— none (structural) —',e_neutral:'State 1 — Neutral',e_alert:'State 2 — Alert',
+e_subdued:'State 3 — Subdued',e_open:'State 4 — Open',e_intense:'State 5 — Intense',
+e_performing:'State 6 — Performing',e_joy:'State 7 — Joy',e_defiant:'State 8 — Defiant',
+e_melancholy:'State 9 — Melancholy',e_wonder:'State 10 — Wonder',
+e_tension:'State 11 — Tension',e_conspiring:'State 12 — Conspiring',
+costume_label:'Costume',cos_def:'Default (master ref)',cos_kit:'Alternative football kit',
+cos_custom:'Custom (describe)',cos_custom_label:'Custom costume',notes_label:'Additional notes',
+sheet_scale_note:'Hair defaults: Yanissa = cream-blonde afro. Ashley = shoulder-length auburn max. Rita = past-shoulder dark brown centre-part.',
+gen_btn_sheet:'Generate character sheet prompts',
+conv_info:'Turn a real person into a Yanissa World puppet. Portrait verification first, then full body.',
+conv_id_title:'Identity — real person',face_label:'Face shape',eyes_label:'Eye colour',
+skin_label:'Skin tone',hair_col_label:'Hair colour',hair_style_label:'Hair style',
+features_label:'Distinctive features',conv_costume_title:'Costume',kit_tab:'Football kit',
+kit_label:'Football kit',conv_cos_note:'Notes on costume',
+conv_out_title:'Output',out_type_label:'Generate as',
+ot_portrait:'Portrait verification (first)',ot_full:'Full body',soul_label:'Soul ID name',
+gen_btn_conv:'Generate conversion prompts',
+clear_hist:'Clear all',hf_all:'All',hf_scene:'Scenes',hf_sheet:'Sheets',hf_conv:'Conversions',
+hist_empty:'Nothing saved yet.',
+check_pre:'Before generating in Nano Banana',check_post:'After generation — verify output',
+reset_check:'Reset'
+},
+fr:{
+nav_gen:'Générer',nav_scene:'Scène',nav_sheet:'Fiche personnage',
+nav_conv:'Conversion marionnette',nav_team:'Équipe',nav_hist:'Historique',nav_check:'Vérification',
+member_lbl:'Membre',
+scene_info:'Gemini = mood board & tests de fond (crédits gratuits, Imagen 3). Nano Banana = production avec Soul ID. Seedance = animer.',
+pipeline_title:'Pipeline de production',
+wf1:'Gemini Imagen 3',wf1s:'Mood board & tests fond',
+wf2:'Nano Banana Premium',wf2s:'Image de production',
+wf3:'Seedance 2.0',wf3s:'Animer la vidéo',
+platform_label:'Plateforme / format',plat_neutral:'Neutre',
+loc_title:'Lieu & décor',bg_mode_label:'Référence de fond',
+bg_desc:'Décrire',bg_photo_tab:'Importer photo',bg_both:'Les deux',
+loc_label:'Lieu',loc_hint:'Français ou anglais',
+bg_photo_label:'Photo de fond Pinterest',
+bg_upload_hint:'Cliquez pour importer une photo de fond',
+bg_photo_warn:'Photo utilisée pour les tests de fond dans Gemini + référence de composition dans Nano Banana. Nano Banana reçoit un prompt décor séparé pour traduire en style miniature.',
+t_overcast:'Couvert / gris',t_golden:'Heure dorée',t_night:'Nuit',
+t_midday:'Midi / lumineux',t_dawn:'Aube / heure bleue',t_dusk:'Crépuscule / heure magique',
+col_std:'Standard Yanissa World',col_forest:'Verts forêt + ors',
+col_pool:'Bleus piscine 90s',col_night:'Néon nocturne',col_warm:'Ambres chauds',col_mono:'Monochrome',
+chars_title:'Personnages',chars_select:'Sélectionner les personnages',cp_new:'+ Nouveau',
+newchar_label:'Nouveau personnage',newchar_hint:'Nom Soul ID + notes',
+arrange_label:'Disposition',arrange_hint:'qui est où',
+scale_note:'Verrou de taille : hauteur réelle identique. Cheveux verrouillés par défaut sauf modification.',
+outfit_title:'Tenue / costume',outfit_text:'Texte',outfit_image:'Image réf.',outfit_default:'Par défaut',
+out_top:'Haut / veste',out_pants:'Bas / pantalon',out_shoes:'Chaussures',
+out_hat:'Chapeau / couvre-chef',out_hair:'Cheveux (si différent)',out_hair_hint:'vide = défaut verrouillé',
+outfit_upload_hint:'Cliquez pour importer une image de tenue',outfit_note_lbl:'Notes sur la tenue',
+outfit_def_note:'Costumes par défaut : Yanissa = survêt Adidas vert. Ashley = maillot Brasil blanc + short noir. Rita = maillot Mexique vert + jogging gris.',
+acc_title:'Accessoires',acc_bag:'Sac',acc_sunnies:'Lunettes de soleil',
+acc_jewels:'Bijoux',acc_phone:'Téléphone',acc_headphones:'Casque / écouteurs',
+veh_opt:'optionnel',veh_none:'Aucun',veh_text:'Décrire',veh_img:'Photo réf.',
+veh_none_note:'Pas de véhicule dans cette scène.',
+veh_type:'Type',vt_car:'Voiture',vt_moto:'Moto / scooter',vt_boat:'Bateau',vt_plane:'Avion / hélicoptère',vt_bicycle:'Vélo',
+veh_role:'Rôle',vr_bg:'Élément de fond',vr_fg:'Premier plan / prominent',vr_in:'Personnages dedans / dessus',
+veh_desc:'Description',veh_upload_hint:'Cliquez pour importer une photo de véhicule',veh_note_lbl:'Notes véhicule',
+action_title:'Action & ambiance',action_label:'Que font-ils ?',action_hint:'Français ou anglais',
+video_title:'Vidéo / Seedance',script_label:'Dialogue / action',script_hint:'ce qui se passe dans ce plan',
+script_placeholder:'ex. Yanissa marche lentement vers la caméra, lève les yeux, léger sourire. Ashley regarde depuis le fond. Pas de dialogue.',
+duration_label:'Durée du plan',
+camera_title:'Angle & distance caméra',cam_angle:'Angle',cam_dist:'Distance',
+ca_eye:'Niveau des yeux (standard)',ca_low:'Contre-plongée',ca_high:'Plongée',
+ca_ots:'Par-dessus l\'épaule',ca_pov:'POV — point de vue',ca_dutch:'Angle néerlandais',
+ca_front:'Portrait face caméra',ca_tq:'Trois quarts',ca_profile:'Profil latéral',
+cd_full:'Corps entier',cd_med:'Plan américain (taille)',cd_cow:'Plan cowboy (cuisse)',
+cd_port:'Portrait (poitrine)',cd_cu:'Gros plan (visage)',cd_ecu:'Très gros plan',
+cd_wide:'Large — tous + environnement',cd_est:'Plan d\'ensemble — décor complet',
+emotion_title:'État émotionnel',emotion_label:'État principal',
+em_neutral:'Neutre — référence',em_alert:'Alerte / observation',em_subdued:'Introspectif',
+em_intense:'Intense / concentré',em_open:'Ouvert / réceptif',em_performing:'En performance / chant',
+em_joy:'Joie / exaltation',em_tension:'Tension / conflit',em_wonder:'Émerveillement',
+em_defiant:'Défiant / confiant',em_melancholy:'Mélancolie / nostalgie',
+em_conspiring:'Complicité / secret',em_exhausted:'Épuisé / après performance',em_determined:'Déterminé / résolu',
+mouth_label:'Bouche / solénoïde',mo_neutral:'Position neutre — 2mm',mo_closed:'Fermée / serrée',
+mo_mid:'Mi-ouverte — 4mm',mo_full:'Pleine ouverture — 8mm (chant)',
+sig_title:'Codes signatures',sig_tableau:'Plan tableau',sig_4wall:'Rupture 4e mur',
+sig_falling:'Objet qui tombe',sig_mino:'Ombre Grand Minö',sig_16mm:'Grain 16mm',sig_mini:'Plan large miniature',
+falling_label:'Objet qui tombe',falling_hint:'annonce le prochain lieu',
+extra_label:'Notes supplémentaires',extra_hint:'accessoires, météo, détails',
+ep_label:'Contexte épisode',ep_hint:'optionnel',
+ep1:'Ép 1 — Brixton 7h12',ep2:'Ép 2 — Notting Hill Sound',ep3:'Ép 3 — Soho After Dark',
+ep4:'Ép 4 — La Prod Fantôme',ep5:'Ép 5 — Bonjour Bonjour',ep6:'Ép 6 — Fête de la Musique Paris',
+ep7:'Ép 7 — Ibiza Calling',ep8:'Ép 8 — Bali Frequencies',ep9:'Ép 9 — Tokyo Néon',
+ep10:'Ép 10 — Rio Carnaval',ep_diary:'Yanissa World Diaries',
+opt_title:'Options',neg_label:'Inclure le prompt négatif complet',
+gen_btn:'Générer tous les prompts',clear_btn:'Effacer',
+tab_gemini:'Gemini Imagen 3',tab_nano:'Nano Banana',tab_seed:'Seedance 2.0',
+tab_bg:'Fond (Gemini + Nano)',copy_btn:'Copier',save_btn:'Sauvegarder',
+sheet_info:'Générez des images de référence Soul ID. Gemini = mood board rapide. Nano Banana = référence de production.',
+sheet_char_title:'Personnage',sheet_char_type:'Type de personnage',
+sc_core:'Personnage principal',sc_any:'N\'importe quel Soul ID',char_label:'Personnage',
+soul_id_label:'Nom Soul ID',char_desc_label:'Description du personnage',
+view_label:'Type de vue',v_full:'Corps entier face',v_port:'Portrait — tête & épaules',
+v_face:'Gros plan visage',v_tq:'Trois quarts',v_back:'Vue de dos',v_hands:'Mains + articulations',
+e_none:'— aucun (vue structurelle) —',e_neutral:'État 1 — Neutre',e_alert:'État 2 — Alerte',
+e_subdued:'État 3 — Introspectif',e_open:'État 4 — Ouvert',e_intense:'État 5 — Intense',
+e_performing:'État 6 — Performance',e_joy:'État 7 — Joie',e_defiant:'État 8 — Défiant',
+e_melancholy:'État 9 — Mélancolie',e_wonder:'État 10 — Émerveillement',
+e_tension:'État 11 — Tension',e_conspiring:'État 12 — Complicité',
+costume_label:'Costume',cos_def:'Par défaut (référence maître)',cos_kit:'Maillot de foot alternatif',
+cos_custom:'Personnalisé (décrire)',cos_custom_label:'Costume personnalisé',notes_label:'Notes supplémentaires',
+sheet_scale_note:'Cheveux par défaut : Yanissa = afro crème-blonde. Ashley = mi-long roux (max épaules). Rita = lisse brun foncé (sous les épaules, centre).',
+gen_btn_sheet:'Générer les prompts de fiche',
+conv_info:'Transformez une vraie personne en marionnette Yanissa World. Portrait d\'abord, puis corps entier.',
+conv_id_title:'Identité — personne réelle',face_label:'Forme du visage',eyes_label:'Couleur des yeux',
+skin_label:'Teinte de peau',hair_col_label:'Couleur des cheveux',hair_style_label:'Style de cheveux',
+features_label:'Traits distinctifs',conv_costume_title:'Costume',kit_tab:'Maillot de foot',
+kit_label:'Maillot de foot',conv_cos_note:'Notes sur le costume',
+conv_out_title:'Sortie',out_type_label:'Générer en tant que',
+ot_portrait:'Vérification portrait (d\'abord)',ot_full:'Corps entier',soul_label:'Nom Soul ID',
+gen_btn_conv:'Générer les prompts de conversion',
+clear_hist:'Tout effacer',hf_all:'Tout',hf_scene:'Scènes',hf_sheet:'Fiches',hf_conv:'Conversions',
+hist_empty:'Rien de sauvegardé.',
+check_pre:'Avant de générer dans Nano Banana',check_post:'Après génération — vérifier',
+reset_check:'Réinitialiser'
+}
+};
+
+function t(k){return(STR[lang]&&STR[lang][k])||STR.en[k]||k}
+
+// ── PROMPT DATA ──
+const CHARS={
+yanissa:`CHARACTER — YANISSA (Soul ID: YANISSA_SOUL_ID):
+Albino Black woman, 19. Skin: pale cream-white, flat painted fibreglass resin — no pores, no subsurface scattering, no warmth. Hair: large rounded cream-blonde afro — FIXED at signature size, single sculpted rigid mass, no strand separation, one soft specular highlight. Eyes: almond-shaped, large, green-grey iris, painted glass, one specular catchlight. Wrist joint rings: visible, cream-white connector rings — MANDATORY. Knee joint rings: visible, black connector discs — MANDATORY. Mouth at solenoid neutral.`,
+ashley:`CHARACTER — ASHLEY (Soul ID: ASHLEY_SOUL_ID):
+British-Brazilian woman, early 20s. Skin: warm medium pink-beige, flat painted fibreglass resin — no pores, no subsurface scattering. Hair: auburn-copper-red, straight, SHOULDER-LENGTH MAXIMUM — never extends past shoulder regardless of pose. Single rigid sculpted mass, one specular line along top. Glasses: black rectangular frame, thick temples, FIXED to face — always present. Eyes: green-hazel, painted glass. Wrist joint rings: prominent warm brown-red resin rings — MANDATORY. Red string bracelet on left wrist above ring. Knee joint rings: visible disc connectors — MANDATORY.`,
+rita:`CHARACTER — RITA (Soul ID: RITA_SOUL_ID):
+Mexican-Indian woman, early 20s. Skin: warm olive-medium, flat painted fibreglass resin — no pores, no subsurface scattering. Hair: dark brown-black, straight, centre-parted — PAST-SHOULDER LENGTH, falls to mid-back maximum, no further. Single rigid high-gloss mass, rigid centre part, NO strand separation. Eyes: large almond-shaped dark brown — most prominent facial feature — painted glass. Wrist joint rings: warm brown-tan — MANDATORY. Knee joint rings: disc connectors — MANDATORY. RIGHT HAND IN POCKET — left arm at side (default).`,
+grandmino:`CHARACTER — GRAND MINÖ (never fully revealed):
+Appears only as fragments — shadow on wall, reflection in glass, silhouette in crowd. When visible: red bear-ear balaclava, leather jacket, gold signet ring. CRITICAL: NEVER shown face-on, NEVER fully revealed. Presence only.`,
+gadget:`CHARACTER — GADGET (Soul ID: GADGET_SOUL_ID):
+Parisian influencer. Pink hoodie (signature). Vintage sunglasses, small gold earring. Same Supermarionation puppet proportions as core characters — 4.5–5 heads tall, visible wrist and knee joint rings.`};
+
+const BLOCKB=`SUPERMARIONATION MINIATURE SET — TECHNICAL SPEC:
+Hand-built physical miniature set at 1:6 scale. Real materials throughout. Weathering MANDATORY: dry-brush highlights on raised edges, dark wash in recesses, water stain streaks, grime at bases, chipped paint, rust at fixings. Camera: puppet EYE-LEVEL or below unless specified. Forced perspective. DEEP FOCUS — NO bokeh. Sky: hand-painted matte backdrop ONLY — NEVER real photography or HDRI.`;
+
+const SCALE_BLOCK=`SCALE CONSISTENCY — CRITICAL:
+All characters IDENTICAL real-life height. Correct any perspective-based size differences. Feet on same horizontal ground plane. Heads at same maximum height. DO NOT preserve perspective size differences.`;
+
+const HAIR_BLOCK=`HAIR ACCURACY — NON-NEGOTIABLE:
+Yanissa: large cream-blonde afro — fixed size, single rigid mass.
+Ashley: auburn-red straight — SHOULDER-LENGTH MAXIMUM, never past shoulder.
+Rita: dark brown-black straight — mid-back maximum, centre-parted.
+If hair deviates: reject and regenerate.`;
+
+const NEG=`NEGATIVE PROMPT:
+CHARACTER: realistic human skin, subsurface scattering, skin pores, individual hair strands, flyaway hair, hair past shoulder for Ashley, hair shorter than shoulder for Rita, missing wrist joint rings, missing knee joint rings, realistic human proportions, 7-head-tall figure, Pixar, anime, manga, cartoon, 3D render, CGI skin, scale mismatch between characters.
+SETTINGS: photorealistic location photography, CGI environment, HDRI sky, real sky photography, procedurally generated textures, zero weathering, bokeh, photographic sky, visible strings or wires, lens flare.
+IDENTITY: identity drift from Soul ID, different hair colour, different hair length, joints smoothed over, joint rings removed.`;
+
+const TIMEMAP={
+overcast:'Lighting: cold diffused overcast. Cool 5500K. No warmth.',
+golden:'Lighting: strong warm key from upper-left at 30°. Golden hour. Long cast shadows. Warm 3000K.',
+night:'Lighting: multiple practical sources. High contrast. Deep shadow pools.',
+midday:'Lighting: hard key from above-left. Short crisp shadows. Neutral 4500K.',
+dawn:'Lighting: cool blue pre-dawn ambient. Soft key from horizon. No warmth yet.',
+dusk:'Lighting: warm magenta-amber from horizon. Long raking shadows.'};
+
+const CAMMAP={
+eye_level:'Camera at puppet eye-level, straight-on, 85mm equivalent, deep focus.',
+low:'Camera below puppet eye-level, angled 10–15° upward, 85mm equivalent. Architecture looms into upper frame.',
+high:'Camera above, angled downward — bird\'s eye, 35mm equivalent.',
+over_shoulder:'Camera over one character\'s shoulder, 50mm equivalent.',
+pov:'Camera at character\'s eye-level — first-person perspective, 40mm equivalent.',
+dutch:'Camera tilted 15° — Dutch angle, 50mm equivalent.',
+front_on:'Camera perfectly centred front-on, 85mm equivalent.',
+three_quarter:'Camera 45° to front, 85mm equivalent.',
+profile:'Camera 90° — pure side profile, 85mm equivalent.'};
+
+const DISTMAP={
+full_body:'Shot distance: full body — head to toe.',
+medium:'Shot distance: medium shot — waist up.',
+cowboy:'Shot distance: cowboy shot — thigh up.',
+portrait:'Shot distance: portrait — chest up.',
+close_up:'Shot distance: close-up — face fills frame.',
+extreme_cu:'Shot distance: extreme close-up — eyes or key detail only.',
+wide:'Shot distance: wide — all characters + significant environment.',
+establishing:'Shot distance: establishing — full miniature set revealed. Characters small within environment.'};
+
+const EMOTIONMAP={
+neutral:'EMOTIONAL STATE: Neutral baseline. Face front, no tilt. Mouth at solenoid rest.',
+alert:'EMOTIONAL STATE: Alert / observing. Head 5° to side. Mouth closed tight. Stillness is the expression.',
+subdued:'EMOTIONAL STATE: Subdued / inward. Head 8° downward. Mouth closed.',
+intense:'EMOTIONAL STATE: Intense / focused. Head perfectly level and square. Mouth closed tight.',
+open:'EMOTIONAL STATE: Open / receptive. Head 5° upward. Solenoid mouth 4mm mid-drop.',
+performing:'EMOTIONAL STATE: Performing / singing. Head 8° upward. Solenoid mouth full 8mm drop — binary mechanical open.',
+joy:'EMOTIONAL STATE: Joy / elated. Head thrown back 10°. Solenoid mouth full 8mm open.',
+tension:'EMOTIONAL STATE: Tension. Head 5° forward, chin jutting. Mouth closed tight.',
+wonder:'EMOTIONAL STATE: Wonder. Head 8° upward. Solenoid mouth 4mm mid-drop.',
+defiant:'EMOTIONAL STATE: Defiant / confident. Head perfectly square. Mouth closed tight.',
+melancholy:'EMOTIONAL STATE: Melancholy. Head 10° down, 5° to side. Mouth closed.',
+conspiring:'EMOTIONAL STATE: Conspiring. Head tilted 15° inward toward other character. Mouth 4mm open.',
+exhausted:'EMOTIONAL STATE: Exhausted. Head slightly forward and down. Mouth 4mm open — catching breath.',
+determined:'EMOTIONAL STATE: Determined. Head level, 3° forward tilt. Mouth closed.'};
+
+const MOUTHMAP={
+neutral:'Solenoid mouth: neutral rest — 2mm gap.',
+closed:'Solenoid mouth: fully closed — lips together.',
+mid:'Solenoid mouth: mid-position — 4mm lower lip drop.',
+full:'Solenoid mouth: maximum lower lip drop — 8mm. Binary open — lower lip only, upper fixed.'};
+
+const PLATMAP={
+tiktok:'ASPECT RATIO: 9:16 vertical. Framing for TikTok / Reels — tall frame, characters upper two-thirds.',
+insta:'ASPECT RATIO: 1:1 square. Balanced composition for Instagram feed.',
+yt:'ASPECT RATIO: 16:9 horizontal. Cinematic wide format for YouTube.',
+neutral:'ASPECT RATIO: neutral — standard format.'};
+
+const COLMAP={
+standard:'Palette: dominant forest greens, Adidas greens, golds, off-whites. Lighting always contrastive.',
+forest:'Palette: deep forest green dominant. Gold accents on jewellery. Off-white negative space.',
+pool:'Palette: 90s pool blue dominant — vivid teal. Off-white walls. Chlorine aesthetic.',
+nightneon:'Palette: deep blue-black, neon accents — red, white, gold, green. High contrast.',
+warm:'Palette: amber and terracotta dominant. Warm 2800K. Gold and ochre reflections.',
+mono:'Palette: desaturated greyscale. Cold light. Minimal colour. Flashback aesthetic.'};
+
+const SIGMAP={
+tableau:'SIGNATURE VISUAL — TABLEAU PLAN: Three girls frozen in frontal display — perfectly still, symmetrical, like mannequins in a vitrine. Eyes forward. No movement. Key Instagram image.',
+'4thwall':'SIGNATURE VISUAL — 4TH WALL BREAK: One or more characters look directly into the camera lens.',
+falling:'SIGNATURE VISUAL — FALLING OBJECT: Object falls in slow motion at scene end, announcing next location.',
+mino_shadow:'SIGNATURE VISUAL — GRAND MINÖ PRESENCE: Shadow on wall, reflection in glass, silhouette in crowd, or single element (red bear-ear balaclava, hand with gold ring). NEVER full figure.',
+'16mm':'VISUAL TREATMENT — 16MM FILM GRAIN: Authentic 16mm grain. Slight halation at light sources. Warm film stock. Signals: flashback, dream, memory.',
+miniature:'SIGNATURE VISUAL — MINIATURE WIDE PLAN: Wide shot fully revealing miniature set. Camera far back — tiny puppet figures within full maquette. Hand-painted sky backdrop visible.'};
+
+const EPMAP={
+ep1:'EPISODE CONTEXT — EP 1 (Brixton 7h12, discovery): Yanissa alone. Quiet before everything changes.',
+ep2:'EPISODE CONTEXT — EP 2 (Notting Hill Sound): Rita\'s domain. Musical obsession. Discovery of a voice.',
+ep3:'EPISODE CONTEXT — EP 3 (Soho After Dark): Ashley\'s leap. Chaos becoming something new.',
+ep4:'EPISODE CONTEXT — EP 4 (La Prod Fantôme): All three together. The phantom prod arrives. Something bigger in the room.',
+ep5:'EPISODE CONTEXT — EP 5 (Bonjour Bonjour): Music pure. No dialogue. The song being born.',
+ep6:'EPISODE CONTEXT — EP 6 (Fête de la Musique Paris): Explosion. France discovers them. Euphoria.',
+ep7:'EPISODE CONTEXT — EP 7 (Ibiza Calling): First travel. Pool glamour vs business reality.',
+ep8:'EPISODE CONTEXT — EP 8 (Bali Frequencies): Reality cracking. Grand Minö\'s presence felt.',
+ep9:'EPISODE CONTEXT — EP 9 (Tokyo Néon): Clip night. High energy. Moments of connection in the cracks.',
+ep10:'EPISODE CONTEXT — EP 10 (Rio Carnival): Everything converging. Maximum visual drama. The cliffhanger.',
+diary:'EPISODE CONTEXT — Diaries (30s TikTok): Casual, backstage, raw.'};
+
+// ── GEMINI IMAGEN 3 MOOD BOARD PROMPT BUILDER ──
+// Short, vivid, style-first. No technical specs. Works with Imagen 3 style presets.
+function buildGeminiScenePrompt(locText,action,emotion,colour,sigs){
+  const hasBg=bgMode==='photo'||(bgMode==='both'&&bgFileName);
+  const chars=[...selectedChars].filter(c=>c!=='new');
+  const newChar=document.getElementById('s-newchar')?document.getElementById('s-newchar').value.trim():'';
+
+  // Character mood descriptions for Gemini (visual, not technical)
+  const gemChars={
+    yanissa:'a young albino Black woman with a large cream-blonde afro and green Adidas tracksuit',
+    ashley:'a British-Brazilian woman with short auburn hair, black rectangular glasses and a white Brasil football jersey',
+    rita:'a Mexican-Indian woman with long dark straight hair, centre-parted, wearing a green Mexico football jersey',
+    grandmino:'a mysterious hooded figure in a red bear-ear balaclava and leather jacket — only their shadow or silhouette is visible',
+    gadget:'a flamboyant Parisian influencer in a bright pink hoodie and vintage sunglasses'
+  };
+  const charDescs=chars.map(c=>gemChars[c]||c).join(', ');
+  const newDesc=newChar?`, ${newChar}`:'';
+
+  // Colour mood for Gemini
+  const colMood={
+    standard:'rich forest greens, Adidas greens, golds and off-whites',
+    forest:'deep forest greens and gold accents',
+    pool:'vivid 90s teal pool blues and white',
+    nightneon:'deep blue-black with neon red and gold accents',
+    warm:'warm amber and terracotta tones',
+    mono:'black and white, high contrast monochrome'};
+
+  // Style preset recommendation based on mood
+  const styleRec={
+    overcast:'Try the Cinematic or Monochrome style preset.',
+    golden:'Try the Color block or Runway style preset.',
+    night:'Try the Cinematic or Anyma\'s world style preset.',
+    midday:'Try the Color block or Runway style preset.',
+    dawn:'Try the Cinematic style preset.',
+    dusk:'Try the Cinematic or Color block style preset.'};
+
+  const time=document.getElementById('s-time')?document.getElementById('s-time').value:'overcast';
+  const ep=document.getElementById('s-ep')?document.getElementById('s-ep').value:'';
+  const falling=document.getElementById('s-falling')?document.getElementById('s-falling').value.trim():'';
+
+  let p='';
+  p+=`GEMINI IMAGEN 3 — MOOD BOARD PROMPT\n`;
+  p+=`(Paste in Gemini app → "Create image" → Pro model`;
+  if(styleRec[time])p+=` → ${styleRec[time]}`;
+  p+=`)\n\n`;
+
+  if(hasBg){
+    p+=`BACKGROUND TEST VERSION (no characters):\n`;
+    p+=`${locText||'Atmospheric location'}. `;
+    p+=`${TIMEMAP[time]||''} `.replace('Lighting:','').replace(/\..*/,'').trim()+' light. ';
+    p+=`${colMood[colour]||colMood.standard}. `;
+    p+=`Miniature model set aesthetic — hand-built scenery, slightly toy-like, vivid painted surfaces, painterly sky backdrop. No people. Mood board reference.\n\n`;
+    p+=`CHARACTER + SCENE VERSION:\n`;
+  }
+
+  if(chars.length>0||newChar){
+    p+=`${charDescs}${newDesc}`;
+    if(action)p+=` — ${action.slice(0,120)}`;
+    p+=`. `;
+  } else if(action){
+    p+=`${action.slice(0,120)}. `;
+  }
+
+  if(locText)p+=`${locText.slice(0,100)}. `;
+  p+=`${colMood[colour]||colMood.standard}. `;
+  p+=`Miniature puppet world aesthetic — hand-crafted scale model scenery, vivid painted backdrop sky, stylised toy-like characters. `;
+
+  if(sigs.has('tableau'))p+=`Three figures perfectly still in symmetrical display pose. `;
+  if(sigs.has('16mm'))p+=`Film grain, 16mm aesthetic. `;
+  if(sigs.has('mino_shadow'))p+=`A mysterious shadow in the background — red balaclava silhouette barely visible. `;
+  if(sigs.has('miniature'))p+=`Wide shot revealing the full miniature set environment. `;
+  if(falling)p+=`${falling} falling in slow motion in the foreground. `;
+  if(ep&&EPMAP[ep])p+=`Mood: ${ep==='ep8'?'surreal, reality cracking':ep==='ep1'?'quiet, lonely, about to change':ep==='ep6'?'euphoric, celebratory':ep==='ep10'?'dramatic, climactic':'cinematic, bold'}. `;
+
+  if(ep==='diary')p+=`Casual, backstage energy — raw and unposed. `;
+
+  p+=`\n\n💡 GEMINI TIPS:\n`;
+  p+='• Use "Create image" mode → Pro model\n';
+  p+='• Try 2–3 style presets to find the right visual direction\n';
+  p+='• Generate 4–8 images — collect the best for mood board\n';
+  p+=hasBg?'• Test the background-only version first before adding characters\n':'';
+  p+='• These images establish visual direction — production goes to Nano Banana with Soul ID';
+
+  return p;
+}
+
+// ── NANO BANANA PRODUCTION PROMPT BUILDER ──
+function buildNanoBananaPrompt(locText,hasBgRef){
+  let outfitMode='ot-text';
+  const outTabs=document.getElementById('outfit-tabs');
+  if(outTabs){const on=outTabs.querySelector('.tab.on');if(on)outfitMode=on.getAttribute('data-target')||'ot-text';}
+
+  let vehMode='vt-none';
+  const vehTabs=document.getElementById('veh-tabs');
+  if(vehTabs){const on=vehTabs.querySelector('.tab.on');if(on)vehMode=on.getAttribute('data-target')||'vt-none';}
+
+  let p='SUPERMARIONATION PUPPET CHARACTERS — TECHNICAL SPEC:\n';
+  p+='Gerry Anderson Thunderbirds tradition (AP Films 1965). Hollow fibreglass shell heads, flat painted resin skin — no pores, no subsurface scattering, single sharp specular hotspot. Hair: single rigid sculpted mass, no strand separation. ARTICULATION JOINT RINGS MANDATORY at wrists and knees — always visible. Head-to-body ratio 4.5–5 heads tall. Cylindrical torso. Solenoid mouth: binary lower lip drop only.\n\n';
+
+  const order=['yanissa','ashley','rita','grandmino','gadget'];
+  order.forEach(c=>{if(selectedChars.has(c))p+=CHARS[c]+'\n\n';});
+  const nc=document.getElementById('s-newchar')?document.getElementById('s-newchar').value.trim():'';
+  if(selectedChars.has('new')&&nc)p+=`CHARACTER — NEW: ${nc}\n\n`;
+
+  p+=SCALE_BLOCK+'\n\n';
+  p+=HAIR_BLOCK+'\n\n';
+  p+=BLOCKB+'\n\n';
+
+  if(hasBgRef){
+    p+=`BACKGROUND REFERENCE: [ATTACH: result of Background-First prompt — Nano Banana Step 1]\n`;
+    p+=`Maintain all set aesthetic exactly as generated in Step 1. Place characters INTO this established set.\n\n`;
+  } else if(locText){
+    p+=`LOCATION:\n${locText}\n\n`;
+  }
+
+  const time=document.getElementById('s-time')?document.getElementById('s-time').value:'overcast';
+  const colour=document.getElementById('s-colour')?document.getElementById('s-colour').value:'standard';
+  if(TIMEMAP[time])p+=TIMEMAP[time]+'\n\n';
+  if(COLMAP[colour])p+=COLMAP[colour]+'\n\n';
+
+  // Outfit
+  const getVal=id=>{const el=document.getElementById(id);return el?el.value.trim():'';}
+  const top=getVal('s-top'),pants=getVal('s-pants'),shoes=getVal('s-shoes'),hat=getVal('s-hat'),hair=getVal('s-hair');
+  const outFile=document.getElementById('ot-img')&&document.getElementById('ot-img').style.display!=='none';
+  if(outFile&&outFileName){
+    p+=`COSTUME REFERENCE IMAGE: [ATTACH: ${outFileName}]\n`;
+    const note=getVal('s-outnote');
+    p+=`Translate fabrics to miniature at 1:6 scale. Preserve joint rings.${note?' Notes: '+note:''}\n\n`;
+  } else if(document.getElementById('ot-def')&&document.getElementById('ot-def').style.display!=='none'){
+    p+='COSTUME: Master reference defaults.\n\n';
+  } else if(top||pants||shoes||hat||hair){
+    p+='COSTUME DETAILS:\n';
+    if(top)p+=`Top: ${top}\n`;
+    if(pants)p+=`Pants: ${pants}\n`;
+    if(shoes)p+=`Shoes: ${shoes}\n`;
+    if(hat)p+=`Hat: ${hat}\n`;
+    if(hair)p+=`Hair override: ${hair} [Locked defaults apply to all other characters]\n`;
+    p+='\n';
+  } else {
+    p+='COSTUME: Master reference defaults.\n\n';
+  }
+
+  // Accessories
+  const bag=getVal('s-bag'),sun=getVal('s-sunnies'),jew=getVal('s-jewels'),ph=getVal('s-phone'),hp=getVal('s-headphones');
+  if(bag||sun||jew||ph||hp){
+    p+='ACCESSORIES:\n';
+    if(bag)p+=`Bag: ${bag}\n`;
+    if(sun)p+=`Sunglasses: ${sun}\n`;
+    if(jew)p+=`Jewellery: ${jew}\n`;
+    if(ph)p+=`Phone: ${ph}\n`;
+    if(hp)p+=`Headphones: ${hp}\n`;
+    p+='\n';
+  }
+
+  // Vehicle
+  const vehTextActive=document.getElementById('vt-text')&&document.getElementById('vt-text').style.display!=='none';
+  const vehImgActive=document.getElementById('vt-img')&&document.getElementById('vt-img').style.display!=='none';
+  if(vehImgActive&&vehFileName){
+    const role=getVal('s-vehrole')||'background';
+    const note=getVal('s-vehnote');
+    p+=`VEHICLE REFERENCE: [ATTACH: ${vehFileName}]\nTranslate to 1:6 miniature model. Role: ${role}.${note?' Notes: '+note:''}\n\n`;
+  } else if(vehTextActive){
+    const type=getVal('s-vehtype')||'car',role=getVal('s-vehrole')||'background element',desc=getVal('s-vehdesc');
+    p+=`VEHICLE: ${type}. Role: ${role}.${desc?' '+desc:''} Translate to hand-built 1:6 miniature model.\n\n`;
+  }
+
+  const action=getVal('s-action'),arrange=getVal('s-arrange');
+  if(action)p+=`SCENE ACTION:\n${action}\n\n`;
+  if(arrange)p+=`CHARACTER ARRANGEMENT:\n${arrange}\n\n`;
+
+  const angle=document.getElementById('s-camangle')?document.getElementById('s-camangle').value:'eye_level';
+  const dist=document.getElementById('s-camdist')?document.getElementById('s-camdist').value:'full_body';
+  p+=`CAMERA:\n${CAMMAP[angle]||''}\n${DISTMAP[dist]||''}\n${PLATMAP[platform]||''}\n\n`;
+
+  const emotion=document.getElementById('s-emotion')?document.getElementById('s-emotion').value:'neutral';
+  const mouth=document.getElementById('s-mouth')?document.getElementById('s-mouth').value:'neutral';
+  if(EMOTIONMAP[emotion])p+=EMOTIONMAP[emotion]+'\n';
+  if(MOUTHMAP[mouth])p+=MOUTHMAP[mouth]+'\n\n';
+
+  selectedSigs.forEach(s=>{
+    if(SIGMAP[s]){
+      let sig=SIGMAP[s];
+      if(s==='falling'){const fo=getVal('s-falling');if(fo)sig=sig.replace('Object falls',fo+' falls');}
+      p+=sig+'\n\n';
+    }
+  });
+
+  const extra=getVal('s-extra');
+  if(extra)p+=`ADDITIONAL DETAILS:\n${extra}\n\n`;
+
+  const ep=document.getElementById('s-ep')?document.getElementById('s-ep').value:'';
+  if(ep&&EPMAP[ep])p+=EPMAP[ep]+'\n\n';
+
+  if(negOn)p+=NEG;
+  return p.trim();
+}
+
+// ── BACKGROUND-FIRST PROMPT (Gemini BG test + Nano Banana BG-only) ──
+function buildBgPrompts(locText){
+  const time=document.getElementById('s-time')?document.getElementById('s-time').value:'overcast';
+  const colour=document.getElementById('s-colour')?document.getElementById('s-colour').value:'standard';
+  const hasBgPhoto=bgMode==='photo'||(bgMode==='both'&&bgFileName);
+  const bgRef=hasBgPhoto?(bgFileName||'[background-reference.jpg]'):'';
+
+  const colMood={standard:'forest greens, golds, off-whites',forest:'deep forest greens and gold',pool:'vivid teal pool blues',nightneon:'deep blue-black with neon accents',warm:'amber and terracotta',mono:'black and white monochrome'};
+
+  let p='';
+  p+='╔══════════════════════════════════════╗\n';
+  p+='║  STEP A — GEMINI IMAGEN 3            ║\n';
+  p+='║  Background mood board (free credits)║\n';
+  p+='╚══════════════════════════════════════╝\n\n';
+  p+='Paste in Gemini → "Create image" → Pro model. Generate 4–8 images.\n';
+  p+='Goal: establish the visual mood and lighting of the background BEFORE going to Nano Banana.\n\n';
+  if(bgRef)p+=`[ATTACH PHOTO IN GEMINI: ${bgRef}]\n\n`;
+  p+=`${locText||'Atmospheric location'}. `;
+  p+=`${(TIMEMAP[time]||'').replace('Lighting:','').replace(/\..*/,'').trim()} light. `;
+  p+=`${colMood[colour]||colMood.standard}. `;
+  p+=`Miniature model set aesthetic — hand-built scale scenery, vivid painted sky backdrop, slightly toy-like atmosphere. No people. Background location study.\n`;
+  p+=`Try Cinematic or Color block style presets.\n\n`;
+
+  p+='╔══════════════════════════════════════╗\n';
+  p+='║  STEP B — NANO BANANA PREMIUM        ║\n';
+  p+='║  Background-only production prompt   ║\n';
+  p+='╚══════════════════════════════════════╝\n\n';
+  p+='Run this in Nano Banana FIRST — NO characters. This generates the Yanissa World miniature set.\n';
+  p+='The output of this step becomes the background reference for your character scene.\n\n';
+  if(bgRef)p+=`BACKGROUND REFERENCE PHOTO: [ATTACH: ${bgRef}]\nUse for composition and layout reference ONLY. DO NOT reproduce photographic realism.\n\n`;
+  p+='TRANSLATION RULES — apply to every element:\n';
+  p+='Real buildings → balsa/fibreglass miniature facades at 1:6 scale\n';
+  p+='Real sky → hand-painted airbrushed matte backdrop, never photographic\n';
+  p+='Real street/ground → painted surface with gloss varnish, real material texture, weathering\n';
+  p+='Real trees/plants → wire-armature structures with flocked foliage\n';
+  p+='Real lighting → single tungsten key light from upper-left at 45°\n\n';
+  if(locText)p+=`LOCATION:\n${locText}\n\n`;
+  p+=BLOCKB+'\n\n';
+  if(TIMEMAP[time])p+=TIMEMAP[time]+'\n\n';
+  if(COLMAP[colour])p+=COLMAP[colour]+'\n\n';
+  p+=`OUTPUT: Empty set — no characters. Camera at eye-level. Deep focus.\n${PLATMAP[platform]||''}\n\n`;
+  p+=`NEGATIVE: photorealistic photography, real sky, HDRI, CGI environment, procedurally generated textures, real location photography, bokeh, characters in scene`;
+
+  return p;
+}
+
+// ── SEEDANCE 2.0 MOTION PROMPT ──
+function buildSeedancePrompt(){
+  const getVal=id=>{const el=document.getElementById(id);return el?el.value.trim():'';}
+  const action=getVal('s-action');
+  const script=getVal('s-script');
+  const duration=document.getElementById('s-duration')?document.getElementById('s-duration').value:'4s';
+  const angle=document.getElementById('s-camangle')?document.getElementById('s-camangle').value:'eye_level';
+  const dist=document.getElementById('s-camdist')?document.getElementById('s-camdist').value:'full_body';
+
+  const camMotion={
+    eye_level:'slow controlled push-in — 5% zoom over duration. Locked tripod quality.',
+    low:'slight upward tilt — camera rises 3° over duration. Static otherwise.',
+    high:'locked overhead — no camera movement.',
+    over_shoulder:'static locked.',
+    pov:'very slight handheld sway — gentle 2° oscillation, breathing rhythm.',
+    dutch:'static — Dutch angle held throughout.',
+    front_on:'static locked — no camera movement.',
+    three_quarter:'slow orbit right — 5° movement over duration.',
+    profile:'static locked — profile held.'};
+
+  let p='SEEDANCE 2.0 — MOTION PROMPT\n\n';
+  p+='INPUT FRAME: [ATTACH: best Nano Banana output image from this scene]\n';
+  p+='Animate FROM this image. Do NOT regenerate the scene — work from the existing frame only.\n\n';
+
+  if(script){
+    p+='SCRIPT / ACTION BEAT:\n'+script+'\n\n';
+  }
+
+  p+='CHARACTER MOTION:\n';
+  if(action)p+=action.slice(0,200)+'\n';
+  p+='Puppet movement: mechanical and constrained — limited range, NOT fluid human movement.\n\n';
+
+  p+='CAMERA MOTION:\n'+(camMotion[angle]||'slow controlled push-in, tripod quality.')+'\n';
+  p+=(DISTMAP[dist]||'')+'\n\n';
+
+  p+='MOTION CONSTRAINTS — CRITICAL:\n';
+  p+='• Hair: DOES NOT MOVE — rigid fixed mass throughout\n';
+  p+='• Joint rings: remain visible in all frames\n';
+  p+='• Environment: static miniature set — no wind, no particle systems\n';
+  p+='• Solenoid mouth: binary open/close only if speaking — no lip-sync range\n';
+  p+='• Camera: slow, controlled, tripod quality — no handheld shake\n\n';
+
+  p+=`Duration: ${duration}.\n`;
+  p+=PLATMAP[platform]||'';
+  return p.trim();
+}
+
+// ── SCENE INSTRUCTIONS (FR) ──
+function buildSceneInstructions(){
+  const hasBgRef=bgMode==='photo'||(bgMode==='both'&&bgFileName);
+  const bgRef=bgFileName||'[background-reference.jpg]';
+  const steps=[];
+
+  if(hasBgRef){
+    steps.push({
+      n:'1',color:'var(--g)',
+      title:'Étape 1 — Gemini : mood board & test de fond (onglet "Fond")',
+      desc:'Copiez le prompt Fond (section Gemini). Ouvrez gemini.google.com → "Create image" → modèle Pro.',
+      attach:bgFileName?`Attacher dans Gemini : ${bgFileName}`:'Texte uniquement — pas de photo',
+      detail:'Générez 4–8 images. Testez le fond sans personnages. Choisissez votre direction visuelle. Ces images sont votre mood board.'
+    });
+    steps.push({
+      n:'2',color:'var(--g)',
+      title:'Étape 2 — Nano Banana : décor seul (onglet "Fond" section Nano Banana)',
+      desc:'Copiez le prompt Nano Banana du même onglet. Ouvrez Higgsfield → Nano Banana Premium.',
+      attach:bgFileName?`Zone de référence : ${bgFileName}`:'Texte uniquement',
+      detail:'Collez le prompt. Générez 2–4 fois. Choisissez le meilleur décor sans personnages. Ce résultat devient votre image de référence de fond.'
+    });
+    steps.push({
+      n:'3',color:'var(--am)',
+      title:'Étape 3 — Nano Banana : scène avec personnages (onglet "Nano Banana")',
+      desc:'Activez les profils Soul ID pour chaque personnage. Ouvrez Higgsfield Nano Banana Premium.',
+      attach:'Zone de référence 1 : image maître des 3 personnages Yanissa World\nZone de référence 2 : résultat de l\'Étape 2 (décor sans personnages)',
+      detail:'Collez le prompt Nano Banana. Générez 4 fois. Vérifiez : anneaux de poignet visibles sur tous les personnages, taille identique, décor en style miniature.'
+    });
+  } else {
+    steps.push({
+      n:'1',color:'var(--g)',
+      title:'Étape 1 — Gemini : mood board (onglet "Gemini Imagen 3")',
+      desc:'Copiez le prompt Gemini. Ouvrez gemini.google.com → "Create image" → modèle Pro.',
+      attach:'Texte uniquement dans Gemini — pas d\'image à attacher',
+      detail:'Essayez 2–3 presets de style (Cinematic, Color block, Runway...). Générez 4–8 images. Ces images sont votre mood board — direction visuelle avant la production.'
+    });
+    steps.push({
+      n:'2',color:'var(--am)',
+      title:'Étape 2 — Nano Banana : image de production (onglet "Nano Banana")',
+      desc:'Activez les profils Soul ID pour chaque personnage présent. Ouvrez Higgsfield Nano Banana Premium.',
+      attach:'Zone de référence : image maître des 3 personnages Yanissa World',
+      detail:'Collez le prompt Nano Banana. Générez 4 fois. Vérifiez : anneaux de poignet visibles, taille identique entre personnages, cheveux conformes aux specs.'
+    });
+  }
+
+  steps.push({
+    n:hasBgRef?'4':'3',color:'var(--bl)',
+    title:`Étape ${hasBgRef?4:3} — Seedance 2.0 : animer (onglet "Seedance 2.0")`,
+    desc:'Toujours dans Higgsfield, passez à Seedance 2.0.',
+    attach:`Image d'entrée : meilleur résultat de l'Étape ${hasBgRef?3:2}`,
+    detail:'Copiez le prompt Seedance 2.0. Seedance anime à partir de l\'image existante — ne pas regénérer la scène. Durée recommandée : 3–6 secondes.'
+  });
+
+  let html='';
+  steps.forEach(s=>{
+    html+=`<div class="instr-step">
+      <div class="sn" style="background:${s.color}">${s.n}</div>
+      <div class="sb2">
+        <div class="st">${s.title}</div>
+        <div class="sd">${s.desc}</div>
+        <div class="sa">${s.attach}</div>
+        <div class="sd" style="margin-top:6px">${s.detail}</div>
+      </div>
+    </div>`;
+  });
+
+  html+=`<div class="instr-step">
+    <div class="sn" style="background:var(--am);font-size:9px">✓</div>
+    <div class="sb2">
+      <div class="st">Vérification finale après Nano Banana</div>
+      <div class="sd">
+        □ Anneaux articulaires visibles aux poignets de TOUS les personnages<br>
+        □ MÊME taille réelle pour tous les personnages (pas de décalage d'échelle)<br>
+        □ Ashley : cheveux roux mi-long MAX — pas plus long que les épaules<br>
+        □ Rita : brun foncé lisse — pas plus long que le milieu du dos<br>
+        □ Yanissa : grande afro crème-blonde fixe<br>
+        □ Décor en style miniature (pas photo-réaliste)<br>
+        □ Ciel = toile de fond peinte (pas une photo réelle)<br>
+        □ Chaque personnage correspond à son profil Soul ID
+      </div>
+    </div>
+  </div>`;
+  return html;
+}
+
+// ── MAIN GENERATE SCENE ──
+function generateScene(){
+  const getVal=id=>{const el=document.getElementById(id);return el?el.value.trim():'';}
+  const locText=bgMode==='both'?getVal('s-loc2'):getVal('s-loc');
+  const action=getVal('s-action');
+  const hasBgPhoto=bgMode==='photo'||(bgMode==='both'&&bgFileName);
+
+  if(!locText&&!hasBgPhoto){
+    alert(lang==='fr'?'Veuillez décrire le lieu ou importer une photo de fond.':'Please describe the location or upload a background photo.');return;
+  }
+  if(!action){alert(lang==='fr'?'Veuillez décrire ce que font les personnages.':'Please describe what the characters are doing.');return;}
+  if(selectedChars.size===0){alert(lang==='fr'?'Veuillez sélectionner au moins un personnage.':'Please select at least one character.');return;}
+
+  const emotion=document.getElementById('s-emotion')?document.getElementById('s-emotion').value:'neutral';
+  const colour=document.getElementById('s-colour')?document.getElementById('s-colour').value:'standard';
+
+  const gemini=buildGeminiScenePrompt(locText,action,emotion,colour,selectedSigs);
+  const nano=buildNanoBananaPrompt(locText,hasBgPhoto);
+  const seed=buildSeedancePrompt();
+  const bg=buildBgPrompts(locText);
+  const instr=buildSceneInstructions();
+
+  document.getElementById('scene-txt-0').textContent=gemini;
+  document.getElementById('scene-txt-1').textContent=nano;
+  document.getElementById('scene-txt-2').textContent=seed;
+  document.getElementById('scene-txt-3').textContent=bg;
+  document.getElementById('scene-txt-4').innerHTML=instr;
+
+  const box=document.getElementById('scene-out-box');
+  box.classList.add('vis');
+  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+// ── GENERATE SHEET ──
+const SHEET_VIEWMAP={
+full:'VIEW: Full body front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent, deep focus. Both wrist joint rings visible. Both knee joint rings visible.',
+portrait:'VIEW: Portrait — head and shoulders. Camera at eye-level, 85mm. Sharp focus on eyes. Top of hair to mid-chest.',
+face:'VIEW: Extreme close-up — face only. 85mm front-facing. Sharp focus on eyes.',
+tq:'VIEW: Full body three-quarter — camera 45° right of front. Eye-level. Head turned to face camera.',
+back:'VIEW: Full body from behind. Eye-level. Deep focus.',
+hands:'VIEW: Detail study — hands at 3× scale + wrist joint ring and knee joint ring close-up.'};
+
+const SHEET_EMOTIONMAP={
+none:'',
+neutral:'EMOTIONAL STATE — NEUTRAL: Face front, no tilt. Mouth 2mm solenoid rest. Zero-point reference.',
+alert:'EMOTIONAL STATE — ALERT: Head 5° to side. Mouth closed tight. Stillness is the expression.',
+subdued:'EMOTIONAL STATE — SUBDUED: Head 8° downward. Mouth closed.',
+open:'EMOTIONAL STATE — OPEN: Head 5° upward. Solenoid mouth 4mm mid-drop.',
+intense:'EMOTIONAL STATE — INTENSE: Head perfectly square. Mouth closed tight.',
+performing:'EMOTIONAL STATE — PERFORMING: Head 8° upward. Solenoid mouth full 8mm drop. Binary open.',
+joy:'EMOTIONAL STATE — JOY: Head back 10°. Solenoid mouth full 8mm open.',
+defiant:'EMOTIONAL STATE — DEFIANT: Head perfectly square. Mouth closed tight.',
+melancholy:'EMOTIONAL STATE — MELANCHOLY: Head 10° down, 5° side. Mouth closed.',
+wonder:'EMOTIONAL STATE — WONDER: Head 8° upward. Mouth 4mm mid-drop.',
+tension:'EMOTIONAL STATE — TENSION: Head 5° forward. Mouth closed tight.',
+conspiring:'EMOTIONAL STATE — CONSPIRING: Head 15° inward. Mouth 4mm open.'};
+
+function buildSheetNanoPrompt(charBlock,view,emotion,costume,notes,charName){
+  let p=`Using the uploaded master reference image as the non-negotiable style anchor.\n\n`;
+  p+=charBlock+'\n\n';
+  p+=SCALE_BLOCK+'\n\n';
+  p+=HAIR_BLOCK+'\n\n';
+  p+=(SHEET_VIEWMAP[view]||'')+'\n\n';
+  if(emotion&&SHEET_EMOTIONMAP[emotion])p+=SHEET_EMOTIONMAP[emotion]+'\n\n';
+  p+=`Costume: ${costume}\n\n`;
+  if(notes)p+=`Additional notes: ${notes}\n\n`;
+  p+=`Background: smooth cool grey seamless backdrop (RGB 185,185,195). Soft diffused studio portrait lighting. Single clean specular hotspot on resin skin.\n\n`;
+  p+=`NEGATIVE: realistic human skin, subsurface scattering, skin pores, individual hair strands, flyaway hair, hair past shoulder for Ashley, missing wrist joint rings, missing knee joint rings, realistic human proportions, CGI, anime, cartoon, bokeh, visible strings`;
+  return p;
+}
+
+function buildSheetGeminiPrompt(charName,view,emotion,costume){
+  const gemChars={
+    yanissa:'a young albino Black woman with a large cream-blonde afro — Supermarionation puppet style, toy-like, fibreglass doll',
+    ashley:'a British-Brazilian woman with short auburn hair and black rectangular glasses — Supermarionation puppet style, toy-like, fibreglass doll',
+    rita:'a Mexican-Indian woman with long dark straight centre-parted hair — Supermarionation puppet style, toy-like, fibreglass doll',
+    grandmino:'a mysterious figure in a red bear-ear balaclava — Supermarionation puppet style',
+    gadget:'a Parisian man in a pink hoodie — Supermarionation puppet style, toy-like, fibreglass doll'};
+  const desc=gemChars[charName]||`${charName} — Supermarionation puppet character, fibreglass doll aesthetic`;
+  const viewDesc={full:'full body, front-facing',portrait:'portrait — head and shoulders',face:'face close-up',tq:'three-quarter angle',back:'back view',hands:'hands detail closeup'};
+
+  let p=`GEMINI IMAGEN 3 — CHARACTER MOOD BOARD\n`;
+  p+=`(Paste in Gemini → "Create image" → Pro model. Try: Runway or Salon preset for character reference.)\n\n`;
+  p+=`${desc}, ${viewDesc[view]||'full body'}. `;
+  p+=`Costume: ${costume}. `;
+  if(emotion&&emotion!=='none')p+=`Expression: ${emotion}. `;
+  p+=`Visible articulation joint rings at wrists. Flat painted skin — no pores, no realistic texture. White-grey neutral background. `;
+  p+=`Character reference / mood board — Soul ID style exploration.\n\n`;
+  p+=`💡 Generate 4–6 images for mood board. Best results → bring to Nano Banana for Soul ID production.`;
+  return p;
+}
+
+function generateSheet(){
+  const getVal=id=>{const el=document.getElementById(id);return el?el.value.trim():'';}
+  const charType=document.getElementById('sh-chartype')?document.getElementById('sh-chartype').value:'core';
+  let charBlock='',charName='';
+  if(charType==='core'){
+    const c=document.getElementById('sh-char')?document.getElementById('sh-char').value:'yanissa';
+    charBlock=CHARS[c]||'';charName=c;
+  } else {
+    const sid=getVal('sh-soulid'),desc=getVal('sh-chardesc');
+    if(!sid){alert(lang==='fr'?'Entrez le nom Soul ID.':'Please enter the Soul ID name.');return;}
+    charName=sid;
+    charBlock=`CHARACTER — ${sid.toUpperCase()}:\nSupermarionation puppet — same proportions and joint ring specs as core Yanissa World characters (4.5–5 heads tall, flat resin skin, rigid hair, visible wrist and knee joint rings).${desc?'\n'+desc:''}`;
+  }
+  const view=document.getElementById('sh-view')?document.getElementById('sh-view').value:'full';
+  const emotion=document.getElementById('sh-emotion')?document.getElementById('sh-emotion').value:'none';
+  const costumeType=document.getElementById('sh-costume')?document.getElementById('sh-costume').value:'default';
+  const costumeTxt=getVal('sh-costume-txt');
+  const notes=getVal('sh-notes');
+  const costume=costumeType==='default'?'master reference default':costumeType==='kit'?'alternative football kit — [SPECIFY KIT]':costumeTxt||'[describe costume]';
+
+  const gemini=buildSheetGeminiPrompt(charName,view,emotion,costume);
+  const nano=buildSheetNanoPrompt(charBlock,view,emotion,costume,notes,charName);
+
+  const instrHTML=`
+    <div class="instr-step"><div class="sn">1</div><div class="sb2">
+      <div class="st">Étape 1 — Gemini : mood board personnage (onglet "Gemini Imagen 3")</div>
+      <div class="sd">Copiez le prompt Gemini. Ouvrez gemini.google.com → "Create image" → modèle Pro. Essayez les presets Runway ou Salon.</div>
+      <div class="sa">Texte uniquement dans Gemini — pas d'image à attacher</div>
+      <div class="sd" style="margin-top:6px">Générez 4–6 images. Ces images = mood board du personnage. Choisissez la direction avant d'aller dans Nano Banana.</div>
+    </div></div>
+    <div class="instr-step"><div class="sn" style="background:var(--am)">2</div><div class="sb2">
+      <div class="st">Étape 2 — Nano Banana : production Soul ID (onglet "Nano Banana")</div>
+      <div class="sd">Ouvrez Higgsfield Nano Banana Premium. Activez le profil Soul ID : <strong>${charName}</strong>.</div>
+      <div class="sa">Zone de référence : image maître des 3 personnages Yanissa World</div>
+      <div class="sd" style="margin-top:6px">Collez le prompt Nano Banana. Générez 4–6 fois par vue. Objectif : 20–70 images pour construire le Soul ID.</div>
+    </div></div>
+    <div class="instr-step"><div class="sn" style="background:var(--am);font-size:9px">✓</div><div class="sb2">
+      <div class="st">Vérification</div>
+      <div class="sd">
+        □ Anneaux articulaires visibles aux poignets<br>
+        □ Cheveux conformes : longueur, couleur, masse rigide<br>
+        □ Tête surdimensionnée (ratio 4.5–5 têtes)<br>
+        □ Peau en résine peinte plate (pas humaine)<br>
+        □ Ressemblance avec le profil Soul ID
+      </div>
+    </div></div>`;
+
+  document.getElementById('sheet-txt-0').textContent=gemini;
+  document.getElementById('sheet-txt-1').textContent=nano;
+  document.getElementById('sheet-txt-2').innerHTML=instrHTML;
+
+  const box=document.getElementById('sheet-out-box');
+  box.classList.add('vis');
+  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+// ── GENERATE CONVERSION ──
+function generateConv(){
+  const getVal=id=>{const el=document.getElementById(id);return el?el.value.trim():'';}
+  const face=document.getElementById('cv-face')?document.getElementById('cv-face').value:'oval';
+  const eyes=document.getElementById('cv-eyes')?document.getElementById('cv-eyes').value:'dark brown';
+  const skin=document.getElementById('cv-skin')?document.getElementById('cv-skin').value:'medium / olive';
+  const hc=document.getElementById('cv-haircolor')?document.getElementById('cv-haircolor').value:'black';
+  const hs=document.getElementById('cv-hairstyle')?document.getElementById('cv-hairstyle').value:'medium straight';
+  const feat=getVal('cv-features');
+  const ot=document.getElementById('cv-outtype')?document.getElementById('cv-outtype').value:'portrait';
+  const sn=getVal('cv-soulname');
+
+  const kitActive=document.getElementById('cvt-kit')&&document.getElementById('cvt-kit').style.display!=='none';
+  const textActive=document.getElementById('cvt-text')&&document.getElementById('cvt-text').style.display!=='none';
+  const imgActive=document.getElementById('cvt-img')&&document.getElementById('cvt-img').style.display!=='none';
+  let costume='';
+  if(kitActive){const k=document.getElementById('cv-kit').value,a=getVal('cv-acc');costume=k==='none'?'[ASSIGN COSTUME]':k;if(a)costume+=`. Accessories: ${a}.`;}
+  else if(textActive){costume=getVal('cv-costume-txt')||'[ASSIGN COSTUME]';}
+  else if(imgActive){costume=`[ATTACH costume reference: ${cvFileName||'costume-ref.jpg'}]${getVal('cv-cosnote')?' Notes: '+getVal('cv-cosnote'):''}`;}
+
+  // Gemini conversion prompt
+  const gemini=`GEMINI IMAGEN 3 — PUPPET CONVERSION MOOD BOARD\n(Paste in Gemini → "Create image" → Pro model. Try: Anyma's world or Gothic clay preset for puppet style.)\n\nConvert this person into a Supermarionation puppet character — Gerry Anderson Thunderbirds style, fibreglass doll aesthetic.\nFace: ${face} face, ${eyes} eyes, ${skin} skin tone. Hair: ${hc}, ${hs}.\n${feat?'Distinctive features: '+feat+'.\n':''}Costume: ${costume}.\nVisible articulation joint rings at wrists. Flat painted resin skin — no pores. Head oversized relative to body (puppet proportions).\n${sn?'Character name: '+sn+'\n':''}\n💡 Tip: This generates mood board reference images only. For production-quality Soul ID images, use the Nano Banana prompt tab.\nGenerate 4–6 images, select best for identity reference.`;
+
+  const nano=`YANISSA WORLD — PUPPET CONVERSION${ot==='portrait'?' (PORTRAIT VERIFICATION)':' (FULL BODY)'}:\n\nDUAL REFERENCE SYSTEM:\n[ATTACH REFERENCE 1 — Style anchor: Yanissa World master reference image]\n[ATTACH REFERENCE 2 — Identity anchor: photograph of the real person]\n\nDUAL TRANSFER TASK:\n1. STYLE → Match Reference 1 exactly: fibreglass resin, 4.5–5 heads tall, visible wrist and knee joint rings.\n2. IDENTITY → Puppet must clearly resemble the person in Reference 2.\n\n${SCALE_BLOCK}\n\nIDENTITY DESCRIPTION:\nFace shape: ${face}. Eye colour: ${eyes}. Skin tone: ${skin} → flat painted fibreglass resin, same tone, zero pores.\nHair: ${hc}, ${hs} → single rigid sculpted mass, same colour + shape, one specular highlight, NO strand separation.${feat?'\nDistinctive features: '+feat+' → fixed moulded puppet equivalents.':''}\n\nMATERIAL TRANSLATION:\nSkin → flat painted fibreglass resin, matching tone\nHair → single rigid sculpted mass, matching colour and shape\nEyes → painted glass, matching colour, single specular catchlight\nClothing → ${costume}\n\nARTICULATION JOINTS — MANDATORY:\nVisible external connector rings at BOTH wrists and BOTH knees.\n${sn?'\nSoul ID reference: '+sn:''}\n\n${ot==='portrait'?'OUTPUT: Portrait — head and shoulders. Eye-level, 85mm. Cool grey background (RGB 185,185,195). Studio portrait lighting.\nPURPOSE: Verify face likeness. If portrait resembles real person in puppet form → proceed to full body.':'OUTPUT: Full body, front-facing. Eye-level, 85mm. Deep focus. Cool grey background (RGB 185,185,195). Studio portrait lighting. Contact shadow beneath feet.'}\n\nNEGATIVE: realistic human skin, subsurface scattering, skin pores, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, CGI, anime, cartoon, bokeh, identity drift from Reference 2, style drift from Reference 1`;
+
+  const instrHTML=`
+    <div class="instr-step"><div class="sn">1</div><div class="sb2">
+      <div class="st">Étape 1 — Gemini : mood board conversion (onglet "Gemini Imagen 3")</div>
+      <div class="sd">Copiez le prompt Gemini. Ouvrez gemini.google.com → "Create image" → Pro. Essayez Anyma's world ou Gothic clay.</div>
+      <div class="sa">Texte uniquement dans Gemini — pas d'image à attacher</div>
+      <div class="sd" style="margin-top:6px">Générez 4–6 images. Mood board de conversion — direction visuelle avant Nano Banana.</div>
+    </div></div>
+    <div class="instr-step"><div class="sn" style="background:var(--am)">2</div><div class="sb2">
+      <div class="st">Étape 2 — Nano Banana : vérification portrait (onglet "Nano Banana")</div>
+      <div class="sd">Ouvrez Higgsfield Nano Banana Premium. Commencez par le mode Portrait Verification.</div>
+      <div class="sa">Zone de référence 1 : image maître des 3 personnages Yanissa World\nZone de référence 2 : photo de la vraie personne</div>
+      <div class="sd" style="margin-top:6px">Collez le prompt. Générez 4 fois. Le personnage ressemble-t-il à la vraie personne ? Si oui → corps entier. Si non → ajustez la description et réessayez.</div>
+    </div></div>
+    <div class="instr-step"><div class="sn" style="background:var(--am);font-size:9px">✓</div><div class="sb2">
+      <div class="st">Checklist de validation</div>
+      <div class="sd">
+        □ Ressemblance faciale avec la vraie personne<br>
+        □ Anneaux articulaires visibles aux poignets et genoux<br>
+        □ Tête surdimensionnée (ratio marionnette 4.5–5 têtes)<br>
+        □ Peau en résine peinte plate<br>
+        □ Cheveux = masse rigide unique<br>
+        □ Style correspond aux 3 personnages principaux
+      </div>
+    </div></div>`;
+
+  document.getElementById('conv-txt-0').textContent=gemini;
+  document.getElementById('conv-txt-1').textContent=nano;
+  document.getElementById('conv-txt-2').innerHTML=instrHTML;
+
+  const box=document.getElementById('conv-out-box');
+  box.classList.add('vis');
+  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+// ── UI HELPERS ──
+function setLang(l,el){
+  lang=l;
+  document.querySelectorAll('.lb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  applyLang();
+}
+function applyLang(){
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.getAttribute('data-k'),v=t(k);
+    if(el.tagName==='OPTION')el.textContent=v;
+    else if((el.tagName==='INPUT'&&el.type==='text')||el.tagName==='TEXTAREA')el.placeholder=v;
+    else if(!el.children.length)el.textContent=v;
+  });
+}
+function goPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('panel-'+name).classList.add('on');
+  document.querySelectorAll('.ni [data-k="nav_'+name+'"]').forEach(s=>s.closest('.ni').classList.add('on'));
+  const titles={scene:'nav_scene',sheet:'nav_sheet',conv:'nav_conv',hist:'nav_hist',check:'nav_check'};
+  document.getElementById('htitle').textContent=t(titles[name]||name);
+  if(name==='hist')renderHist();
+  if(name==='check')renderCheck();
+}
+function toggleMob(){document.getElementById('mobnav').classList.toggle('open')}
+function closeMob(){document.getElementById('mobnav').classList.remove('open')}
+function setTabContent(tabGroupId,allContentIds,activeId,el){
+  document.getElementById(tabGroupId).querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  allContentIds.forEach(id=>{const d=document.getElementById(id);if(d)d.style.display=id===activeId?'block':'none';});
+}
+function setBgTab(el,mode){
+  bgMode=mode;
+  document.querySelectorAll('#bg-tabs .tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  ['bg-desc','bg-photo','bg-both'].forEach(id=>{const d=document.getElementById(id);if(d)d.style.display='none';});
+  const target=document.getElementById('bg-'+mode);
+  if(target)target.style.display='block';
+}
+const CHAR_CLASSES={yanissa:'py',ashley:'pa',rita:'pr',grandmino:'pgm',gadget:'pg',new:'pon'};
+function toggleChar(el,name){
+  if(selectedChars.has(name)){selectedChars.delete(name);el.className='pill';}
+  else{selectedChars.add(name);el.classList.add(CHAR_CLASSES[name]||'pon');}
+  const nr=document.getElementById('new-char-row');
+  if(nr)nr.style.display=selectedChars.has('new')?'block':'none';
+}
+function togglePill(el,name){
+  if(selectedSigs.has(name)){selectedSigs.delete(name);el.classList.remove('pon');}
+  else{selectedSigs.add(name);el.classList.add('pon');}
+  const fr=document.getElementById('falling-row');
+  if(fr)fr.style.display=selectedSigs.has('falling')?'block':'none';
+}
+function setPlat(el,p){platform=p;document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on')}
+function toggleNeg(){negOn=!negOn;const tt=document.getElementById('neg-tt');negOn?tt.classList.add('on'):tt.classList.remove('on');}
+function toggleSheetChar(){
+  const type=document.getElementById('sh-chartype')?document.getElementById('sh-chartype').value:'core';
+  const core=document.getElementById('sh-core-sel'),any=document.getElementById('sh-any-row');
+  if(core)core.style.display=type==='core'?'block':'none';
+  if(any)any.style.display=type==='any'?'block':'none';
+}
+function handleUp(input,zoneId,txtId){
+  if(input.files[0]){
+    const name=input.files[0].name;
+    const zone=document.getElementById(zoneId),txt=document.getElementById(txtId);
+    if(zone)zone.classList.add('has');
+    if(txt){txt.className='upztxt ok';txt.textContent='✓ '+name;}
+    if(zoneId==='bgzone'||zoneId==='bgzone2')bgFileName=name;
+    if(zoneId==='outzone')outFileName=name;
+    if(zoneId==='vehzone')vehFileName=name;
+    if(zoneId==='cvzone')cvFileName=name;
+  }
+}
+function switchOutTab(panel,idx,el){
+  const tabs=document.getElementById(panel+'-out-tabs');
+  if(tabs)tabs.querySelectorAll('.otab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  let i=0;while(document.getElementById(`${panel}-out-${i}`)){document.getElementById(`${panel}-out-${i}`).classList.remove('on');i++;}
+  const pane=document.getElementById(`${panel}-out-${idx}`);
+  if(pane)pane.classList.add('on');
+  if(panel==='sheet')sheetActiveTab=idx;
+  if(panel==='conv')convActiveTab=idx;
+  else if(panel==='scene')sceneActiveTab=idx;
+}
+function copyActiveOut(panel){
+  let idx=panel==='sheet'?sheetActiveTab:panel==='conv'?convActiveTab:sceneActiveTab;
+  const el=document.getElementById(`${panel}-txt-${idx}`);
+  if(!el)return;
+  const text=el.tagName==='DIV'?el.innerText:el.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    document.querySelectorAll(`#${panel}-out-box .bcp`).forEach(b=>{const o=b.textContent;b.textContent=lang==='fr'?'Copié!':'Copied!';setTimeout(()=>b.textContent=o,1500);});
+  });
+}
+
+// ── HISTORY ──
+function saveHist(type){
+  const paneIds={scene:'scene-txt-1',sheet:'sheet-txt-1',conv:'conv-txt-1'};
+  const el=document.getElementById(paneIds[type]);
+  if(!el||!el.textContent.trim())return;
+  const mem=document.getElementById('membname').value.trim()||'Anonymous';
+  hist.unshift({id:Date.now(),type,mem,text:el.textContent,time:new Date().toLocaleString('en-GB',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})});
+  if(hist.length>200)hist=hist.slice(0,200);
+  localStorage.setItem('yw_v3_hist',JSON.stringify(hist));
+  updateHCount();
+  document.querySelectorAll(`#${type}-out-box .bsv`).forEach(b=>{const o=b.textContent;b.textContent=lang==='fr'?'Sauvegardé':'Saved';setTimeout(()=>b.textContent=o,1500);});
+}
+function updateHCount(){const el=document.getElementById('hcount');if(el)el.textContent=hist.length;}
+function filterHist(f,el){histFilter=f;document.querySelectorAll('.hf').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderHist();}
+function renderHist(){
+  const list=document.getElementById('hlist'),sum=document.getElementById('hsummary');
+  if(!list)return;
+  const filtered=histFilter==='all'?hist:hist.filter(h=>h.type===histFilter);
+  if(!filtered.length){list.innerHTML=`<div class="hempty">${t('hist_empty')}</div>`;if(sum)sum.textContent=lang==='fr'?'Aucun historique':'No history yet';return;}
+  if(sum)sum.textContent=`${filtered.length} prompt${filtered.length===1?'':'s'}`;
+  const tc={scene:'hts',sheet:'htsh',conv:'htc'};
+  const tn={scene:t('nav_scene'),sheet:t('nav_sheet'),conv:t('nav_conv')};
+  list.innerHTML=filtered.map(h=>`<div class="hi" onclick="openHist('${h.id}')">
+    <div class="hitop"><span class="htype ${tc[h.type]||''}">${tn[h.type]||h.type}</span><span class="hmem">${h.mem}</span><span class="htime">${h.time}</span></div>
+    <div class="hprev">${h.text.slice(0,160).replace(/\n/g,' ')}...</div>
+  </div>`).join('');
+}
+function openHist(id){
+  const h=hist.find(x=>x.id==id);if(!h)return;
+  const w=window.open('','_blank');
+  if(w){w.document.write(`<!DOCTYPE html><html><head><title>YW Prompt</title><style>body{font-family:monospace;white-space:pre-wrap;padding:20px;background:#0e0e0e;color:#d0e8b0;font-size:11px;line-height:1.7}h2{color:#b8f04a;font-family:sans-serif;font-size:13px;margin-bottom:10px}button{background:#b8f04a;color:#0e0e0e;border:none;padding:6px 12px;font-family:sans-serif;font-size:11px;font-weight:700;cursor:pointer;border-radius:4px;margin-bottom:12px}</style></head><body><h2>${h.type} — ${h.mem} — ${h.time}</h2><button onclick="navigator.clipboard.writeText(document.getElementById('t').textContent)">Copy</button><div id="t">${h.text}</div></body></html>`);w.document.close();}
+}
+function clearHist(){if(!confirm(lang==='fr'?'Effacer tout?':'Clear all history?'))return;hist=[];localStorage.removeItem('yw_v3_hist');updateHCount();renderHist();}
+
+// ── CLEAR ──
+function clearScene(){
+  ['s-loc','s-loc2','s-action','s-arrange','s-newchar','s-top','s-pants','s-shoes','s-hat','s-hair','s-bag','s-sunnies','s-jewels','s-phone','s-headphones','s-vehdesc','s-vehnote','s-outnote','s-falling','s-extra','s-script'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const ep=document.getElementById('s-ep');if(ep)ep.value='';
+  selectedChars.clear();selectedSigs.clear();
+  document.querySelectorAll('#cpills .pill').forEach(p=>{p.className='pill';});
+  document.querySelectorAll('#sigpills .pill').forEach(p=>p.classList.remove('pon'));
+  const nr=document.getElementById('new-char-row');if(nr)nr.style.display='none';
+  const fr=document.getElementById('falling-row');if(fr)fr.style.display='none';
+  const box=document.getElementById('scene-out-box');if(box)box.classList.remove('vis');
+}
+function clearSheet(){['sh-soulid','sh-chardesc','sh-costume-txt','sh-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const box=document.getElementById('sheet-out-box');if(box)box.classList.remove('vis');}
+function clearConv(){['cv-features','cv-acc','cv-costume-txt','cv-cosnote','cv-soulname'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const box=document.getElementById('conv-out-box');if(box)box.classList.remove('vis');}
+
+// ── CHECKLIST ──
+const CL_PRE={
+en:['Master reference image (3 characters) ready to attach in Nano Banana','Soul ID profiles activated for each character in scene','Nano Banana Premium model selected (not standard)','Generation count set to 4','Gemini mood board reviewed and visual direction confirmed','Background-only Nano Banana run first (if using photo reference)'],
+fr:['Image de référence maître (3 personnages) prête à attacher dans Nano Banana','Profils Soul ID activés pour chaque personnage de la scène','Modèle Nano Banana Premium sélectionné (pas standard)','Nombre de générations réglé sur 4','Mood board Gemini validé et direction visuelle confirmée','Décor seul généré dans Nano Banana d\'abord (si utilisation photo référence)']};
+const CL_POST={
+en:['Wrist joint rings visible on ALL puppet figures','All characters at SAME real-life height — no scale mismatch','Ashley hair: shoulder-length auburn MAX','Rita hair: past-shoulder dark brown — not longer than mid-back','Yanissa afro: large cream-blonde fixed mass','Sky reads as painted matte backdrop — NOT real photography','Set surfaces show weathering — NOT CGI smooth','Each character matches their Soul ID face','Background in deep focus — no bokeh blur'],
+fr:['Anneaux articulaires visibles aux poignets de TOUS les personnages','MÊME taille réelle pour tous (pas de décalage d\'échelle)','Cheveux Ashley : roux mi-long MAX — pas plus long que les épaules','Cheveux Rita : brun foncé lisse — pas plus long que le milieu du dos','Afro Yanissa : grande masse fixe crème-blonde','Ciel = toile de fond peinte — PAS photo réelle','Surfaces du décor avec vieillissement — PAS CGI lisse','Chaque personnage correspond à son Soul ID','Arrière-plan en focus total — pas de bokeh']};
+
+function renderCheck(){
+  const pre=CL_PRE[lang]||CL_PRE.en,post=CL_POST[lang]||CL_POST.en;
+  const mk=items=>items.map(item=>`<div class="cr" onclick="toggleCL(this)"><div class="cb"></div><span>${item}</span></div>`).join('');
+  const pEl=document.getElementById('pre-cl'),poEl=document.getElementById('post-cl');
+  if(pEl)pEl.innerHTML=mk(pre);
+  if(poEl)poEl.innerHTML=mk(post);
+}
+function toggleCL(row){const b=row.querySelector('.cb');const c=b.classList.toggle('on');row.classList.toggle('done',c);b.textContent=c?'✓':'';}
+function resetCheck(){document.querySelectorAll('.cr').forEach(r=>{r.classList.remove('done');const b=r.querySelector('.cb');b.classList.remove('on');b.textContent='';})}
+
+// ── INIT ──
+updateHCount();
+
+</script>
+</body>
+</html>
