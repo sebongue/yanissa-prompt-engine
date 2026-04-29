@@ -120,6 +120,7 @@ textarea{resize:vertical;min-height:56px;line-height:1.5}
 .wf{display:flex;align-items:center;gap:4px;margin:8px 0;flex-wrap:wrap}
 .wf-s{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:6px 10px;font-size:10px;font-weight:600;color:var(--t2);flex:1;min-width:80px;text-align:center;line-height:1.4}
 .wf-s.active{border-color:var(--g);color:var(--g);background:var(--gbg)}
+.wf-s:hover{border-color:var(--b2);color:var(--t);background:var(--bg4)}
 .wf-a{color:var(--t3);font-size:12px;flex-shrink:0}
 .hl{display:flex;flex-direction:column;gap:6px}
 .hi{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:10px 12px;cursor:pointer;transition:border .15s}
@@ -196,11 +197,11 @@ textarea{resize:vertical;min-height:56px;line-height:1.5}
 <div class="fs">
   <div class="fst" data-k="pipeline_title">Production pipeline</div>
   <div class="wf">
-    <div class="wf-s active" data-k="wf1">1. Gemini<br><span style="font-weight:400;font-size:9px" data-k="wf1s">Test & refine</span></div>
+    <div class="wf-s active" data-k="wf1" onclick="clickPipeline(0,this)" style="cursor:pointer" title="Click to jump to Gemini output">1. Gemini<br><span style="font-weight:400;font-size:9px" data-k="wf1s">Mood board & BG tests</span></div>
     <div class="wf-a">→</div>
-    <div class="wf-s" data-k="wf2">2. Nano Banana<br><span style="font-weight:400;font-size:9px" data-k="wf2s">Generate image</span></div>
+    <div class="wf-s" data-k="wf2" onclick="clickPipeline(1,this)" style="cursor:pointer" title="Click to jump to Nano Banana output">2. Nano Banana<br><span style="font-weight:400;font-size:9px" data-k="wf2s">Generate image</span></div>
     <div class="wf-a">→</div>
-    <div class="wf-s" data-k="wf3">3. Seedance 2.0<br><span style="font-weight:400;font-size:9px" data-k="wf3s">Animate video</span></div>
+    <div class="wf-s" data-k="wf3" onclick="clickPipeline(2,this)" style="cursor:pointer" title="Click to jump to Seedance output">3. Seedance 2.0<br><span style="font-weight:400;font-size:9px" data-k="wf3s">Animate video</span></div>
   </div>
   <div class="fst" style="margin-top:10px;margin-bottom:7px" data-k="platform_label">Platform / format</div>
   <div class="prow">
@@ -1753,6 +1754,38 @@ function renderCheck(){
 }
 function toggleCL(row){const b=row.querySelector('.cb');const c=b.classList.toggle('on');row.classList.toggle('done',c);b.textContent=c?'✓':'';}
 function resetCheck(){document.querySelectorAll('.cr').forEach(r=>{r.classList.remove('done');const b=r.querySelector('.cb');b.classList.remove('on');b.textContent='';})}
+
+// ── PIPELINE STEP CLICK → jumps to matching output tab ──
+// Map: 0=Gemini(tab 0), 1=Nano Banana(tab 1), 2=Seedance(tab 2)
+function clickPipeline(tabIdx, el) {
+  // Highlight the clicked step
+  document.querySelectorAll('.wf-s').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+
+  // If output box is visible, switch to the matching tab
+  const box = document.getElementById('scene-out-box');
+  if (box && box.classList.contains('vis')) {
+    const tabs = document.getElementById('scene-out-tabs');
+    if (tabs) {
+      const otabs = tabs.querySelectorAll('.otab');
+      if (otabs[tabIdx]) {
+        switchOutTab('scene', tabIdx, otabs[tabIdx]);
+        setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+      }
+    }
+  } else {
+    // Output not generated yet — show a hint on the step
+    el.style.borderColor = 'var(--am)';
+    el.style.color = 'var(--am)';
+    const hint = lang === 'fr' ? 'Générez d\'abord ↑' : 'Generate first ↑';
+    const orig = el.innerHTML;
+    setTimeout(() => {
+      el.style.borderColor = '';
+      el.style.color = '';
+      el.classList.add('active');
+    }, 1200);
+  }
+}
 
 // ── INIT ──
 updateHCount();
