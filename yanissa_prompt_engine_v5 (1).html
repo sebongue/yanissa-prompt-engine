@@ -1,0 +1,2754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yanissa World — Prompt Engine v4</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080808;--bg2:#0f0f0f;--bg3:#171717;--bg4:#1f1f1f;
+  --b:#1c1c1c;--b2:#2a2a2a;--b3:#383838;
+  --t:#f2f2f2;--t2:#909090;--t3:#484848;
+  --g:#b8f04a;--gd:#7ab825;--gbg:#0c1a04;--g2:#d0ff70;
+  --am:#f0c050;--ambg:#1a1000;--bl:#60b0f0;--blbg:#041420;--pu:#c0a0ff;--pubg:#120518;
+  --sw:220px;--r:8px;--rl:12px
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:"Space Grotesk",sans-serif;background:var(--bg);color:var(--t);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:var(--sw) 1fr;height:100vh}
+
+/* SIDEBAR */
+.sb{background:var(--bg2);border-right:1px solid var(--b);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.logo{padding:18px 16px 14px;border-bottom:1px solid var(--b)}
+.logo-mark{font-size:9px;font-weight:700;letter-spacing:.2em;color:var(--g);text-transform:uppercase;margin-bottom:4px}
+.logo-name{font-size:14px;font-weight:700}
+.logo-sub{font-size:10px;color:var(--t3);margin-top:2px}
+.lr{display:flex;gap:4px;margin-top:10px}
+.lbtn{flex:1;padding:4px;border-radius:5px;border:1px solid var(--b2);background:transparent;font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:700;cursor:pointer;color:var(--t3);transition:.15s}
+.lbtn.on{background:var(--g);color:#080808;border-color:var(--g)}
+.nav{padding:10px 0;flex:1}
+.ns{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);padding:0 14px;margin:14px 0 5px}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:12px;font-weight:500;color:var(--t2);transition:.12s;border-left:2px solid transparent;user-select:none}
+.ni:hover{color:var(--t);background:var(--bg3)}
+.ni.on{color:var(--g);background:var(--gbg);border-left-color:var(--g)}
+.nbadge{margin-left:auto;font-size:9px;font-weight:700;background:var(--bg4);color:var(--t3);padding:2px 6px;border-radius:10px}
+.ni.on .nbadge{background:var(--gbg);color:var(--g)}
+
+/* MAIN */
+.main{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.mhdr{padding:14px 24px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg2)}
+.htitle{font-size:15px;font-weight:700}
+.hsub{font-size:11px;color:var(--t3);margin-top:2px}
+.minp{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:6px 9px;color:var(--t);font-family:"Space Grotesk",sans-serif;font-size:11px;width:120px;outline:none}
+.minp:focus{border-color:var(--g)}
+.mc{flex:1;overflow-y:auto;padding:20px 24px}
+.panel{display:none}.panel.on{display:block}
+
+/* MODE TABS — the clickable pipeline cards */
+.mtabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.mtab{flex:1;min-width:100px;padding:12px 14px;border-radius:var(--rl);border:1px solid var(--b2);background:var(--bg2);cursor:pointer;transition:.15s;user-select:none;text-align:left}
+.mtab:hover{border-color:var(--b3);background:var(--bg3)}
+.mtab.on{border-color:var(--g);background:var(--gbg)}
+.mtab-title{font-size:13px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px}
+.mtab.on .mtab-title{color:var(--g)}
+.mtab-sub{font-size:10px;color:var(--t3);margin-top:3px}
+.mtab.on .mtab-sub{color:var(--gd)}
+
+/* FORMS */
+.fs{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:14px;margin-bottom:10px}
+.fst{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.fr.f1{grid-template-columns:1fr}
+.fr:last-child{margin-bottom:0}
+.fl{font-size:11px;font-weight:500;color:var(--t2);margin-bottom:4px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.req{color:var(--g);font-size:9px}
+.hint{font-size:9px;color:var(--t3);margin-left:auto}
+select,input[type=text],textarea{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:7px 9px;color:var(--t);font-family:"Space Grotesk",sans-serif;font-size:12px;outline:none;transition:border .12s;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+select:focus,input:focus,textarea:focus{border-color:var(--g)}
+textarea{resize:vertical;min-height:60px;line-height:1.6}
+.fsub{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin:12px 0 7px;padding-top:12px;border-top:1px solid var(--b)}
+.sdiv{height:1px;background:var(--b);margin:12px 0}
+
+/* PILLS */
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:5px 11px;border-radius:20px;border:1px solid var(--b2);background:var(--bg3);font-size:11px;font-weight:600;cursor:pointer;color:var(--t2);transition:.12s;user-select:none}
+.pill:hover{border-color:var(--b3)}
+.py{border-color:#b8f04a!important;background:#0c1a04!important;color:#b8f04a!important}
+.pa{border-color:#f0c050!important;background:#1a1000!important;color:#f0c050!important}
+.pr{border-color:#60b0f0!important;background:#041420!important;color:#60b0f0!important}
+.pgm{border-color:#f06060!important;background:#1a0404!important;color:#f06060!important}
+.pg{border-color:#c0a0ff!important;background:#120518!important;color:#c0a0ff!important}
+.pcat{border-color:#ff9944!important;background:#1a0a00!important;color:#ff9944!important}
+.pon{border-color:var(--am)!important;background:var(--ambg)!important;color:var(--am)!important}
+
+/* INNER TABS (character panel) */
+.itabs{display:flex;gap:4px;margin-bottom:14px}
+.itab{padding:6px 12px;border-radius:6px;border:1px solid var(--b2);background:transparent;font-family:"Space Grotesk",sans-serif;font-size:11px;font-weight:600;cursor:pointer;color:var(--t3);transition:.12s}
+.itab:hover{color:var(--t2)}
+.itab.on{background:var(--bg3);border-color:var(--b3);color:var(--t)}
+
+/* BUTTONS */
+.gbar{display:flex;gap:7px;margin-top:14px}
+.bgen{flex:1;background:var(--g);color:#080808;border:none;border-radius:var(--r);padding:11px 14px;font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.bgen:hover{background:var(--g2)}.bgen:active{transform:scale(.98)}
+.bsec{background:transparent;border:1px solid var(--b2);border-radius:var(--r);padding:11px 12px;font-family:"Space Grotesk",sans-serif;font-size:11px;color:var(--t3);cursor:pointer;transition:.12s}
+.bsec:hover{border-color:var(--b3);color:var(--t2)}
+.bcp{background:var(--g);color:#080808;border:none;border-radius:5px;padding:5px 10px;font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:700;cursor:pointer}
+.bcp:hover{background:var(--g2)}
+.bsv{background:transparent;border:1px solid var(--b2);border-radius:5px;padding:5px 10px;font-family:"Space Grotesk",sans-serif;font-size:10px;color:var(--t2);cursor:pointer}
+.bsv:hover{border-color:var(--g);color:var(--g)}
+
+/* TOGGLE */
+.ntog{display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 0;user-select:none}
+.tt{width:28px;height:15px;background:var(--bg4);border-radius:8px;position:relative;transition:.2s;border:1px solid var(--b2)}
+.tt.on{background:var(--gd);border-color:var(--gd)}
+.tk{width:10px;height:10px;background:var(--t3);border-radius:50%;position:absolute;top:1.5px;left:2px;transition:.2s}
+.tt.on .tk{left:14px;background:#080808}
+.tlbl{font-size:11px;color:var(--t2)}
+
+/* OUTPUT CARD */
+.out-card{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;margin-top:14px}
+.out-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--b);background:var(--bg3)}
+.out-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--g)}
+.out-acts{display:flex;gap:5px}
+.out-txt{font-family:"DM Mono",monospace;font-size:11px;line-height:1.8;color:#c5e88a;padding:13px;white-space:pre-wrap;max-height:300px;overflow-y:auto}
+.out-empty{font-size:11px;color:var(--t3);padding:20px 13px;text-align:center}
+
+/* INLINE INSTRUCTIONS */
+.instr-block{border-top:1px solid var(--b);padding:13px}
+.instr-block-title{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.instr-step{display:flex;gap:9px;align-items:flex-start;margin-bottom:11px}
+.instr-step:last-child{margin-bottom:0}
+.sn{width:20px;height:20px;border-radius:50%;background:var(--g);color:#080808;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sb2{flex:1}
+.st{font-size:11px;font-weight:700;color:var(--t);margin-bottom:2px}
+.sd{font-size:11px;color:var(--t2);line-height:1.6}
+.sa{background:var(--bg4);border:1px solid var(--b2);border-radius:4px;padding:4px 8px;font-size:10px;font-family:"DM Mono",monospace;color:var(--am);margin-top:4px;display:block;white-space:pre-wrap}
+
+/* INFO BOXES */
+.how{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--rl);padding:14px;margin-bottom:16px}
+.how-title{font-size:11px;font-weight:700;color:var(--t);margin-bottom:6px;display:flex;align-items:center;gap:7px}
+.how-body{font-size:11px;color:var(--t2);line-height:1.7}
+.how-step{display:flex;align-items:flex-start;gap:8px;margin-top:8px}
+.how-num{width:18px;height:18px;border-radius:50%;background:var(--b3);color:var(--t2);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.info{background:var(--gbg);border:1px solid var(--gd);border-radius:var(--r);padding:8px 11px;font-size:11px;color:#7ab825;margin-bottom:11px;line-height:1.5}
+.warn{background:var(--ambg);border:1px solid #3a2800;border-radius:var(--r);padding:7px 11px;font-size:10px;color:#907020;line-height:1.5;margin-bottom:10px}
+
+/* SEAT GRID */
+.seat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px}
+.seat-box{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:10px;transition:.12s}
+.seat-box.on{border-color:var(--g);background:var(--gbg)}
+.seat-lbl{font-size:9px;font-weight:700;color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em}
+.seat-rear{grid-column:1/-1}
+
+/* SCALE REF */
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:8px}
+.sc-i{background:var(--bg3);border-radius:6px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center}
+.sc-l{font-size:11px;color:var(--t2)}
+.sc-v{font-size:12px;font-weight:700;color:var(--g);font-family:"DM Mono",monospace}
+.wf-rule{background:var(--bg2);border:1px solid var(--b);border-radius:var(--r);padding:10px 12px;margin-bottom:6px}
+.wf-rt{font-size:11px;font-weight:700;color:var(--t);margin-bottom:4px}
+.wf-rb{font-size:11px;color:var(--t2);line-height:1.6}
+.wf-rc{font-family:"DM Mono",monospace;font-size:10px;color:var(--g);background:var(--gbg);border-radius:4px;padding:5px 8px;margin-top:6px;display:block;line-height:1.6;white-space:pre-wrap}
+
+/* HISTORY */
+.hfrow{display:flex;gap:5px;margin-bottom:11px;flex-wrap:wrap}
+.hf{font-size:10px;padding:4px 8px;border-radius:12px;border:1px solid var(--b);background:transparent;color:var(--t3);cursor:pointer;transition:.12s}
+.hf.on{background:var(--bg3);color:var(--t);border-color:var(--b2)}
+.hl{display:flex;flex-direction:column;gap:6px}
+.hi{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:10px 12px;cursor:pointer;transition:border .12s}
+.hi:hover{border-color:var(--b2)}
+.hitop{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+.htype{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 5px;border-radius:3px}
+.hts{background:var(--gbg);color:var(--g)}.htv{background:var(--ambg);color:var(--am)}.htm{background:var(--pubg);color:var(--pu)}.htsh{background:var(--blbg);color:var(--bl)}
+.hmem,.htime{font-size:10px;color:var(--t3)}.htime{margin-left:auto}
+.hprev{font-size:11px;color:var(--t2);font-family:"DM Mono",monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hempty{text-align:center;padding:34px;color:var(--t3);font-size:12px}
+
+/* CHECKLIST */
+.cr{display:flex;align-items:flex-start;gap:7px;padding:6px 0;font-size:11px;color:var(--t2);border-bottom:1px solid var(--b);cursor:pointer;user-select:none;line-height:1.4}
+.cr:last-child{border-bottom:none}
+.cb{width:13px;height:13px;border-radius:3px;border:1px solid var(--b2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--g);margin-top:1px}
+.cb.on{background:var(--gbg);border-color:var(--gd)}.cr.done{color:var(--t3);text-decoration:line-through}
+
+/* PASS SECTION (music video) */
+.pass-section{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:14px;margin-bottom:10px}
+.pass-title{font-size:12px;font-weight:700;color:var(--t);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.pass-num{width:22px;height:22px;border-radius:50%;background:var(--g);color:#080808;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+@media(max-width:700px){
+  html,body{overflow:auto}.app{grid-template-columns:1fr;height:auto}.main{height:auto;overflow:visible}.mc{overflow:visible}
+  .sb{display:none}.mhdr{padding:9px 14px}.mc{padding:14px}
+  .fr{grid-template-columns:1fr!important}.mtabs{flex-direction:column}
+  .gbar{flex-direction:column}.sc-grid{grid-template-columns:1fr}.seat-grid{grid-template-columns:1fr}.seat-rear{grid-column:1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sb">
+  <div class="logo">
+    <div class="logo-mark">Yanissa World</div>
+    <div class="logo-name">Prompt Engine</div>
+    <div class="logo-sub">v4.0 — Team Edition</div>
+    <div class="lr">
+      <button class="lbtn on" id="lbtn-en" onclick="setLang('en',this)">EN</button>
+      <button class="lbtn" id="lbtn-fr" onclick="setLang('fr',this)">FR</button>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="ns" data-k="ns_gen">Generate</div>
+    <div class="ni on" onclick="goPanel('scene',this)">🎬 <span data-k="nav_scene">Scene</span></div>
+    <div class="ni" onclick="goPanel('vehicle',this)">🚗 <span data-k="nav_veh">Vehicle</span></div>
+    <div class="ni" onclick="goPanel('musicvideo',this)">🎵 <span data-k="nav_mv">Music Video</span></div>
+    <div class="ni" onclick="goPanel('character',this)">🎭 <span data-k="nav_char">Character</span></div>
+    <div class="ns" data-k="ns_ref">Reference</div>
+    <div class="ni" onclick="goPanel('workflows',this)">📋 <span data-k="nav_wf">Workflows</span></div>
+    <div class="ni" onclick="goPanel('history',this)">🕐 <span data-k="nav_hist">History</span> <span class="nbadge" id="hcount">0</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="mhdr">
+  <div>
+    <div class="htitle" id="htitle">Scene</div>
+    <div class="hsub" id="hsub">Choose a prompt type to generate</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:11px;color:var(--t3)" data-k="member_lbl">Team member</span>
+    <input class="minp" id="membname" id="membname" placeholder="Your name" data-ph="ph_member">
+  </div>
+</div>
+<div class="mc">
+
+<!-- ═══ SCENE ═══ -->
+<div id="panel-scene" class="panel on">
+  <div class="how" style="margin-bottom:16px">
+    <div class="how-title" data-k="scene_banner_title">📌 Place existing characters in a scene</div>
+    <div class="how-body" data-k="scene_banner_body">Use this panel when your characters already have Soul IDs (existing cast: Yanissa, Ashley, Rita, etc.) and you want to place them in a new location or situation.<br><br><b>Creating a brand new character?</b> Go to the <b>Character</b> panel → New Character pipeline first.</div>
+  </div>
+  <!-- Mode tabs -->
+  <div class="mtabs" id="scene-mtabs">
+    <button class="mtab on" data-idx="0">
+      <div class="mtab-title">🍌 Nano Banana</div>
+      <div class="mtab-sub">Production image</div>
+    </button>
+    <button class="mtab" data-idx="1">
+      <div class="mtab-title">🎬 Seedance</div>
+      <div class="mtab-sub">Animate from still</div>
+    </button>
+    <button class="mtab" data-idx="2">
+      <div class="mtab-title">🎙 Post-prod</div>
+      <div class="mtab-sub">Dialogue script</div>
+    </button>
+    <button class="mtab" data-idx="3">
+      <div class="mtab-title">📋 Instructions FR</div>
+      <div class="mtab-sub">Step by step guide</div>
+    </button>
+  </div>
+
+  <!-- 0: NANO BANANA -->
+  <div id="scene-mode-0">
+    <div class="fs">
+      <div class="fst">📍 <span data-k="sec_location">Location & Setting</span></div>
+      <div class="fr f1"><div>
+        <div class="fl"><span data-k="lbl_location">Location</span> <span class="req">required</span></div>
+        <textarea id="s-loc" rows="2" data-ph="ph_location" placeholder="e.g. Brixton market, Atlantic Road. Late afternoon. Record shops, Caribbean food shop, market stalls, graffiti on shutters."></textarea>
+      </div></div>
+      <div class="fr">
+        <div><div class="fl" data-k="lbl_time">Time of day</div>
+          <select id="s-time">
+            <option value="overcast">Overcast / grey</option>
+            <option value="golden">Golden hour</option>
+            <option value="night">Night</option>
+            <option value="midday">Midday</option>
+            <option value="dawn">Dawn / blue hour</option>
+            <option value="dusk">Dusk / magic hour</option>
+          </select>
+        </div>
+        <div><div class="fl" data-k="lbl_aspect">Aspect ratio</div>
+          <select id="s-aspect" data-sel="aspect_opts">
+            <option value="16:9">16:9 — Cinematic</option>
+            <option value="9:16">9:16 — TikTok / Reels</option>
+            <option value="1:1">1:1 — Instagram</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="fs">
+      <div class="fst">👥 <span data-k="sec_chars">Characters</span></div>
+      <div class="pills" id="cpills" style="margin-bottom:10px">
+        <div class="pill" onclick="togChar(this,'yanissa')">Yanissa</div>
+        <div class="pill" onclick="togChar(this,'ashley')">Ashley</div>
+        <div class="pill" onclick="togChar(this,'rita')">Rita</div>
+        <div class="pill" onclick="togChar(this,'beats')">Beats 🐱</div>
+        <div class="pill" onclick="togChar(this,'grandmino')">Grand Minö</div>
+        <div class="pill" onclick="togChar(this,'gadget')">Gadget</div>
+        <div class="pill" onclick="togChar(this,'new')">+ New</div>
+      </div>
+      <div id="new-char-row" style="display:none"><div class="fl" style="margin-top:8px">New character <span class="hint">Soul ID name + description</span></div>
+        <input type="text" id="s-newchar" data-ph="ph_newchar" placeholder="e.g. COACH_MARISOL_SOUL_ID — Cuban-American, coral tracksuit">
+      </div>
+      <div style="margin-top:8px"><div class="fl"><span data-k="lbl_arrange">Arrangement</span> <span class="hint" data-k="hint_arrange">who is where</span></div>
+        <input type="text" id="s-arrange" data-ph="ph_arrange" placeholder="e.g. Yanissa left with vinyl, Rita centre on wall, Ashley right on phone">
+      </div>
+    </div>
+    <div class="fs">
+      <div class="fst">🎬 <span data-k="sec_action">Action & Mood</span></div>
+      <div class="fr f1"><div>
+        <div class="fl"><span data-k="lbl_action">What are they doing?</span> <span class="req">required</span></div>
+        <textarea id="s-action" rows="3" data-ph="ph_action" placeholder="e.g. Yanissa holds a vinyl up to the light. Rita leans against the record shop wall, right hand in pocket. Ashley scrolls her phone, notepad under arm."></textarea>
+      </div></div>
+      <div class="fr">
+        <div><div class="fl" data-k="lbl_emotion">Emotional state</div>
+          <select id="s-emotion">
+            <option value="neutral">Neutral</option><option value="alert">Alert / observing</option>
+            <option value="subdued">Subdued / inward</option><option value="intense">Intense / focused</option>
+            <option value="open">Open / receptive</option><option value="performing">Performing / singing</option>
+            <option value="joy">Joy / elated</option><option value="defiant">Defiant / confident</option>
+          </select>
+        </div>
+        <div><div class="fl" data-k="lbl_mouth">Mouth / solenoid</div>
+          <select id="s-mouth">
+            <option value="neutral">Neutral rest — 2mm</option><option value="closed">Closed / tight</option>
+            <option value="mid">Mid open — 4mm</option><option value="full">Full open — 8mm</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="fs">
+      <div class="fst">📷 <span data-k="sec_camera">Camera & Extras</span></div>
+      <div class="fr">
+        <div><div class="fl" data-k="lbl_camangle">Camera angle</div>
+          <select id="s-camangle">
+            <option value="eye_level">Eye-level (standard)</option>
+            <option value="road_level">Road level — vehicle</option>
+            <option value="low">Low — looking up</option>
+            <option value="front_on">Front-on portrait</option>
+            <option value="three_quarter">Three-quarter</option>
+            <option value="profile">Side profile</option>
+          </select>
+        </div>
+        <div><div class="fl" data-k="lbl_camdist">Shot distance</div>
+          <select id="s-camdist">
+            <option value="full_body">Full body</option>
+            <option value="wide">Wide — all + environment</option>
+            <option value="establishing">Establishing — full set</option>
+            <option value="medium">Medium (waist up)</option>
+            <option value="portrait">Portrait (chest up)</option>
+            <option value="close_up">Close-up (face)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr f1" style="margin-top:0"><div>
+        <div class="fl"><span data-k="lbl_extra">Extra notes</span> <span class="hint" data-k="hint_extra">props, weather, details</span></div>
+        <input type="text" id="s-extra" data-ph="ph_extra" placeholder="e.g. Hookah on table. Boombox playing. Pigeon on the parapet.">
+      </div></div>
+      <div class="fsub"><span data-k="lbl_sigs">Signature codes</span> <span style="font-size:9px;color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0" data-k="lbl_sigs_hint">— recurring visual elements unique to Yanissa World</span></div>
+      <div style="font-size:10px;color:var(--t3);margin-bottom:8px;line-height:1.6">
+        <b style="color:var(--t2)">Tableau plan</b> — three girls frozen, facing camera like mannequins in a vitrine<br>
+        <b style="color:var(--t2)">4th wall break</b> — one or more characters look directly into the camera<br>
+        <b style="color:var(--t2)">Falling object</b> — object falls in slow motion at scene end, announces the next location<br>
+        <b style="color:var(--t2)">Grand Minö shadow</b> — only his shadow, reflection, or silhouette — never full reveal<br>
+        <b style="color:var(--t2)">Miniature wide plan</b> — camera pulls far back to reveal the full miniature set<br>
+        <b style="color:var(--t2)">16mm grain</b> — warm film grain treatment — used for flashbacks and dreams
+      </div>
+      <div class="pills" id="sigpills">
+        <div class="pill" onclick="togSig(this,'tableau')">Tableau plan</div>
+        <div class="pill" onclick="togSig(this,'4thwall')">4th wall break</div>
+        <div class="pill" onclick="togSig(this,'falling')">Falling object</div>
+        <div class="pill" onclick="togSig(this,'mino_shadow')">Grand Minö shadow</div>
+        <div class="pill" onclick="togSig(this,'miniature')">Miniature wide plan</div>
+        <div class="pill" onclick="togSig(this,'16mm')">16mm grain</div>
+      </div>
+      <div id="falling-row" style="display:none;margin-top:10px">
+        <div class="fl"><span data-k="lbl_falling">Falling object</span> <span class="hint" data-k="hint_falling">announces next location</span></div>
+        <input type="text" id="s-falling" data-ph="ph_falling" placeholder="e.g. a vinyl record, a plane ticket">
+      </div>
+      <div style="margin-top:12px">
+        <label class="ntog" onclick="togNeg()">
+          <div class="tt on" id="tt-neg"><div class="tk"></div></div>
+          <span class="tlbl" data-k="lbl_neg">Include full negative prompt</span>
+        </label>
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="scene-nb-btn" data-k="btn_generate_scene">Generate Nano Banana prompt</button>
+      <button class="bsec" onclick="clearScene()">Clear</button>
+    </div>
+    <!-- Output: Nano Banana prompt + inline instructions -->
+    <div class="out-card" id="scene-nb-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">🍌 Nano Banana — ready to paste in Higgsfield</div>
+        <div class="out-acts">
+          <button class="bcp" id="scene-nb-copy">Copy</button>
+          <button class="bsv" id="scene-nb-save">Save</button>
+        </div>
+      </div>
+      <div class="out-txt" id="scene-txt-0"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to use this in Higgsfield</div>
+        <div id="scene-instr-0"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1: SEEDANCE -->
+  <div id="scene-mode-1" style="display:none">
+    <div class="info" data-k="info_seedance">Seedance animates FROM an approved Nano Banana still. Generate and approve that image first, then come here.</div>
+    <div class="fs">
+      <div class="fst">🎬 <span data-k="sec_motion">Motion Script</span></div>
+      <div class="warn" data-k="warn_seedance">Never include dialogue, lyrics, or song names — triggers audio hallucination.</div>
+      <div class="fr f1"><div>
+        <div class="fl" data-k="lbl_motion">What happens — beat by beat</div>
+        <textarea id="s-motion" rows="6" placeholder="e.g.
+00:00-00:02 — All three still. Hookah smoke rising.
+00:02-00:04 — Yanissa jaw opens on 8 beats. Rita head turns slowly left.
+00:04-00:06 — Boombox shakes once. All heads snap toward it."></textarea>
+      </div></div>
+      <div class="fr">
+        <div><div class="fl" data-k="lbl_duration">Duration</div>
+          <select id="s-duration">
+            <option value="3s">3s</option><option value="4s">4s</option>
+            <option value="6s" selected>6s (recommended)</option>
+            <option value="8s">8s</option>
+          </select>
+        </div>
+        <div><div class="fl">Aspect ratio</div>
+          <select id="s-aspect-seed">
+            <option value="16:9">16:9 — Cinematic</option>
+            <option value="9:16">9:16 — TikTok / Reels</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="scene-sd-btn" data-k="btn_gen_seed">Generate Seedance prompt</button>
+    </div>
+    <!-- Output: Seedance prompt + inline instructions -->
+    <div class="out-card" id="scene-sd-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">🎬 Seedance 2.0 — ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="scene-sd-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="scene-txt-1"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to use this in Higgsfield</div>
+        <div class="instr-step"><div class="sn">1</div><div class="sb2">
+          <div class="st">Input frame</div>
+          <div class="sd">In Higgsfield, select Seedance 2.0. Upload your approved Nano Banana image as the input frame.</div>
+          <span class="sa">Input: best result from Nano Banana — not a new generation</span>
+        </div></div>
+        <div class="instr-step"><div class="sn">2</div><div class="sb2">
+          <div class="st">Paste and generate</div>
+          <div class="sd">Paste this prompt. Generate 4 times. Select the cleanest 2. 6 seconds maximum per clip.</div>
+        </div></div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn" style="background:var(--am)">✓</div><div class="sb2">
+          <div class="st">Verify</div>
+          <div class="sd">Afro stays rigid — does not blow. Characters stay seated. Hair does not move independently. If it does — regenerate.</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: POST-PROD -->
+  <div id="scene-mode-2" style="display:none">
+    <div class="info" data-k="info_postprod">The dialogue script never goes into Seedance. Write it here for your voice recording session or subtitle export.</div>
+    <div class="fs">
+      <div class="fst">🎙 <span data-k="sec_dialogue">Dialogue Script</span></div>
+      <div class="fr f1"><div>
+        <textarea id="s-postprod" rows="12" placeholder="e.g.
+00:02 — YANISSA (close-mic, intimate):
+'High maintenance... yes I am.'
+
+00:05 — ASHLEY (flat, punchy):
+'ata ata ata ata'
+
+00:08 — RITA (low, dry):
+'...'"></textarea>
+      </div></div>
+    </div>
+    <div class="gbar">
+      <button class="bcp" style="flex:1;padding:11px;font-size:13px" id="scene-pp-copy">Copy dialogue script</button>
+    </div>
+  </div>
+
+  <!-- 3: INSTRUCTIONS FR — auto-generated on tab click -->
+  <div id="scene-mode-3" style="display:none">
+    <div class="out-card">
+      <div class="out-hdr">
+        <div class="out-lbl">📋 Instructions FR — step by step</div>
+        <div class="out-acts"><button class="bcp" id="scene-instr-copy">Copy</button></div>
+      </div>
+      <div class="instr-txt" id="scene-txt-instr">
+        <div style="color:var(--t3);font-size:11px;padding:20px;text-align:center">Fill in the Nano Banana tab first, then click Instructions FR to see the guide here.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VEHICLE ═══ -->
+<div id="panel-vehicle" class="panel">
+  <div class="mtabs" id="vehicle-mtabs">
+    <button class="mtab on" data-idx="0">
+      <div class="mtab-title">🍌 Nano Banana</div>
+      <div class="mtab-sub">Scene still</div>
+    </button>
+    <button class="mtab" data-idx="1">
+      <div class="mtab-title">🎬 Seedance</div>
+      <div class="mtab-sub">Animate tracking shot</div>
+    </button>
+  </div>
+
+  <!-- 0: VEHICLE NANO BANANA -->
+  <div id="vehicle-mode-0">
+    <div class="info">🇬🇧 All vehicles are UK right-hand drive. Driver = RIGHT side. Passenger = LEFT side.</div>
+    <div class="fs">
+      <div class="fst">🚗 Vehicle</div>
+      <div class="fr">
+        <div><div class="fl">Vehicle</div>
+          <select id="v-veh" onchange="togVehDesc()">
+            <option value="ritas_mini">Rita's Mini Cooper (BPM 140)</option>
+            <option value="new_car">New car — describe below</option>
+            <option value="taxi">London black cab</option>
+          </select>
+        </div>
+        <div><div class="fl">Shot type</div>
+          <select id="v-shot">
+            <option value="exterior_side">Exterior — side view</option>
+            <option value="exterior_front">Exterior — front approach</option>
+            <option value="exterior_3q">Exterior — three-quarter</option>
+            <option value="soul_id">Soul ID — grey backdrop</option>
+          </select>
+        </div>
+      </div>
+      <div id="v-new-desc-row" style="display:none"><div class="fl" style="margin-top:8px">Vehicle description</div>
+        <input type="text" id="v-new-desc" placeholder="e.g. 1970s black London cab, chrome bumper, rust at wheel arches">
+      </div>
+    </div>
+    <div class="fs">
+      <div class="fst">📍 Street</div>
+      <div class="fr f1"><div>
+        <div class="fl">Location</div>
+        <textarea id="v-loc" rows="2" placeholder="e.g. Brixton high street — Caribbean food shops, record shop, chicken shop, graffiti."></textarea>
+      </div></div>
+      <div class="fr">
+        <div><div class="fl">Time of day</div>
+          <select id="v-time">
+            <option value="overcast">Overcast / grey</option><option value="golden">Golden hour</option>
+            <option value="night">Night</option><option value="midday">Midday</option>
+          </select>
+        </div>
+        <div><div class="fl">Aspect ratio</div>
+          <select id="v-aspect"><option value="16:9">16:9</option><option value="9:16">9:16</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="fs">
+      <div class="fst">👥 Characters & Seating</div>
+      <div class="seat-grid">
+        <div class="seat-box" id="seat-passenger">
+          <div class="seat-lbl">Front passenger — left (near camera)</div>
+          <select id="v-passenger" onchange="updSeats()">
+            <option value="none">— empty —</option>
+            <option value="yanissa">Yanissa (cream-blonde afro)</option>
+            <option value="ashley">Ashley (auburn hair, glasses)</option>
+            <option value="rita">Rita (dark ponytail)</option>
+          </select>
+        </div>
+        <div class="seat-box" id="seat-driver">
+          <div class="seat-lbl">Driver — right (steering wheel)</div>
+          <select id="v-driver" onchange="updSeats()">
+            <option value="rita">Rita (dark ponytail)</option>
+            <option value="yanissa">Yanissa (cream-blonde afro)</option>
+            <option value="ashley">Ashley (auburn hair, glasses)</option>
+          </select>
+        </div>
+        <div class="seat-box seat-rear" id="seat-rear">
+          <div class="seat-lbl">Rear — centre back</div>
+          <select id="v-rear" onchange="updSeats()">
+            <option value="ashley">Ashley (auburn hair, glasses)</option>
+            <option value="none">— empty —</option>
+            <option value="yanissa">Yanissa (cream-blonde afro)</option>
+            <option value="rita">Rita (dark ponytail)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="vehicle-nb-btn">Generate Nano Banana prompt</button>
+      <button class="bsec" onclick="clearVehicle()">Clear</button>
+    </div>
+    <div class="out-card" id="vehicle-nb-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">🍌 Nano Banana — ready to paste</div>
+        <div class="out-acts">
+          <button class="bcp" id="vehicle-nb-copy">Copy</button>
+          <button class="bsv" id="vehicle-nb-save">Save</button>
+        </div>
+      </div>
+      <div class="out-txt" id="vehicle-txt-0"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to use — Higgsfield Nano Banana</div>
+        <div class="instr-step"><div class="sn">1</div><div class="sb2">
+          <div class="st">Attacher les références</div>
+          <div class="sd">Ouvrir Higgsfield Nano Banana Premium. Activer les Soul IDs.</div>
+          <span class="sa">Référence 1 : image maître des 3 personnages
+Référence 2 : RITA_MINI_SOUL_ID.png</span>
+        </div></div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn" style="background:var(--am)">✓</div><div class="sb2">
+          <div class="st">Vérifier avant Seedance</div>
+          <div class="sd">Peau Yanissa crème-blanche · Deux bandes vertes · BPM 140 lisible · Bâtiments plus grands que la voiture · Ciel peint</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1: VEHICLE SEEDANCE -->
+  <div id="vehicle-mode-1" style="display:none">
+    <div class="info">Generate the Nano Banana still first and approve it. Then come here to animate it.</div>
+    <div class="fs">
+      <div class="fst">🎬 Motion Type</div>
+      <div class="itabs" id="v-motion-tabs">
+        <button class="itab on" onclick="setVMot('tracking',this)">Tracking shot</button>
+        <button class="itab" onclick="setVMot('approach',this)">Car approaches</button>
+        <button class="itab" onclick="setVMot('static',this)">Static</button>
+      </div>
+      <div id="vm-tracking"><div style="font-size:11px;color:var(--t2)">Background slides right to left · Car stays centred · Sky static · Hair rigid</div></div>
+      <div id="vm-approach" style="display:none"><div style="font-size:11px;color:var(--t2)">Car drives toward camera · Front faces viewer throughout · No spinning</div></div>
+      <div id="vm-static" style="display:none"><div style="font-size:11px;color:var(--t2)">No vehicle movement · Subtle puppet character reactions only</div></div>
+      <div style="margin-top:12px"><div class="fl">Extra notes <span class="hint">optional</span></div>
+        <input type="text" id="v-seed-extra" placeholder="e.g. Yanissa head turns slowly toward the passing street.">
+      </div>
+      <div class="fr" style="margin-top:9px">
+        <div><div class="fl">Duration</div>
+          <select id="v-duration"><option value="6s" selected>6s</option><option value="8s">8s</option></select>
+        </div>
+        <div><div class="fl">Aspect ratio</div>
+          <select id="v-aspect-seed"><option value="16:9">16:9</option><option value="9:16">9:16</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="vehicle-sd-btn">Generate Seedance prompt</button>
+    </div>
+    <div class="out-card" id="vehicle-sd-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">🎬 Seedance — ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="vehicle-sd-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="vehicle-txt-1"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to use — Higgsfield Seedance</div>
+        <div class="instr-step"><div class="sn">1</div><div class="sb2">
+          <div class="st">Input frame</div>
+          <div class="sd">In Seedance, upload the approved Nano Banana vehicle still as the input frame.</div>
+          <span class="sa">Input: best Nano Banana result — not a new generation</span>
+        </div></div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn" style="background:var(--am)">✓</div><div class="sb2">
+          <div class="st">Vérifier</div>
+          <div class="sd">Afro rigide · Bâtiments style miniature · BPM 140 lisible · Générer 4 fois, choisir les 2 meilleurs</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MUSIC VIDEO ═══ -->
+<div id="panel-musicvideo" class="panel">
+  <!-- How this works — always visible -->
+  <div class="how">
+    <div class="how-title">🎵 How the jaw beat system works</div>
+    <div class="how-body">You generate <strong>3 separate Seedance clips</strong> — one per character's jaw movement. Each pass, all other mouths are sealed. Composite the 3 clips in post using face masks.</div>
+    <div class="how-step"><div class="how-num">1</div><div style="font-size:11px;color:var(--t2)">Extract jaw beat timestamps from your MIDI analysis (Logic Pro → Flex Pitch → MIDI export)</div></div>
+    <div class="how-step"><div class="how-num">2</div><div style="font-size:11px;color:var(--t2)">Generate Pass 1 (lead vocal), Pass 2 (ad-lib A), Pass 3 (ad-lib B) — one at a time</div></div>
+    <div class="how-step"><div class="how-num">3</div><div style="font-size:11px;color:var(--t2)">Composite in post: P1 base layer → P2 face mask → P3 face mask · Add audio · Export</div></div>
+  </div>
+
+  <!-- Track info -->
+  <div class="fs">
+    <div class="fst">🎵 Track Info</div>
+    <div class="fr">
+      <div><div class="fl">BPM <span class="req">required</span></div>
+        <input type="text" id="mv-bpm" placeholder="140" oninput="calcBPM()">
+      </div>
+      <div><div class="fl">Beat interval (auto)</div>
+        <input type="text" id="mv-interval" readonly style="color:var(--g)">
+      </div>
+    </div>
+    <div class="fr">
+      <div><div class="fl">Track title</div>
+        <input type="text" id="mv-title" placeholder="e.g. High Maintenance">
+      </div>
+      <div><div class="fl">Clip duration</div>
+        <select id="mv-duration"><option value="6s" selected>6s</option><option value="8s">8s</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pass 1 -->
+  <div class="pass-section">
+    <div class="pass-title"><div class="pass-num">1</div> Lead Vocal Jaw Beats</div>
+    <div class="fr">
+      <div><div class="fl">Lead vocalist</div>
+        <select id="mv-lead">
+          <option value="left">LEFT — Yanissa (cream-blonde afro)</option>
+          <option value="centre">CENTRE character</option>
+          <option value="right">RIGHT character</option>
+        </select>
+      </div>
+      <div><div class="fl">Others this pass</div>
+        <input type="text" value="Mouths SEALED SHUT" readonly style="color:var(--t3)">
+      </div>
+    </div>
+    <div><div class="fl">Jaw beat timestamps <span class="hint">open→close pairs, one per line</span></div>
+      <textarea id="mv-lead-beats" rows="6" placeholder="0.146s open -> 0.274s close&#10;0.310s open -> 0.686s close&#10;0.696s open -> 0.832s close&#10;(paste from MIDI analysis)"></textarea>
+    </div>
+    <div class="gbar" style="margin-top:10px">
+      <button class="bgen" id="mv-p1-btn">Generate Pass 1 prompt</button>
+    </div>
+    <div class="out-card" id="mv-p1-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">Pass 1 — Lead vocal · ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="mv-p1-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="mv-txt-0"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to use Pass 1</div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn">→</div><div class="sb2">
+          <div class="sd">Paste in Seedance. Use approved scene still as input frame. Generate 4 times. Select the best. Keep ALL OTHER CHARACTERS' mouths sealed. This pass is lead vocal ONLY.</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pass 2 -->
+  <div class="pass-section">
+    <div class="pass-title"><div class="pass-num">2</div> Ad-lib Character A</div>
+    <div class="fr">
+      <div><div class="fl">Ad-lib character</div>
+        <select id="mv-adlib1">
+          <option value="centre">CENTRE — Ashley (auburn, glasses)</option>
+          <option value="left">LEFT character</option>
+          <option value="right">RIGHT character</option>
+        </select>
+      </div>
+      <div><div class="fl">Delivery</div>
+        <select id="mv-adlib1-style">
+          <option value="staccato">Staccato — rapid machine-gun</option>
+          <option value="deliberate">Deliberate — spaced, minimal</option>
+        </select>
+      </div>
+    </div>
+    <div><div class="fl">Jaw beat timestamps — ad-lib A</div>
+      <textarea id="mv-adlib1-beats" rows="4" placeholder="2.212s open -> 2.357s close&#10;2.357s open -> 2.503s close&#10;2.520s open -> 2.683s close"></textarea>
+    </div>
+    <div class="gbar" style="margin-top:10px">
+      <button class="bgen" id="mv-p2-btn">Generate Pass 2 prompt</button>
+    </div>
+    <div class="out-card" id="mv-p2-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">Pass 2 — Ad-lib A · ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="mv-p2-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="mv-txt-1"></div>
+    </div>
+  </div>
+
+  <!-- Pass 3 -->
+  <div class="pass-section">
+    <div class="pass-title"><div class="pass-num">3</div> Ad-lib Character B</div>
+    <div class="fr">
+      <div><div class="fl">Ad-lib character</div>
+        <select id="mv-adlib2">
+          <option value="right">RIGHT — Rita (dark ponytail)</option>
+          <option value="left">LEFT character</option>
+          <option value="centre">CENTRE character</option>
+        </select>
+      </div>
+      <div><div class="fl">Delivery</div>
+        <select id="mv-adlib2-style">
+          <option value="deliberate">Deliberate — spaced, minimal</option>
+          <option value="staccato">Staccato — rapid machine-gun</option>
+        </select>
+      </div>
+    </div>
+    <div><div class="fl">Jaw beat timestamps — ad-lib B</div>
+      <textarea id="mv-adlib2-beats" rows="4" placeholder="4.837s open -> 4.929s close&#10;4.938s open -> 5.006s close&#10;5.760s open -> 5.812s close"></textarea>
+    </div>
+    <div class="gbar" style="margin-top:10px">
+      <button class="bgen" id="mv-p3-btn">Generate Pass 3 prompt</button>
+    </div>
+    <div class="out-card" id="mv-p3-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">Pass 3 — Ad-lib B · ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="mv-p3-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="mv-txt-2"></div>
+    </div>
+  </div>
+
+  <!-- Post-prod + Compositing -->
+  <div class="pass-section">
+    <div class="pass-title"><div class="pass-num" style="background:var(--pu)">✍</div> Post-production Dialogue</div>
+    <div class="warn">This script never goes into Seedance. For voice recording and subtitle sessions only.</div>
+    <textarea id="mv-postprod" rows="8" placeholder="00:00.146 — YANISSA: 'High...'&#10;00:00.310 — YANISSA: 'Main-'&#10;00:02.212 — ASHLEY: 'ata'&#10;00:02.357 — ASHLEY: 'ata'&#10;..."></textarea>
+    <div class="gbar" style="margin-top:10px">
+      <button class="bgen" id="mv-comp-btn">Generate compositing guide</button>
+      <button class="bcp" style="padding:11px 16px;font-size:12px" id="mv-pp-copy">Copy dialogue</button>
+    </div>
+    <div class="out-card" id="mv-comp-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">📋 Compositing guide</div>
+        <div class="out-acts"><button class="bcp" id="mv-comp-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="mv-txt-comp"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CHARACTER ═══ -->
+<div id="panel-character" class="panel">
+
+  <!-- TASK SELECTOR -->
+  <div class="mtabs" id="char-mtabs" style="margin-bottom:14px">
+    <button class="mtab on" data-ctask="new" onclick="setCharTask('new',this)">
+      <div class="mtab-title" data-k="char_task_new">✦ New character</div>
+      <div class="mtab-sub" data-k="char_task_new_sub">Build from zero → 4-step pipeline</div>
+    </button>
+    <button class="mtab" data-ctask="existing" onclick="setCharTask('existing',this)">
+      <div class="mtab-title" data-k="char_task_existing">🎭 Existing character</div>
+      <div class="mtab-sub" data-k="char_task_existing_sub">Sheet · Conversion · Animal</div>
+    </button>
+  </div>
+
+  <!-- ═══ NEW CHARACTER PIPELINE ═══ -->
+  <div id="ctask-new">
+    <div class="how">
+      <div class="how-title" data-k="how_new_title">🔑 New character — 4-step pipeline</div>
+      <div class="how-body" data-k="how_new_body">Follow these steps in order. Complete each step and approve the output before moving to the next. Do not skip steps — the reference sheets built in steps 2 and 4 are what lock identity in every future scene.</div>
+    </div>
+
+    <!-- STEP 1: FACE PROMPT -->
+    <div class="pass-section">
+      <div class="pass-title"><div class="pass-num">1</div> Base Face Prompt</div>
+      <div class="info" style="margin-bottom:12px">Generates the character's face for the first time. This is the foundation — all other steps reference this output.</div>
+      <div class="fs">
+        <div class="fst">🆔 Character identity</div>
+        <div class="fr">
+          <div><div class="fl">Soul ID name</div><input type="text" id="np-soulname" placeholder="e.g. COACH_MARISOL_SOUL_ID"></div>
+          <div><div class="fl">Age / gender</div><input type="text" id="np-age" placeholder="e.g. 28, woman"></div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Skin tone</div><input type="text" id="np-skin" placeholder="e.g. warm olive, medium brown"></div>
+          <div><div class="fl">Eye colour</div><input type="text" id="np-eyes" placeholder="e.g. dark brown, hazel"></div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Hair colour</div><input type="text" id="np-hcolor" placeholder="e.g. black, auburn"></div>
+          <div><div class="fl">Hair style</div><input type="text" id="np-hstyle" placeholder="e.g. short afro, straight shoulder-length"></div>
+        </div>
+        <div><div class="fl">Distinctive features <span class="hint">optional</span></div>
+          <input type="text" id="np-features" placeholder="e.g. strong jaw, high cheekbones, wide nose">
+        </div>
+      </div>
+      <div class="gbar">
+        <button class="bgen" onclick="genNewFace()">Generate Step 1 — Face prompt</button>
+      </div>
+      <div class="out-card" id="np-face-out" style="display:none">
+        <div class="out-hdr">
+          <div class="out-lbl">Step 1 — Base face · Nano Banana</div>
+          <div class="out-acts"><button class="bcp" onclick="copyEl('np-face-txt',this)">Copy</button></div>
+        </div>
+        <div class="out-txt" id="np-face-txt"></div>
+        <div class="instr-block">
+          <div class="instr-block-title">📋 Step 1 instructions</div>
+          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Open Nano Banana Premium in Higgsfield</div><div class="sd">Attach the master reference image (3 puppet characters). This locks the puppet style.</div></div></div>
+          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Paste and generate</div><div class="sd">Generate 6–10 times. Select the 2 best face outputs. Verify: puppet proportions, joint rings visible, skin flat painted.</div></div></div>
+          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Approve before Step 2</div><div class="sd">Only proceed to Step 2 once the face is correct and resembles the intended character.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: FACE REFERENCE SHEET -->
+    <div class="pass-section">
+      <div class="pass-title"><div class="pass-num">2</div> Face Reference Sheet — 8 angles</div>
+      <div class="info" style="margin-bottom:12px">Use your approved Step 1 output as a reference image. This creates the multi-angle reference sheet that locks face identity in Higgsfield.</div>
+      <div class="gbar">
+        <button class="bgen" onclick="genFaceSheet()">Generate Step 2 — Face reference sheet</button>
+      </div>
+      <div class="out-card" id="np-facesheet-out" style="display:none">
+        <div class="out-hdr">
+          <div class="out-lbl">Step 2 — Face reference sheet · Nano Banana</div>
+          <div class="out-acts"><button class="bcp" onclick="copyEl('np-facesheet-txt',this)">Copy</button></div>
+        </div>
+        <div class="out-txt" id="np-facesheet-txt"></div>
+        <div class="instr-block">
+          <div class="instr-block-title">📋 Step 2 instructions</div>
+          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach two references</div><div class="sd">Reference 1: master character image (3 puppets — style anchor). Reference 2: your approved Step 1 face output (identity anchor).</div></div></div>
+          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Layout: 8 portraits in a grid</div>
+            <div class="sd">The prompt requests 8 angles in one image:<br>
+            1. Full front · 2. Left 3/4 · 3. Right 3/4 · 4. Left profile<br>
+            5. Right profile · 6. Slight upward · 7. Slight downward · 8. Back of head<br><br>
+            Generate 3–4 times. Select the sheet where identity is most consistent across all 8 angles.</div></div></div>
+          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">This sheet becomes your Soul ID anchor</div><div class="sd">Save this image — it is what you attach as the character reference in every future scene prompt.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: BODY PROMPT -->
+    <div class="pass-section">
+      <div class="pass-title"><div class="pass-num">3</div> Body Creation Prompt</div>
+      <div class="info" style="margin-bottom:12px">Builds the full body using the approved face sheet as identity lock. Establishes puppet proportions, costume, and joint rings.</div>
+      <div class="fs">
+        <div class="fst">👘 Costume & character details</div>
+        <div class="fr f1"><div>
+          <div class="fl">Costume <span class="req">required</span></div>
+          <input type="text" id="np-costume" placeholder="e.g. Coral Adidas tracksuit, white trainers, gold chain">
+        </div></div>
+        <div><div class="fl">Role / personality <span class="hint">optional — informs posture</span></div>
+          <input type="text" id="np-role" placeholder="e.g. Cuban-American PE coach. Confident, direct.">
+        </div>
+      </div>
+      <div class="gbar">
+        <button class="bgen" onclick="genNewBody()">Generate Step 3 — Body prompt</button>
+      </div>
+      <div class="out-card" id="np-body-out" style="display:none">
+        <div class="out-hdr">
+          <div class="out-lbl">Step 3 — Body creation · Nano Banana</div>
+          <div class="out-acts"><button class="bcp" onclick="copyEl('np-body-txt',this)">Copy</button></div>
+        </div>
+        <div class="out-txt" id="np-body-txt"></div>
+        <div class="instr-block">
+          <div class="instr-block-title">📋 Step 3 instructions</div>
+          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach two references</div><div class="sd">Reference 1: master character image (style anchor). Reference 2: your approved Step 2 face sheet (identity anchor).</div></div></div>
+          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Generate 6–8 times</div><div class="sd">Verify: 4.5–5 head-height proportions, cylindrical torso, visible wrist and knee joint rings, correct costume, face consistent with Step 2 reference sheet.</div></div></div>
+          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Approve before Step 4</div><div class="sd">Select the 2 best full-body outputs where proportions and costume are correct.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: BODY REFERENCE SHEET -->
+    <div class="pass-section">
+      <div class="pass-title"><div class="pass-num">4</div> Body Reference Sheet — 8 angles</div>
+      <div class="info" style="margin-bottom:12px">Final step. Creates a full-body multi-angle reference sheet. Combined with Step 2, this becomes the complete Soul ID your team attaches to every future scene.</div>
+      <div class="gbar">
+        <button class="bgen" onclick="genBodySheet()">Generate Step 4 — Body reference sheet</button>
+      </div>
+      <div class="out-card" id="np-bodysheet-out" style="display:none">
+        <div class="out-hdr">
+          <div class="out-lbl">Step 4 — Body reference sheet · Nano Banana</div>
+          <div class="out-acts"><button class="bcp" onclick="copyEl('np-bodysheet-txt',this)">Copy</button></div>
+        </div>
+        <div class="out-txt" id="np-bodysheet-txt"></div>
+        <div class="instr-block">
+          <div class="instr-block-title">📋 Step 4 instructions</div>
+          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach three references</div><div class="sd">Reference 1: master character image (style anchor). Reference 2: approved Step 2 face sheet. Reference 3: approved Step 3 body output.</div></div></div>
+          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Layout: 8 body poses in a grid</div>
+            <div class="sd">1. Front straight-on · 2. Left 3/4 · 3. Right 3/4 · 4. Left profile<br>
+            5. Right profile · 6. Back view · 7. Relaxed stance · 8. Slight contrapposto<br><br>
+            Generate 3–4 times. Select the sheet where body proportions and face are most consistent.</div></div></div>
+          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Soul ID complete — ready for scenes</div><div class="sd">Your character now has a complete Soul ID: face sheet (Step 2) + body sheet (Step 4). Upload both to Higgsfield and reference in every scene prompt.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EXISTING CHARACTER TOOLS ═══ -->
+  <div id="ctask-existing" style="display:none">
+    <div class="itabs" id="char-itabs">
+      <button class="itab on" onclick="setCharTab('sheet',this)">Character Sheet</button>
+      <button class="itab" onclick="setCharTab('conversion',this)">Puppet Conversion</button>
+      <button class="itab" onclick="setCharTab('soulid',this)">Animal Soul ID</button>
+    </div>
+
+  <!-- CHARACTER SHEET -->
+  <div id="ctab-sheet">
+    <div class="fs">
+      <div class="fst">🎭 Character Sheet</div>
+      <div class="fr">
+        <div><div class="fl">Character</div>
+          <select id="sh-char" onchange="togSheetChar()">
+            <option value="yanissa">Yanissa</option><option value="ashley">Ashley</option>
+            <option value="rita">Rita</option><option value="beats">Beats (the cat)</option>
+            <option value="grandmino">Grand Minö</option><option value="custom">Custom Soul ID</option>
+          </select>
+        </div>
+        <div><div class="fl">View</div>
+          <select id="sh-view">
+            <option value="full">Full body front</option><option value="portrait">Portrait</option>
+            <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
+            <option value="back">Back view</option><option value="hands">Hands + joint rings</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div><div class="fl">Emotional state</div>
+          <select id="sh-emotion">
+            <option value="none">— structural (none) —</option>
+            <option value="neutral">Neutral</option><option value="alert">Alert / observing</option>
+            <option value="subdued">Subdued</option><option value="intense">Intense</option>
+            <option value="performing">Performing / singing</option><option value="defiant">Defiant</option>
+          </select>
+        </div>
+        <div><div class="fl">Costume</div>
+          <select id="sh-costume" onchange="togSheetCostume()">
+            <option value="default">Default (master reference)</option>
+            <option value="kit">Alternative football kit</option>
+            <option value="custom">Custom — describe below</option>
+          </select>
+        </div>
+      </div>
+      <div id="sh-costume-row" style="display:none"><div class="fl" style="margin-top:8px">Custom costume</div>
+        <input type="text" id="sh-costume-txt" placeholder="e.g. White Nigeria away jersey, black jeans, gold chain">
+      </div>
+      <div id="sh-custom-char-row" style="display:none"><div class="fl" style="margin-top:8px">Soul ID name + description</div>
+        <input type="text" id="sh-custom-char" placeholder="e.g. GADGET_SOUL_ID — Parisian influencer, pink hoodie">
+      </div>
+      <div style="margin-top:8px"><div class="fl">Notes <span class="hint">optional</span></div>
+        <input type="text" id="sh-notes" placeholder="e.g. Emphasise wrist joint rings clearly.">
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="sheet-btn">Generate character sheet prompt</button>
+      <button class="bsec" onclick="clearSheet()">Clear</button>
+    </div>
+    <div class="out-card" id="sheet-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">🍌 Nano Banana — ready to paste</div>
+        <div class="out-acts">
+          <button class="bcp" id="sheet-copy">Copy</button>
+          <button class="bsv" id="sheet-save">Save</button>
+        </div>
+      </div>
+      <div class="out-txt" id="sheet-txt-0"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to build a Soul ID</div>
+        <div class="instr-step"><div class="sn">1</div><div class="sb2">
+          <div class="st">Nano Banana Premium</div>
+          <div class="sd">Open Higgsfield Nano Banana Premium. Activate the character's Soul ID profile.</div>
+          <span class="sa">Attacher : image maître des 3 personnages Yanissa World</span>
+        </div></div>
+        <div class="instr-step"><div class="sn">2</div><div class="sb2">
+          <div class="st">Generate 20–70 images</div>
+          <div class="sd">Generate 4–6 times per view. Repeat for all views and emotions. The more images, the more consistent the Soul ID.</div>
+        </div></div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn" style="background:var(--am)">✓</div><div class="sb2">
+          <div class="st">Vérifier</div>
+          <div class="sd">Anneaux aux poignets visibles · Cheveux masse rigide · Tête surdimensionnée · Peau plate peinte<span id="sheet-yanissa-check"></span></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUPPET CONVERSION -->
+  <div id="ctab-conversion" style="display:none">
+    <div class="info">Convert a real person into a Yanissa World puppet. Attach their photo as Reference Image 2.</div>
+    <div class="fs">
+      <div class="fst">🔄 Identity</div>
+      <div class="fr">
+        <div><div class="fl">Face shape</div>
+          <select id="cv-face"><option value="oval">Oval</option><option value="round">Round</option><option value="square">Square / strong jaw</option><option value="heart">Heart / wide forehead</option><option value="long">Long / angular</option></select>
+        </div>
+        <div><div class="fl">Eye colour</div>
+          <select id="cv-eyes"><option value="dark brown">Dark brown</option><option value="light brown">Light brown</option><option value="green">Green</option><option value="blue">Blue</option><option value="grey">Grey</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div><div class="fl">Skin tone</div>
+          <select id="cv-skin">
+            <option value="very light / pale">Very light / pale</option><option value="light / fair">Light / fair</option>
+            <option value="light-medium / warm">Light-medium / warm</option><option value="medium / olive">Medium / olive</option>
+            <option value="medium-dark / warm brown">Medium-dark / warm brown</option><option value="dark brown">Dark brown</option><option value="very dark">Very dark</option>
+          </select>
+        </div>
+        <div><div class="fl">Hair colour</div>
+          <select id="cv-haircolor">
+            <option value="black">Black</option><option value="dark brown">Dark brown</option><option value="auburn / red">Auburn / red</option>
+            <option value="blonde">Blonde</option><option value="platinum">Platinum</option><option value="grey / silver">Grey / silver</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div><div class="fl">Hair style</div>
+          <select id="cv-hairstyle">
+            <option value="short close-cropped">Short — close cropped</option><option value="medium straight">Medium — straight</option>
+            <option value="long straight">Long — straight</option><option value="large natural afro">Large natural afro</option>
+            <option value="locs or braids">Locs / braids</option><option value="high bun">High bun</option>
+          </select>
+        </div>
+        <div><div class="fl">Distinctive features</div>
+          <input type="text" id="cv-features" placeholder="e.g. beard, glasses, strong brow">
+        </div>
+      </div>
+      <div class="fr">
+        <div><div class="fl">Costume</div>
+          <input type="text" id="cv-costume" placeholder="e.g. Pink hoodie, white jeans, gold chain">
+        </div>
+        <div><div class="fl">Soul ID name</div>
+          <input type="text" id="cv-soulname" placeholder="e.g. GADGET_SOUL_ID">
+        </div>
+      </div>
+      <div><div class="fl">Output type</div>
+        <select id="cv-output"><option value="portrait">Portrait verification first</option><option value="full">Full body front</option></select>
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="conv-btn">Generate conversion prompt</button>
+      <button class="bsec" onclick="clearConv()">Clear</button>
+    </div>
+    <div class="out-card" id="conv-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">🍌 Puppet conversion — ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="conv-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="conv-txt-0"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to use</div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn">→</div><div class="sb2">
+          <div class="sd">Attach Reference 1: master character image (3 puppets — style anchor). Attach Reference 2: photo of the person to convert (identity anchor). Start with portrait output to verify likeness before generating full body.</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANIMAL SOUL ID -->
+  <div id="ctab-soulid" style="display:none">
+    <div class="info">Creates a puppet-world Soul ID for an animal. Attach a reference photo of the animal alongside the master character reference.</div>
+    <div class="fs">
+      <div class="fst">🐱 Animal Soul ID</div>
+      <div class="fr">
+        <div><div class="fl">Animal type</div>
+          <select id="an-type"><option value="cat">Cat</option><option value="dog">Dog</option><option value="bird">Bird / pigeon</option><option value="monkey">Monkey</option></select>
+        </div>
+        <div><div class="fl">Soul ID name</div><input type="text" id="an-name" value="BEATS_SOUL_ID"></div>
+      </div>
+      <div class="fr">
+        <div><div class="fl">Breed</div><input type="text" id="an-breed" value="British Shorthair"></div>
+        <div><div class="fl">Colour</div><input type="text" id="an-colour" value="Ginger tabby"></div>
+      </div>
+      <div><div class="fl">Personality</div>
+        <input type="text" id="an-personality" value="Permanently grumpy. Unimpressed. Judges silently.">
+      </div>
+      <div style="margin-top:8px"><div class="fl">Accessories <span class="hint">optional</span></div>
+        <input type="text" id="an-accessories" placeholder="e.g. Small gold chain">
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="animal-btn">Generate animal Soul ID prompt</button>
+      <button class="bsec" onclick="clearAnimal()">Clear</button>
+    </div>
+    <div class="out-card" id="animal-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">🍌 Animal Soul ID — ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="animal-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="animal-txt-0"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to use</div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn">→</div><div class="sb2">
+          <div class="sd">Attach Reference 1: master character image (3 puppets). Attach Reference 2: photo of the animal. Generate 4–6 times front-facing and 4–6 times at 3/4. Verify joint rings at all four ankles.</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+  </div><!-- /ctab-soulid -->
+  </div><!-- /ctask-existing -->
+</div><!-- /panel-character -->
+
+<!-- ═══ WORKFLOWS ═══ -->
+<div id="panel-workflows" class="panel">
+  <div class="itabs" id="wf-itabs">
+    <button class="itab on" onclick="setWFTab('camera',this)">📷 Camera</button>
+    <button class="itab" onclick="setWFTab('scale',this)">📐 Scale</button>
+    <button class="itab" onclick="setWFTab('seedance',this)">🎬 Seedance</button>
+    <button class="itab" onclick="setWFTab('nanobana',this)">🍌 Nano Banana</button>
+    <button class="itab" onclick="setWFTab('vehicle',this)">🚗 Vehicle</button>
+    <button class="itab" onclick="setWFTab('checklist',this)">✅ Checklist</button>
+  </div>
+  <div id="wf-camera">
+    <div class="wf-rule"><div class="wf-rt">Standard puppet scenes — eye level (0.5 units)</div><div class="wf-rb">Camera at puppet eye-level. NOT downward. Deep focus throughout. No bokeh.</div></div>
+    <div class="wf-rule"><div class="wf-rt">Vehicle scenes — road surface level</div><div class="wf-rb">Camera lens at tarmac height, looking very slightly upward. Buildings stretch dramatically upward. NOT eye level.</div><code class="wf-rc">Camera at road surface level. Lens at tarmac height, looking very slightly upward.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Forced perspective — always</div><div class="wf-rb">Background elements 15-20% smaller per step. Street converges to vanishing point.</div><code class="wf-rc">Forced perspective: buildings recede 20% per step. Road markings converge to vanishing point.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Never high angle / bird's eye</div><code class="wf-rc">NEGATIVE: high camera angle looking down. Bird's eye view. Camera above character eye level.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Approach shot — no spinning</div><code class="wf-rc">NO rotation. NO spinning. NO reorienting. Car faces camera from the first frame.</code></div>
+  </div>
+  <div id="wf-scale" style="display:none">
+    <div class="wf-rule"><div class="wf-rt">Reference unit = standing puppet character</div></div>
+    <div class="sc-grid">
+      <div class="sc-i"><span class="sc-l">Standing character</span><span class="sc-v">1.0u</span></div>
+      <div class="sc-i"><span class="sc-l">Front door</span><span class="sc-v">1.4u</span></div>
+      <div class="sc-i"><span class="sc-l">Full 2-storey building</span><span class="sc-v">4.0u</span></div>
+      <div class="sc-i"><span class="sc-l">Full 4-storey building</span><span class="sc-v">8.0u</span></div>
+      <div class="sc-i"><span class="sc-l">Street lamp</span><span class="sc-v">1.4u</span></div>
+      <div class="sc-i"><span class="sc-l">Parapet wall (rooftop)</span><span class="sc-v">1.8u</span></div>
+      <div class="sc-i"><span class="sc-l">Car door height</span><span class="sc-v">0.35u</span></div>
+      <div class="sc-i"><span class="sc-l">Market stall table</span><span class="sc-v">0.4u</span></div>
+      <div class="sc-i"><span class="sc-l">Chair seat</span><span class="sc-v">0.25u</span></div>
+      <div class="sc-i"><span class="sc-l">Cat (Beats) sitting</span><span class="sc-v">0.4u</span></div>
+    </div>
+  </div>
+  <div id="wf-seedance" style="display:none">
+    <div class="wf-rule"><div class="wf-rt">Always start with this line</div><code class="wf-rc">Animate FROM this image exactly. Do not change anything. Do not regenerate the scene.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Never include lyrics or dialogue</div><code class="wf-rc">NEVER: lyrics, dialogue, quoted text, song structure in any Seedance prompt.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Hair lock — state explicitly</div><code class="wf-rc">All hair completely rigid. Zero movement. Zero bounce. Zero wind effect.
+The afro does NOT blow. Does NOT separate. Solid fixed object.</code></div>
+    <div class="wf-rule"><div class="wf-rt">6-8 seconds max · generate 4 · pick best 2</div></div>
+    <div class="wf-rule"><div class="wf-rt">Two-step workflow — always</div><div class="wf-rb">Step 1: Nano Banana generates the approved still. Step 2: Seedance animates FROM that still. Never ask Seedance to build the world from scratch.</div></div>
+  </div>
+  <div id="wf-nanobana" style="display:none">
+    <div class="wf-rule"><div class="wf-rt">Always attach the master reference image</div><code class="wf-rc">REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters]</code></div>
+    <div class="wf-rule"><div class="wf-rt">Never describe bystanders in detail</div><code class="wf-rc">People passing in the background.
+(NOT: puppet-proportioned figures with oversized heads...)</code></div>
+    <div class="wf-rule"><div class="wf-rt">Yanissa skin — always explicit</div><code class="wf-rc">Skin: uniform pale cream-white — same tone as unbleached white paper.
+Zero melanin. No warmth. West African facial structure.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Sky — master description</div><code class="wf-rc">Hand-painted matte backdrop — London overcast. Flat grey-blue base.
+White painted cloud forms — simplified, naive, hand of painter visible.
+Top 25% of frame. Slight horizon join — authentic. No photographic clouds.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Prompts always in English</div><div class="wf-rb">All generation prompts must be in English. Instructions for the team can be in French.</div></div>
+  </div>
+  <div id="wf-vehicle" style="display:none">
+    <div class="wf-rule"><div class="wf-rt">UK right-hand drive — always explicit</div><code class="wf-rc">UK RIGHT-HAND DRIVE. Steering wheel on the RIGHT side.
+Driver RIGHT. Passenger LEFT. Do not mirror or reverse.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Correct seating description</div><code class="wf-rc">IN THE FRONT: cream-blonde afro = passenger (left side).
+Dark ponytail = driver (right side, hands on wheel).
+IN THE BACK: auburn-red hair, black glasses.</code></div>
+    <div class="wf-rule"><div class="wf-rt">Rita's Mini locked details</div><div class="wf-rb">Graphite grey matte · TWO green stripes · Green mirrors + calipers · BPM 140 · Virgin de Guadalupe · Convertible open · Lowered suspension</div></div>
+    <div class="wf-rule"><div class="wf-rt">Two-step movement workflow</div><div class="wf-rb">Step 1: Nano Banana generates complete scene still. Step 2: Seedance animates FROM approved still with minimal prompt.</div></div>
+  </div>
+  <div id="wf-checklist" style="display:none">
+    <div class="fs"><div class="fst">Before generating in Nano Banana</div><div id="pre-cl"></div></div>
+    <div style="height:10px"></div>
+    <div class="fs"><div class="fst">After generation — verify output</div><div id="post-cl"></div></div>
+    <div style="margin-top:10px"><button class="bsec" onclick="resetCheck()">Reset all</button></div>
+  </div>
+</div>
+
+<!-- ═══ HISTORY ═══ -->
+<div id="panel-history" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-size:12px;color:var(--t2)" id="hsummary">No history yet</div>
+    <button class="bsec" onclick="clearHist()" data-k="btn_clearall">Clear all</button>
+  </div>
+  <div class="hfrow">
+    <div class="hf on" onclick="filterHist('all',this)">All</div>
+    <div class="hf" onclick="filterHist('scene',this)">Scene</div>
+    <div class="hf" onclick="filterHist('vehicle',this)">Vehicle</div>
+    <div class="hf" onclick="filterHist('mv',this)">Music Video</div>
+    <div class="hf" onclick="filterHist('sheet',this)">Character</div>
+  </div>
+  <div class="hl" id="hlist"><div class="hempty" data-k="hist_empty">Nothing saved yet.</div></div>
+</div>
+
+</div></div></div>
+<script>
+
+// ═══════════════════════════════════════════════════════════
+// YANISSA WORLD PROMPT ENGINE v4 — All testing phase learnings applied
+// Pipeline: Nano Banana Premium (image) → Seedance 2.0 (video)
+// Universal blocks injected automatically — user never sees them
+// ═══════════════════════════════════════════════════════════
+
+// ── STATE ──
+let lang='en', negOn=true, histFilter='all', vMotMode='tracking';
+let selChars=new Set(), selSigs=new Set();
+let hist=JSON.parse(localStorage.getItem('yw_v4_hist')||'[]');
+
+// ── TRANSLATIONS ──
+const STR={
+en:{
+  // SIDEBAR
+  logo_sub:'v4.0 — Team Edition',
+  ns_gen:'Generate', ns_ref:'Reference',
+  nav_scene:'Scene', nav_veh:'Vehicle', nav_mv:'Music Video',
+  nav_char:'Character', nav_wf:'Workflows', nav_hist:'History',
+  member_lbl:'Team member', ph_member:'Your name',
+  // SCENE BANNER
+  scene_banner_title:'📌 Place existing characters in a scene',
+  scene_banner_body:'Use this panel when your characters already have Soul IDs (existing cast: Yanissa, Ashley, Rita, etc.) and you want to place them in a new location or situation.<br><br><b>Creating a brand new character?</b> Go to the <b>Character</b> panel → New Character pipeline first.',
+  // LOCATION SECTION
+  sec_location:'Location & Setting', lbl_location:'Location',
+  lbl_time:'Time of day', lbl_aspect:'Aspect ratio',
+  ph_location:"e.g. Brixton market, Atlantic Road. Late afternoon. Record shops, Caribbean food shop, market stalls, graffiti on shutters.",
+  // TIME OPTIONS
+  opt_overcast:'Overcast / grey', opt_golden:'Golden hour', opt_night:'Night',
+  opt_midday:'Midday', opt_dawn:'Dawn / blue hour', opt_dusk:'Dusk / magic hour',
+  // ASPECT OPTIONS
+  opt_169:'16:9 — Cinematic', opt_916:'9:16 — TikTok / Reels', opt_11:'1:1 — Instagram',
+  // CHARACTERS SECTION
+  sec_chars:'Characters', lbl_arrange:'Arrangement', hint_arrange:'who is where',
+  ph_arrange:'e.g. Yanissa left with vinyl, Rita centre on wall, Ashley right on phone',
+  ph_newchar:'e.g. COACH_MARISOL_SOUL_ID — Cuban-American, coral tracksuit',
+  // ACTION SECTION
+  sec_action:'Action & Mood', lbl_action:'What are they doing?',
+  ph_action:'e.g. Yanissa holds a vinyl up to the light. Rita leans against the record shop wall, right hand in pocket. Ashley scrolls her phone, notepad under arm.',
+  lbl_emotion:'Emotional state', lbl_mouth:'Mouth / solenoid',
+  // EMOTION OPTIONS
+  opt_neutral:'Neutral', opt_alert:'Alert / observing', opt_subdued:'Subdued / inward',
+  opt_intense:'Intense / focused', opt_open:'Open / receptive',
+  opt_performing:'Performing / singing', opt_joy:'Joy / elated', opt_defiant:'Defiant / confident',
+  // MOUTH OPTIONS
+  opt_mouth_neutral:'Neutral rest — 2mm', opt_mouth_closed:'Closed / tight',
+  opt_mouth_mid:'Mid open — 4mm', opt_mouth_full:'Full open — 8mm',
+  // CAMERA SECTION
+  sec_camera:'Camera & Extras', lbl_camangle:'Camera angle',
+  lbl_camdist:'Shot distance', lbl_extra:'Extra notes', hint_extra:'props, weather, details',
+  ph_extra:'e.g. Hookah on table. Boombox playing. Pigeon on the parapet.',
+  // CAMERA ANGLE OPTIONS
+  opt_cam_eye:'Eye-level (standard)', opt_cam_road:'Road level — vehicle',
+  opt_cam_low:'Low — looking up', opt_cam_front:'Front-on portrait',
+  opt_cam_tq:'Three-quarter', opt_cam_profile:'Side profile',
+  // SHOT DISTANCE OPTIONS
+  opt_dist_full:'Full body', opt_dist_wide:'Wide — all + environment',
+  opt_dist_est:'Establishing — full set', opt_dist_med:'Medium (waist up)',
+  opt_dist_port:'Portrait (chest up)', opt_dist_cu:'Close-up (face)',
+  // SIGNATURES
+  lbl_sigs:'Signature codes',
+  lbl_sigs_hint:'— recurring visual elements unique to Yanissa World',
+  lbl_falling:'Falling object', hint_falling:'announces next location',
+  ph_falling:'e.g. a vinyl record, a plane ticket',
+  lbl_neg:'Include full negative prompt',
+  // BUTTONS
+  btn_generate_scene:'Generate Nano Banana prompt', btn_clear:'Clear',
+  btn_gen_seed:'Generate Seedance prompt', btn_copy_dialogue:'Copy dialogue script',
+  btn_copy:'Copy', btn_save:'Save', btn_clearall:'Clear all', btn_reset:'Reset all',
+  // SEEDANCE TAB
+  info_seedance:'Seedance animates FROM an approved Nano Banana still. Generate and approve that image first, then come here.',
+  sec_motion:'Motion Script',
+  warn_seedance:'Never include dialogue, lyrics, or song names — triggers audio hallucination.',
+  lbl_motion:'What happens — beat by beat', lbl_duration:'Duration',
+  ph_motion:"e.g.\n00:00-00:02 — All three still. Hookah smoke rising.\n00:02-00:04 — Yanissa jaw opens on 8 beats. Rita head turns slowly left.",
+  opt_6s:'6s (recommended)',
+  opt_3s:'3s', opt_4s:'4s', opt_8s:'8s',
+  // POST-PROD TAB
+  info_postprod:"The dialogue script never goes into Seedance. Write it here for your voice recording session or subtitle export.",
+  sec_dialogue:'Dialogue Script',
+  // OUTPUT LABELS
+  out_nb:'🍌 Nano Banana — ready to paste in Higgsfield', out_sd:'🎬 Seedance 2.0 — ready to paste',
+  // INSTR
+  instr_title_how:'How to use this in Higgsfield',
+  instr_sd1:'Input frame',
+  instr_sd1d:'In Higgsfield, select Seedance 2.0. Upload your approved Nano Banana image as the input frame.',
+  instr_sd1a:'Input: best result from Nano Banana — not a new generation',
+  instr_sd2:'Paste and generate',
+  instr_sd2d:'Paste this prompt. Generate 4 times. Select the cleanest 2. 6 seconds maximum per clip.',
+  instr_sd_v:'Verify',
+  instr_sd_vd:"Afro stays rigid — does not blow. Characters stay seated. Hair does not move independently. If it does — regenerate.",
+  // CHARACTER PANEL
+  char_task_new:'✦ New character', char_task_new_sub:'Build from zero → 4-step pipeline',
+  char_task_existing:'🎭 Existing character', char_task_existing_sub:'Sheet · Conversion · Animal',
+  how_new_title:'🔑 New character — 4-step pipeline',
+  how_new_body:'Follow these steps in order. Complete each step and approve the output before moving to the next. Do not skip steps — the reference sheets built in steps 2 and 4 are what lock identity in every future scene.',
+  // HISTORY
+  hist_empty:'Nothing saved yet.', hist_none:'No history',
+  // TRANSLATING
+  translating:'Translating inputs…', translation_done:'Translation done — generating…',
+},
+fr:{
+  // SIDEBAR
+  logo_sub:'v4.0 — Édition Équipe',
+  ns_gen:'Générer', ns_ref:'Référence',
+  nav_scene:'Scène', nav_veh:'Véhicule', nav_mv:'Clip musical',
+  nav_char:'Personnage', nav_wf:'Flux de travail', nav_hist:'Historique',
+  member_lbl:"Membre de l'équipe", ph_member:'Votre nom',
+  // SCENE BANNER
+  scene_banner_title:'📌 Placer des personnages existants dans une scène',
+  scene_banner_body:"Utilisez ce panneau lorsque vos personnages ont déjà des Soul IDs (distribution existante : Yanissa, Ashley, Rita, etc.) et que vous voulez les placer dans un nouveau lieu ou une nouvelle situation.<br><br><b>Vous créez un tout nouveau personnage ?</b> Allez dans le panneau <b>Personnage</b> → Pipeline nouveau personnage en premier.",
+  // LOCATION SECTION
+  sec_location:'Lieu & Cadre', lbl_location:'Lieu',
+  lbl_time:'Moment de la journée', lbl_aspect:'Format',
+  ph_location:"ex. Marché de Brixton, Atlantic Road. Fin d'après-midi. Disquaires, épicerie caribéenne, étals de marché, graffitis sur les volets.",
+  // TIME OPTIONS
+  opt_overcast:'Couvert / gris', opt_golden:'Heure dorée', opt_night:'Nuit',
+  opt_midday:'Plein midi', opt_dawn:'Aube / heure bleue', opt_dusk:'Crépuscule / heure magique',
+  // ASPECT OPTIONS
+  opt_169:'16:9 — Cinématique', opt_916:'9:16 — TikTok / Reels', opt_11:'1:1 — Instagram',
+  // CHARACTERS SECTION
+  sec_chars:'Personnages', lbl_arrange:'Disposition', hint_arrange:'qui est où',
+  ph_arrange:'ex. Yanissa à gauche avec un vinyle, Rita au centre contre le mur, Ashley à droite sur son téléphone',
+  ph_newchar:'ex. COACH_MARISOL_SOUL_ID — Cubano-Américaine, survêtement corail',
+  // ACTION SECTION
+  sec_action:'Action & Ambiance', lbl_action:'Que font-ils ?',
+  ph_action:"ex. Yanissa tient un vinyle à la lumière. Rita s'appuie contre le mur du disquaire, main droite dans la poche. Ashley fait défiler son téléphone, carnet sous le bras.",
+  lbl_emotion:'État émotionnel', lbl_mouth:'Bouche / solénoïde',
+  // EMOTION OPTIONS
+  opt_neutral:'Neutre', opt_alert:'Alerte / en observation', opt_subdued:'Retenu / intérieur',
+  opt_intense:'Intense / concentré', opt_open:'Ouvert / réceptif',
+  opt_performing:'En performance / chantant', opt_joy:'Joie / exalté', opt_defiant:'Défiant / confiant',
+  // MOUTH OPTIONS
+  opt_mouth_neutral:'Repos neutre — 2mm', opt_mouth_closed:'Fermée / serrée',
+  opt_mouth_mid:'Mi-ouvert — 4mm', opt_mouth_full:'Plein ouvert — 8mm',
+  // CAMERA SECTION
+  sec_camera:'Caméra & Extras', lbl_camangle:'Angle de caméra',
+  lbl_camdist:'Distance de plan', lbl_extra:'Notes supplémentaires', hint_extra:'accessoires, météo, détails',
+  ph_extra:'ex. Narguilé sur la table. Boombox en marche. Pigeon sur le parapet.',
+  // CAMERA ANGLE OPTIONS
+  opt_cam_eye:'Niveau des yeux (standard)', opt_cam_road:'Niveau de la route — véhicule',
+  opt_cam_low:'Bas — regard vers le haut', opt_cam_front:'Face portrait',
+  opt_cam_tq:'Trois-quarts', opt_cam_profile:'Profil',
+  // SHOT DISTANCE OPTIONS
+  opt_dist_full:'Corps entier', opt_dist_wide:'Large — tous + environnement',
+  opt_dist_est:'Plan d\'ensemble — décor complet', opt_dist_med:'Moyen (jusqu\'à la taille)',
+  opt_dist_port:'Portrait (jusqu\'à la poitrine)', opt_dist_cu:'Gros plan (visage)',
+  // SIGNATURES
+  lbl_sigs:'Codes signature',
+  lbl_sigs_hint:'— éléments visuels récurrents propres à Yanissa World',
+  lbl_falling:'Objet en chute', hint_falling:'annonce le prochain lieu',
+  ph_falling:"ex. un vinyle, un billet d'avion",
+  lbl_neg:'Inclure le prompt négatif complet',
+  // BUTTONS
+  btn_generate_scene:'Générer le prompt Nano Banana', btn_clear:'Effacer',
+  btn_gen_seed:'Générer le prompt Seedance', btn_copy_dialogue:'Copier le script de dialogue',
+  btn_copy:'Copier', btn_save:'Sauvegarder', btn_clearall:'Tout effacer', btn_reset:'Tout réinitialiser',
+  // SEEDANCE TAB
+  info_seedance:"Seedance anime À PARTIR d'un still Nano Banana approuvé. Générez et approuvez cette image d'abord, puis venez ici.",
+  sec_motion:'Script de mouvement',
+  warn_seedance:"N'incluez jamais de dialogue, paroles ou noms de chanson — déclenche une hallucination audio.",
+  lbl_motion:'Ce qui se passe — temps par temps', lbl_duration:'Durée',
+  ph_motion:"ex.\n00:00-00:02 — Toutes les trois immobiles. Fumée de narguilé.\n00:02-00:04 — Mâchoire de Yanissa s'ouvre sur 8 temps. Rita tourne la tête à gauche.",
+  opt_6s:'6s (recommandé)',
+  opt_3s:'3s', opt_4s:'4s', opt_8s:'8s',
+  // POST-PROD TAB
+  info_postprod:"Le script de dialogue ne va jamais dans Seedance. Rédigez-le ici pour votre session d'enregistrement vocal ou l'export sous-titres.",
+  sec_dialogue:'Script de dialogue',
+  // OUTPUT LABELS
+  out_nb:'🍌 Nano Banana — prêt à coller dans Higgsfield', out_sd:'🎬 Seedance 2.0 — prêt à coller',
+  // INSTR
+  instr_title_how:'Comment utiliser dans Higgsfield',
+  instr_sd1:'Image source',
+  instr_sd1d:'Dans Higgsfield, sélectionner Seedance 2.0. Uploader votre image Nano Banana approuvée comme image source.',
+  instr_sd1a:'Source : meilleur résultat Nano Banana — pas une nouvelle génération',
+  instr_sd2:'Coller et générer',
+  instr_sd2d:'Coller ce prompt. Générer 4 fois. Sélectionner les 2 plus propres. 6 secondes maximum par clip.',
+  instr_sd_v:'Vérifier',
+  instr_sd_vd:"L'afro reste rigide — ne bouge pas. Les personnages restent assis. Les cheveux ne bougent pas indépendamment. Si c'est le cas — régénérer.",
+  // CHARACTER PANEL
+  char_task_new:'✦ Nouveau personnage', char_task_new_sub:'Construire de zéro → pipeline en 4 étapes',
+  char_task_existing:'🎭 Personnage existant', char_task_existing_sub:'Fiche · Conversion · Animal',
+  how_new_title:'🔑 Nouveau personnage — pipeline en 4 étapes',
+  how_new_body:"Suivez ces étapes dans l'ordre. Complétez chaque étape et approuvez le résultat avant de passer à la suivante. Ne sautez pas d'étapes — les fiches de référence construites aux étapes 2 et 4 verrouillent l'identité dans chaque scène future.",
+  // HISTORY
+  hist_empty:'Rien de sauvegardé.', hist_none:"Pas d'historique",
+  // TRANSLATING
+  translating:'Traduction en cours…', translation_done:'Traduction terminée — génération…',
+}};
+const t=k=>STR[lang][k]||STR.en[k]||k;
+
+// ═══════════════════════════════════════════════════════════
+// MASTER BLOCKS — never shown to user, always injected into every prompt
+// Updated from all testing phase findings — notes 1-37
+// ═══════════════════════════════════════════════════════════
+
+const STYLE_ANCHOR=`Hand-built physical miniature set at 1:6 scale constructed from real physical materials: balsa wood, fibreglass shell, foam core, plastic card, acrylic sheet, wire, painted resin, epoxy resin, textured card. Every surface hand-painted by hand. Paint brushstroke direction visible on flat surfaces under raking light. NOT CGI. NOT 3D rendered. NOT photography. NOT animation software output. A physical object built and painted by hand, lit under studio tungsten lights. Deep focus throughout — no bokeh anywhere in the image.`;
+
+const PUPPET_SPEC=`PUPPET CONSTRUCTION — EVERY FIGURE IN THIS SCENE:
+Every human figure — main characters and background figures — is built identically:
+
+SKIN: hollow fibreglass shell hand-painted with flat resin. Surface looks like painted ceramic or painted plaster. Completely non-organic. No pores. No subsurface scattering. No skin warmth. No soft tissue quality. One single sharp specular hotspot on the forehead only. Not Pixar. Not Aardman. Not realistic human. Painted fibreglass — flat, matte, fixed.
+
+HAIR: one single rigid sculpted mass — moulded resin or carved painted wood. Zero strand separation. Zero flyaways. Zero movement. Zero softness. One specular highlight line across the mass. Solid fixed painted shape.
+
+HEAD: 4.5 to 5 times head-height tall. Head dramatically oversized. NOT 7-head realistic proportion.
+
+BODY: cylindrical torso — no waist narrowing, no hip curve. Simplified cylindrical arms and legs.
+
+JOINT RINGS: visible external connector rings at both wrists on every figure. Painted resin rings. Always visible. Never hidden. Never missing.
+
+EYES: large painted glass — fixed forward. One specular catchlight. No moisture. No corneal depth. No iris texture.
+
+MOUTH: lower lip at mechanical rest. Binary — closed or slightly dropped. No smile. No teeth. No expression.`;
+
+const ARCH_BLOCK=`ARCHITECTURE AND SET MATERIALS:
+Hand-built facades from balsa wood, foam core, painted card, acrylic sheet. Individual bricks hand-scribed or applied as textured card. Mortar joints: dark wash pressed into every joint. Raised brick faces: pale dry-brush highlight. London stock brick: buff-yellow painted surface. Render facades: flat painted plaster surface, brushstroke direction visible. Window frames: white painted balsa strip. Glazing: clear acrylic perspex sheet, slightly blue-tinted, visible straight edge seam — hand-fitted. Cornices, sills: white painted resin or balsa strips. Hand-painted shadow line below each cornice.
+
+Weathering on ALL exterior surfaces: dry-brush highlights on raised edges, dark wash in recesses, grime at building bases, soot on upper floors, water stain streaks from window sills, chipped paint at corners, rust at metal fixings. Every building shows the passage of time.
+
+FORCED PERSPECTIVE: background elements 15-20% smaller per step. Buildings painted progressively flatter on matte backdrop as they recede. Street converges to a painted vanishing point.`;
+
+const SKY_BLOCK=`SKY:
+Hand-painted matte backdrop — London overcast.
+Flat grey-blue base colour. White painted cloud forms over the top.
+Clouds simplified and slightly naive — the hand of the painter visible.
+Sky visible in top 25% of frame only.
+Slight visible horizon join where backdrop meets the farthest set elements — authentic and correct.
+No dramatic sky. No sunbeams. No photographic clouds. No HDRI. No digital sky replacement.`;
+
+const SCALE_BLOCK=`SCALE RELATIONSHIPS — CRITICAL:
+Standing puppet character = 1 unit reference height.
+Front door height: 1.4 units. Ground floor ceiling: 2.0 units.
+Full 2-storey building: 4 units — towers over characters.
+Full 4-storey building: 8 units. Street lamp: 1.4 units.
+Parapet wall (rooftop): 1.8 units — taller than standing characters.
+Car door height: 0.35 units. Market stall table: 0.4 units. Chair seat: 0.25 units.`;
+
+const NEG=`NEGATIVE PROMPT:
+CGI render. 3D render. Unreal Engine. Keyshot. Blender. Real street photography. Real sky photography. HDRI sky. Photographic clouds. Bokeh or depth of field blur anywhere. Realistic human skin with pores or subsurface scattering on any figure. Soft hair with individual strands or flyaways on any figure. Realistic human proportions — 7 heads tall. Waist taper. Hip curve. Missing wrist joint rings on any figure. Pixar style. Aardman clay aesthetic. Anime. Cartoon. Perfectly uniform surfaces with zero weathering. CGI environment. Seamless digital sky. High camera angle looking down. Bird's eye view.`;
+
+const NEG_YANISSA=`Brown skin on Yanissa. Warm skin tone on Yanissa. Dark skin on Yanissa. Any skin tone warmer than cream-white on Yanissa.`;
+
+const IDENTITY_LOCK=`IDENTITY LOCK — MANDATORY:
+Every character in this scene must remain identical to their reference images across every frame and every angle.
+Same face structure. Same skin tone. Same hair colour, shape, and rigidity. Same proportions. Same costume. Same joint rings.
+Zero identity drift. Zero facial variation between frames. Zero hair movement or colour shift.
+If any figure drifts from the master reference — reject and regenerate.`;
+
+const YANISSA_SKIN=`YANISSA SKIN — CRITICAL:
+Skin: uniform pale cream-white — same tone as unbleached white paper. Zero melanin expression. No warmth. No undertone. No variation. Scattered light freckles painted on flat resin surface. Flat painted fibreglass resin surface.
+Facial features: West African facial structure — broad nose, full lips, strong jaw.
+Eyes: large almond-shaped, deep blue — painted glass, one specular catchlight. No iris texture. No corneal depth.
+Hair: large rounded cream-blonde afro — pale cream colour, same family as skin tone. Not yellow. Not golden. Not white. Cream. Single rigid sculpted mass.`;
+
+const SEEDANCE_LOCKS=`Animate FROM this image exactly. Do not change anything. Do not regenerate the scene. Work from the existing frame only.
+
+HAIR LOCK — ALL CHARACTERS:
+All hair on all characters completely rigid throughout. Zero movement. Zero bounce. Zero wind effect. Zero physics.
+The large cream-blonde afro does NOT move independently. Does NOT blow. Does NOT separate. Does NOT sway.
+Solid fixed object — moves only when the head moves as one rigid unit.
+All other hair: same rule. Rigid. Fixed. Does not react to speed, motion, or wind.
+
+SKIN LOCK: flat painted ceramic surface throughout. No deformation. No colour change. No micro-expressions.
+CLOTHING LOCK: all garments rigid painted surfaces. No fabric simulation. No cloth physics. No billowing. No tearing.
+JOINT RINGS: fixed decorative accessories. Always visible. Do not distort surrounding material.
+NO AUDIO GENERATION — silent output only.`;
+
+// ── CHARACTER BLOCKS ──
+const CHARS={
+yanissa:`CHARACTER — LEFT FIGURE (Soul ID: YANISSA_SOUL_ID):
+${YANISSA_SKIN}
+Costume: forest green Adidas zip-up track jacket (three white stripes on sleeves, white Trefoil on chest), black turtleneck at collar, black Adidas track trousers (white side stripe), white Adidas Superstar trainers.
+Wrist joint rings: cream-white connector rings. Knee joint rings: black connector discs.
+Expression: neutral, inward. Mouth at solenoid neutral rest.`,
+
+ashley:`CHARACTER — CENTRE FIGURE (Soul ID: ASHLEY_SOUL_ID):
+Skin: warm medium pink-beige flat painted fibreglass resin — no pores, no subsurface scattering.
+Hair: auburn-copper-red, straight, SHOULDER-LENGTH MAXIMUM — single rigid sculpted mass, one specular line along top.
+Glasses: black rectangular frame, thick temples — FIXED to face, ALWAYS present.
+Eyes: green-hazel, painted glass. Wrist joint rings: prominent warm brown-red resin rings. Red string bracelet on left wrist above ring. Knee joint rings visible.
+Costume: white Brasil number 8 jersey (yellow BRASIL text, green flag crest), black Adidas shorts, white socks green stripe, white Adidas Superstar trainers. Silver chain necklace.`,
+
+rita:`CHARACTER — RIGHT FIGURE (Soul ID: RITA_SOUL_ID):
+Skin: warm olive-medium flat painted fibreglass resin — no pores, no subsurface scattering.
+Hair: dark brown-black, straight, centre-parted, falls past shoulders — single rigid high-gloss mass.
+Eyes: large almond-shaped dark brown — painted glass. Wrist joint rings: warm brown-tan connector rings. Knee joint rings visible.
+Costume: green Mexico Adidas jersey (FMF crest, white trim), grey Adidas sweatpants (white stripe), white trainers. Gold Cuban-link chain, pearl rosary with gold crucifix, large gold hoop earrings. RIGHT HAND IN POCKET — left arm at side.`,
+
+beats:`CHARACTER — BEATS THE CAT (Soul ID: BEATS_SOUL_ID):
+Rita's cat. British Shorthair. Ginger. Permanently grumpy.
+Body: hollow resin shell, compact and dense — British Shorthair stocky round form.
+Fur: hand-painted brushstrokes of ginger and darker ginger on flat resin surface. NOT realistic fur. Short directional brushstrokes only. Like a hand-painted ceramic cat figurine.
+Face: flat painted resin mask. Heavy painted brow line — permanent grumpy expression. Downturned mouth — fixed, cannot change. Heavy jowls. Pink painted nose. Wire whiskers.
+Eyes: round amber-yellow painted glass. Heavy brow creates permanent scowl.
+Ankle joint rings: visible external connector rings at all four ankles — same rings as human characters' wrists.
+Sitting upright. Front paws together. Tail wrapped around front paws.
+Size: 0.4 units tall when sitting.`,
+
+grandmino:`CHARACTER — GRAND MINO (never fully revealed season 1):
+Red bear-ear balaclava. Black leather biker jacket. Gold signet ring on right hand.
+Only: shadow on wall, reflection in glass, silhouette in crowd, hand with gold ring, or red balaclava at edge of frame.
+Same puppet construction — flat painted resin, oversized head, joint rings visible on the hand.`,
+
+gadget:`CHARACTER — GADGET (Soul ID: GADGET_SOUL_ID):
+French Parisian influencer. Pink hoodie. White jeans. Gold chain.
+Same puppet construction — flat painted resin, oversized head 4.5 to 5 heads tall, visible wrist joint rings.`};
+
+// ── MAPS ──
+const TIMEMAP={
+overcast:'LIGHTING: cold diffused overcast. Cool 5500K. Soft directional from upper-left. No warmth.',
+golden:'LIGHTING: strong warm key from upper-left at 30°. Golden hour. Long cast shadows. Warm 3000K.',
+night:'LIGHTING: multiple practical sources. High contrast. Deep shadow pools. Warm practicals against cool background.',
+midday:'LIGHTING: hard key from above-left. Short crisp cast shadows. Neutral 4500K.',
+dawn:'LIGHTING: cool blue pre-dawn ambient. Soft key from horizon. No warmth yet.',
+dusk:'LIGHTING: warm magenta-amber from horizon. Long raking shadows. Magic hour quality.'};
+
+const CAMMAP={
+eye_level:'Camera at puppet eye-level (0.5 units height), straight-on, 85mm equivalent, deep focus.',
+road_level:'Camera at road surface level — lens at tarmac height, looking very slightly upward. The underside of the car is almost at camera level. Buildings stretch dramatically upward.',
+low:'Camera below puppet eye-level, angled 10-15 upward, 85mm equivalent. Architecture looms into upper frame.',
+front_on:'Camera perfectly centred front-on, puppet eye-level, 85mm equivalent, deep focus.',
+three_quarter:'Camera 45 to the front, puppet eye-level, 85mm equivalent, deep focus.',
+profile:'Camera 90 — pure side profile, puppet eye-level, 85mm equivalent.',
+over_shoulder:'Camera over one character shoulder, 50mm equivalent, deep focus.'};
+
+const DISTMAP={
+full_body:'Shot distance: full body — head to toe.',
+wide:'Shot distance: wide — all characters and significant environment.',
+establishing:'Shot distance: establishing — full miniature set revealed. Characters appear small.',
+medium:'Shot distance: medium — waist up.',
+portrait:'Shot distance: portrait — chest up.',
+close_up:'Shot distance: close-up — face fills frame.'};
+
+const EMOTMAP={
+neutral:'EMOTIONAL STATE: Neutral baseline. Face front, no tilt. Mouth at solenoid rest — 2mm gap.',
+alert:'EMOTIONAL STATE: Alert / observing. Head 5 to side. Mouth closed tight.',
+subdued:'EMOTIONAL STATE: Subdued / inward. Head 8 downward. Mouth closed.',
+intense:'EMOTIONAL STATE: Intense / focused. Head perfectly square. Mouth closed tight.',
+open:'EMOTIONAL STATE: Open / receptive. Head 5 upward. Solenoid mouth 4mm mid-drop.',
+performing:'EMOTIONAL STATE: Performing / singing. Head 8 upward. Solenoid mouth full 8mm drop — binary mechanical open.',
+joy:'EMOTIONAL STATE: Joy / elated. Head back 10. Solenoid mouth full 8mm open.',
+defiant:'EMOTIONAL STATE: Defiant / confident. Head perfectly square. Mouth closed tight.',
+melancholy:'EMOTIONAL STATE: Melancholy. Head 10 down, 5 to side. Mouth closed.'};
+
+const MOUTHMAP={
+neutral:'Solenoid mouth: neutral rest — 2mm gap.',
+closed:'Solenoid mouth: fully closed.',
+mid:'Solenoid mouth: mid-position — 4mm lower lip drop.',
+full:'Solenoid mouth: maximum lower lip drop — 8mm. Binary open — lower lip only, upper lip fixed.'};
+
+const PLATMAP={'16:9':'ASPECT RATIO: 16:9 horizontal — cinematic.','9:16':'ASPECT RATIO: 9:16 vertical — TikTok / Reels.','1:1':'ASPECT RATIO: 1:1 square — Instagram.'};
+
+const SIGMAP={
+tableau:'SIGNATURE VISUAL — TABLEAU PLAN: Three girls frozen in frontal display — perfectly still, symmetrical, like mannequins in a vitrine. Eyes forward.',
+'4thwall':'SIGNATURE VISUAL — 4TH WALL BREAK: One or more characters look directly into the camera lens.',
+falling:'SIGNATURE VISUAL — FALLING OBJECT: Object falls in slow motion at scene end, announcing next location.',
+mino_shadow:'SIGNATURE VISUAL — GRAND MINO PRESENCE: Shadow on wall, reflection in glass, silhouette in crowd, or single element (red bear-ear balaclava, hand with gold ring). NEVER full figure.',
+'16mm':'VISUAL TREATMENT — 16MM FILM GRAIN: Authentic 16mm grain. Slight halation at light sources. Warm film stock. Signals: flashback, dream, memory.',
+miniature:'SIGNATURE VISUAL — MINIATURE WIDE PLAN: Wide shot fully revealing miniature set. Camera far back — tiny puppet figures within full maquette. Hand-painted sky backdrop visible.'};
+
+// ── SCENE GENERATOR ──
+function generateScene(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value.trim():'';}
+  const loc=v('s-loc'),action=v('s-action');
+  if(!loc){alert('Location required');return;}
+  if(!action){alert('Action required');return;}
+  if(selChars.size===0){alert('Select at least one character');return;}
+
+  const time=v('s-time')||'overcast',aspect=v('s-aspect')||'16:9';
+  const angle=v('s-camangle')||'eye_level',dist=v('s-camdist')||'full_body';
+  const emotion=v('s-emotion')||'neutral',mouth=v('s-mouth')||'neutral';
+  const extra=v('s-extra'),arrange=v('s-arrange'),motion=v('s-motion'),postprod=v('s-postprod'),duration=v('s-duration')||'6s';
+
+  // NANO BANANA
+  let nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters]\n';
+  if(selChars.has('rita'))nb+='\nVEHICLE REFERENCE (if car in scene): [ATTACH: RITA_MINI_SOUL_ID.png]\n';
+  nb+='\n'+IDENTITY_LOCK+'\n\n'+STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n'+ARCH_BLOCK+'\n\n'+SCALE_BLOCK+'\n\n';
+  ['yanissa','ashley','rita','beats','grandmino','gadget'].forEach(c=>{if(selChars.has(c))nb+=CHARS[c]+'\n\n';});
+  const nc=v('s-newchar');
+  if(selChars.has('new')&&nc)nb+='CHARACTER — NEW: '+nc+'\n\n';
+  if(arrange)nb+='CHARACTER ARRANGEMENT:\n'+arrange+'\n\n';
+  nb+='LOCATION:\n'+loc+'\n\n'+SKY_BLOCK+'\n\n';
+  if(TIMEMAP[time])nb+=TIMEMAP[time]+'\n\n';
+  nb+='SCENE ACTION:\n'+action+'\n\n';
+  if(extra)nb+='ADDITIONAL DETAILS:\n'+extra+'\n\n';
+  if(emotion&&EMOTMAP[emotion])nb+=EMOTMAP[emotion]+'\n';
+  if(mouth&&MOUTHMAP[mouth])nb+=MOUTHMAP[mouth]+'\n\n';
+  selSigs.forEach(s=>{
+    if(SIGMAP[s]){let sig=SIGMAP[s];if(s==='falling'){const fo=v('s-falling');if(fo)sig=sig.replace('Object falls',fo+' falls');}nb+=sig+'\n\n';}
+  });
+  nb+=(CAMMAP[angle]||'')+'\n'+(DISTMAP[dist]||'')+'\n'+(PLATMAP[aspect]||'')+'\n\n';
+  if(negOn){nb+=NEG;if(selChars.has('yanissa'))nb+='\n'+NEG_YANISSA;}
+
+  // SEEDANCE
+  let sd=SEEDANCE_LOCKS+'\n\n';
+  sd+=motion?'MOTION SCRIPT:\n'+motion+'\n\n':'MOTION: Characters hold positions with minimal puppet presence. No dramatic movement. Hold naturally until cut.\n\n';
+  sd+=(CAMMAP[angle]||'')+'\n'+(PLATMAP[aspect]||'')+'\nDuration: '+duration+'.';
+
+  // INSTRUCTIONS FR
+  const instr=buildSceneInstr();
+
+  document.getElementById('scene-txt-0').textContent=nb.trim();
+  document.getElementById('scene-txt-1').textContent=sd.trim();
+  document.getElementById('scene-txt-2').textContent=postprod||'[No post-production script entered]';
+  document.getElementById('scene-txt-3').innerHTML=instr;
+  showSceneOutput(sceneModeIdx);
+  var box=document.getElementById('scene-out-box');
+  if(box)box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  
+}
+
+function buildSceneInstr(){
+  const hasY=selChars.has('yanissa'),hasR=selChars.has('rita');
+  return `<div class="instr-step"><div class="sn">1</div><div class="sb2">
+    <div class="st">Etape 1 — Nano Banana : image de production</div>
+    <div class="sd">Ouvrir Higgsfield. Activer Nano Banana Premium. Activer les profils Soul ID.</div>
+    <div class="sa">Attacher : image maitre des 3 personnages Yanissa World${hasY?'\nATTENTION Yanissa : verifier peau creme-blanche (ton papier non blanchi)':''}${hasR?'\nSi voiture visible : attacher RITA_MINI_SOUL_ID.png':''}</div>
+    <div class="sd" style="margin-top:5px">Generer 4 fois. Choisir la meilleure image. Verifier les points ci-dessous.</div>
+  </div></div>
+  <div class="instr-step"><div class="sn" style="background:var(--am)">V</div><div class="sb2">
+    <div class="st">Verification Nano Banana</div>
+    <div class="sd">
+      Anneaux articulaires visibles aux poignets de TOUS les personnages<br>
+      Tetes surdimensionnees — ratio 4.5 a 5 tetes<br>
+      Peau plate peinte — PAS de texture organique<br>
+      Cheveux = masse rigide sculptee — PAS de meches<br>
+      ${hasY?'Yanissa : peau creme-blanche — PAS brune<br>':''}Ciel = toile de fond peinte (25% du cadre max)<br>
+      Decor = set miniature physique — PAS de rendu CGI
+    </div>
+  </div></div>
+  <div class="instr-step"><div class="sn" style="background:var(--bl)">2</div><div class="sb2">
+    <div class="st">Etape 2 — Seedance 2.0 : animation</div>
+    <div class="sd">Dans Higgsfield, passer a Seedance 2.0. Coller le prompt Seedance.</div>
+    <div class="sa">Image d'entree : meilleur resultat de l'Etape 1
+Seedance anime A PARTIR de cette image — ne pas regenerer la scene</div>
+    <div class="sd" style="margin-top:5px">Generer 4 fois. Choisir les meilleurs 2. Duree recommandee : 3-6 secondes par clip.</div>
+  </div></div>
+  <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--pu)">3</div><div class="sb2">
+    <div class="st">Etape 3 — Post-production</div>
+    <div class="sd">Utiliser le script post-production (onglet Post-prod script) pour la session d'enregistrement vocal. Ce script ne va JAMAIS dans Seedance.</div>
+  </div></div>`;
+}
+
+// ── VEHICLE GENERATOR ──
+function generateVehicle(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value.trim():'';}
+  const veh=v('v-veh')||'ritas_mini',shot=v('v-shot')||'exterior_side';
+  const loc=v('v-loc'),time=v('v-time')||'overcast',aspect=v('v-aspect')||'16:9';
+  const driver=v('v-driver')||'rita',passenger=v('v-passenger')||'yanissa',rear=v('v-rear')||'ashley';
+  const seedExtra=v('v-seed-extra'),duration=v('v-duration')||'6s';
+
+  const VDESC={
+ritas_mini:`RITA'S MINI COOPER F67 — Soul ID: RITA_MINI_SOUL_ID.png:
+UK RIGHT-HAND DRIVE. Steering wheel on the RIGHT side. Driver on the RIGHT. Passenger on the LEFT. Do not mirror or reverse.
+Body: graphite grey matte — flat painted surface like grey primer with one thin varnish coat. NOT metallic. ONE narrow specular line along bonnet centre ridge only. No other reflections.
+TWO parallel Adidas green racing stripes on bonnet — both clearly visible. Vivid Adidas green.
+Green mirror caps. Green brake calipers. BPM 140 plate — must read exactly BPM 140.
+Virgin de Guadalupe card and pearl rosary hanging from rear view mirror.
+Convertible top fully open. Gold MINI bonnet badge. Lowered suspension.`,
+taxi:'VEHICLE: London black cab. 1970s style. UK right-hand drive. Hand-built miniature at 1:6 scale. Flat black painted body. Chrome bumper: painted silver resin.',
+bus:'VEHICLE: London red double-decker bus. Classic Routemaster style. UK right-hand drive. Hand-built miniature at 1:6 scale. Flat red painted body.'};
+
+  const CDESC={
+rita:'dark brown-black ponytail, green Mexico football jersey, grey sweatpants, gold Cuban chain, gold hoops. NO glasses. Both hands on steering wheel.',
+yanissa:'large cream-blonde afro (single rigid sculpted mass), pale cream-white skin (unbleached white paper tone — zero warmth), green Adidas zip-up track jacket. NO glasses. Wrist joint rings: cream-white.',
+ashley:'auburn-red straight hair shoulder-length, BLACK RECTANGULAR GLASSES — only this character wears glasses. White Brasil number 8 jersey, black shorts. Wrist joint rings: brown-red.'};
+
+  let nb='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters]\n';
+  nb+='REFERENCE IMAGE 2: [ATTACH: RITA_MINI_SOUL_ID.png — Rita\'s Mini Cooper]\n\n';
+  nb+=STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n';
+  nb+=`CRITICAL — CHARACTER STYLE:
+Every character must look exactly like the figures in REFERENCE IMAGE 1.
+Same flat painted ceramic skin. Same rigid sculpted hair — solid mass, no strands.
+Same oversized head (4.5 to 5 heads tall). Same painted glass eyes. Same visible wrist joint rings.
+If characters look like realistic humans or CGI — this is WRONG.\n\n`;
+  nb+=(VDESC[veh]||v('v-new-desc'))+'\n\n';
+
+  if(loc){
+    nb+=ARCH_BLOCK+'\n\n'+SCALE_BLOCK+'\n\n';
+    nb+=`CAMERA — ROAD SURFACE LEVEL:
+Camera lens at road surface level — almost scraping the tarmac.
+Looking very slightly upward from ground level. The car fills the lower half of the frame.
+Buildings stretch dramatically upward above the car. NOT eye level.
+
+FORCED PERSPECTIVE:
+Buildings directly behind car: full scale. Further away: 20% smaller per step.
+Road markings and lamp posts converge toward vanishing point.\n\n`;
+    nb+='STREET SCENE:\n'+loc+'\n\n'+SKY_BLOCK+'\n\n';
+    if(TIMEMAP[time])nb+=TIMEMAP[time]+'\n\n';
+  }
+
+  nb+='CHARACTERS INSIDE — UK RIGHT-HAND DRIVE:\n';
+  nb+='IN THE FRONT:\n';
+  nb+='Front passenger (LEFT side, no steering wheel): '+(CDESC[passenger]||passenger)+'\n';
+  nb+='Driver (RIGHT side, hands on steering wheel): '+(CDESC[driver]||driver)+'\n';
+  if(rear&&rear!=='none')nb+='IN THE BACK:\nRear centre: '+(CDESC[rear]||rear)+'\n';
+  nb+='\n'+(PLATMAP[aspect]||'')+'\n\n'+NEG+'\n'+NEG_YANISSA;
+  nb+='\nOnly one green stripe — must be TWO parallel green stripes. Cream-blonde afro in rear seat — must be in front passenger seat.';
+
+  // SEEDANCE
+  const motDesc={
+tracking:`The background slides continuously from right to left.
+The car stays perfectly centred and the same size in frame throughout. Camera tracks with the car.
+The sky at the top of the frame stays completely static — does not move.
+Road surface moves beneath the car toward the camera.
+Tyres rotate forward smoothly. Very slight suspension sway — 1 to 2mm only.
+
+BACKGROUND DURING TRACKING:
+Buildings are hand-built miniature facades — balsa, foam core, painted card. Hand-painted. NOT photorealistic.
+London stock brick — buff-yellow, hand-painted, dark mortar joints.
+Buildings so tall their rooflines are NOT visible — cut off above frame top.`,
+approach:`The car drives toward the camera in a straight line.
+Front of car faces camera throughout — bonnet, green stripes, headlights, plate — grows larger as car approaches.
+NO rotation. NO spinning. NO reorienting. NO turning. Car faces camera from the first frame.
+Camera completely static — locked. Does not move.
+Tyres rotate forward smoothly. Very slight suspension sway — 1 to 2mm only.`,
+static:'The car remains stationary. Characters have subtle puppet presence reactions only. No vehicle movement. No camera movement. Static locked scene.'};
+
+  let sd=SEEDANCE_LOCKS+'\n\nVEHICLE MOTION:\n'+(motDesc[vMotMode]||motDesc.tracking)+'\n\n';
+  if(seedExtra)sd+='ADDITIONAL MOTION:\n'+seedExtra+'\n\n';
+  sd+='No rotation or spinning. Afro stays rigid — does not blow at any point. Characters stay seated. Smooth motion only.\n\nDuration: '+duration+'. '+(PLATMAP[aspect]||'');
+
+  const instrV=`<div class="instr-step"><div class="sn">1</div><div class="sb2">
+    <div class="st">Etape 1 — Nano Banana : still de la scene vehicule</div>
+    <div class="sd">Ouvrir Higgsfield Nano Banana Premium. Activer les Soul IDs.</div>
+    <div class="sa">Attacher : image maitre des 3 personnages\nAttacher : RITA_MINI_SOUL_ID.png</div>
+    <div class="sd" style="margin-top:5px">Generer 4 fois. Verifier : proportions batiments, peau Yanissa creme-blanche, deux bandes vertes, BPM 140 lisible.</div>
+  </div></div>
+  <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--bl)">2</div><div class="sb2">
+    <div class="st">Etape 2 — Seedance : animer depuis le still approuve</div>
+    <div class="sd">Passer a Seedance 2.0. Coller le prompt Seedance.</div>
+    <div class="sa">Image d'entree : meilleur resultat de l'Etape 1
+NE PAS regenerer la scene — Seedance anime DEPUIS l'image</div>
+    <div class="sd" style="margin-top:5px">Generer 4 fois. Verifier : afro rigide, batiments style miniature, BPM 140 lisible tout au long du clip.</div>
+  </div></div>`;
+
+  document.getElementById('vehicle-txt-0').textContent=nb.trim();
+  document.getElementById('vehicle-txt-1').textContent=sd.trim();
+  document.getElementById('vehicle-txt-2').innerHTML=instrV;
+  showVehicleOutput(vehicleModeIdx);
+  var box=document.getElementById('vehicle-out-box');
+  if(box)box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  
+}
+
+// ── MUSIC VIDEO GENERATOR ──
+function generateMV(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value.trim():'';}
+  const bpm=v('mv-bpm')||'140',title=v('mv-title')||'Track',duration=v('mv-duration')||'6s';
+  const lead=v('mv-lead')||'left',adl1=v('mv-adlib1')||'centre',adl1s=v('mv-adlib1-style')||'staccato';
+  const adl2=v('mv-adlib2')||'right',adl2s=v('mv-adlib2-style')||'deliberate';
+  const lb=v('mv-lead-beats'),a1b=v('mv-adlib1-beats'),a2b=v('mv-adlib2-beats'),postprod=v('mv-postprod');
+
+  const posName={left:'LEFT character (cream-blonde afro)',centre:'CENTRE character (auburn hair, glasses)',right:'RIGHT character (dark brown ponytail)'};
+  const posOther=pos=>Object.keys(posName).filter(p=>p!==pos).map(p=>posName[p]).join(' and ');
+
+  const buildPass=(num,pos,beats,style,label)=>{
+    let p=`SEEDANCE 2.0 — MOTION ONLY — PASS ${num} OF 3: ${label}\nSilent — audio added in post-production only. DO NOT generate audio.\n\n`;
+    p+=SEEDANCE_LOCKS+'\n\n';
+    p+=`MOUTH — ${posName[pos].toUpperCase()} ONLY:\n`;
+    p+='Lower jaw drops 8mm maximum. Binary open/close. Upper lip does NOT move. No phoneme shapes.\n';
+    p+=style==='staccato'?'Delivery: flat, punchy, staccato. Jaw snaps open fast and closes immediately.\n':'Delivery: deliberate, minimal. Each jaw beat is isolated — drops, holds, closes.\n';
+    p+=posOther(pos).split(' and ').map(s=>s.split('(')[0].trim()).join(' and ')+': mouths FULLY CLOSED throughout this entire pass. SEALED SHUT. Zero jaw movement.\n\n';
+    if(beats)p+='JAW BEATS:\n'+beats+'\n\n';
+    p+='BODY: all three characters completely still. No dancing. No choreography. Jaw movement is the ONLY animation this pass. Feet planted. Arms at sides.\n\n';
+    p+='CAMERA: static locked. No movement. Full body — all three in frame.\nASPECT RATIO: 9:16 vertical.\nDuration: '+duration+'.';
+    return p;
+  };
+
+  const p1=buildPass(1,lead,lb,'sustained','Lead vocal jaw beats');
+  const p2=buildPass(2,adl1,a1b,adl1s,'Ad-lib A jaw beats');
+  const p3=buildPass(3,adl2,a2b,adl2s,'Ad-lib B jaw beats');
+  const bi=(60/parseFloat(bpm)).toFixed(3);
+  const comp=`COMPOSITING GUIDE — ${title} — ${duration} CLIP\nThree-pass Seedance system — post-production assembly\n\nWHAT YOU HAVE AFTER THREE PASSES:\nPass 1 — Lead jaw only (${posName[lead].split('(')[0].trim()}) — others SEALED\nPass 2 — Ad-lib A jaw only (${posName[adl1].split('(')[0].trim()}) — others SEALED\nPass 3 — Ad-lib B jaw only (${posName[adl2].split('(')[0].trim()}) — others SEALED\n\nAll three passes use the identical input frame. All three are ${duration}, same camera, same backdrop.\n\nCOMPOSITING METHOD — FACE MASK:\nLayer stack (bottom to top):\n1. Pass 1 (lead) — base layer, full frame\n2. Pass 2 (ad-lib A) — masked to that character's face only\n3. Pass 3 (ad-lib B) — masked to that character's face only\n\nDraw around the active character's face and jaw area only. Since all three passes are identical except for jaw movement, masked faces sit perfectly over the base.\n\nAUDIO SYNC:\nImport the ${title} audio track after compositing.\nAlign jaw opens to syllable starts using the post-production script.\nBPM: ${bpm} — beat interval: ${bi}s`;
+
+  document.getElementById('mv-txt-0').textContent=p1;
+  document.getElementById('mv-txt-1').textContent=p2;
+  document.getElementById('mv-txt-2').textContent=p3;
+  document.getElementById('mv-txt-3').textContent=postprod||'[No post-production script entered]';
+  document.getElementById('mv-txt-4').textContent=comp;
+  const box=document.getElementById('mv-out-box');box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  
+}
+
+// ── CHARACTER SHEET GENERATOR ──
+function generateSheet(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value.trim():'';}
+  const char=v('sh-char')||'yanissa',view=v('sh-view')||'full';
+  const emotion=v('sh-emotion')||'none',costume=v('sh-costume')||'default';
+  const costumeTxt=v('sh-costume-txt'),customChar=v('sh-custom-char'),notes=v('sh-notes');
+
+  const viewMap={
+    full:'VIEW: Full body front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent, deep focus. Both wrist joint rings visible. Both knee joint rings visible.',
+    portrait:'VIEW: Portrait — head and shoulders. Camera at eye-level. Sharp focus on eyes. Top of hair to mid-chest.',
+    face:'VIEW: Extreme close-up — face only. Front-facing. Sharp focus on eyes. Face filling 80% of frame.',
+    tq:'VIEW: Full body three-quarter — camera 45 right of front. Eye-level. Head turned to face camera.',
+    back:'VIEW: Full body from behind. Eye-level. Deep focus.',
+    hands:'VIEW: Detail study — both hands at 3x scale + wrist joint ring and knee joint ring close-up.'};
+
+  let nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters]\n\n';
+  nb+=IDENTITY_LOCK+'\n\n';
+  nb+=STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n';
+  if(char==='custom'&&customChar)nb+='CHARACTER — '+customChar.toUpperCase()+'\nSame puppet construction as core characters — flat painted resin, 4.5 to 5 heads tall, visible wrist and knee joint rings.\n\n';
+  else nb+=(CHARS[char]||'')+'\n\n';
+  nb+=(viewMap[view]||'')+'\n\n';
+  if(emotion&&emotion!=='none'&&EMOTMAP[emotion])nb+=EMOTMAP[emotion]+'\n\n';
+  const cs=costume==='default'?'Master reference default.':costume==='kit'?'Alternative football kit — [SPECIFY WHICH KIT AND COLOUR].':costumeTxt||'[describe costume]';
+  nb+='Costume: '+cs+'\n\n';
+  if(notes)nb+='Additional notes: '+notes+'\n\n';
+  nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195). Soft diffused studio portrait lighting. Single clean specular hotspot on resin skin.\n\n';
+  nb+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, CGI, anime, cartoon, bokeh, lens flare.';
+  if(char==='yanissa')nb+='\n'+NEG_YANISSA;
+
+  const ihtml=lang==='fr'?`<div class="instr-step"><div class="sn">1</div><div class="sb2">
+    <div class="st">Nano Banana : image de fiche personnage</div>
+    <div class="sd">Ouvrir Higgsfield Nano Banana Premium. Activer le profil Soul ID du personnage.</div>
+    <div class="sa">Attacher : image maitre des 3 personnages Yanissa World</div>
+    <div class="sd" style="margin-top:5px">Generer 4-6 fois. Verifier : anneaux aux poignets, cheveux masse rigide, tete surdimensionnee, peau plate peinte.</div>
+  </div></div>
+  <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">V</div><div class="sb2">
+    <div class="st">Verification fiche personnage</div>
+    <div class="sd">Anneaux articulaires visibles aux poignets<br>Cheveux : longueur, couleur, masse rigide conformes<br>Tete surdimensionnee (ratio 4.5-5)<br>Peau en resine peinte plate<br>${char==='yanissa'?'Yanissa : peau creme-blanche uniforme — PAS brune<br>':''}Ressemblance avec le profil Soul ID</div>
+  </div></div>`:`<div class="instr-step"><div class="sn">1</div><div class="sb2">
+    <div class="st">Nano Banana — character sheet image</div>
+    <div class="sd">Open Higgsfield Nano Banana Premium. Activate the character's Soul ID profile.</div>
+    <div class="sa">Attach: Yanissa World master reference image (3 puppet characters)</div>
+    <div class="sd" style="margin-top:5px">Generate 4–6 times. Verify: wrist joint rings visible, hair is a rigid mass, head oversized, skin flat painted.</div>
+  </div></div>
+  <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2">
+    <div class="st">Verify character sheet output</div>
+    <div class="sd">Joint rings visible at both wrists<br>Hair: correct length, colour, rigid mass — no strands<br>Head oversized (ratio 4.5–5)<br>Skin: flat painted resin surface<br>${char==='yanissa'?'Yanissa: uniform cream-white skin — NOT brown<br>':''}Resemblance to Soul ID reference</div>
+  </div></div>`;
+
+  document.getElementById('sheet-txt-0').textContent=nb.trim();
+  document.getElementById('sheet-txt-1').innerHTML=ihtml;
+  const box=document.getElementById('sheet-out-box');box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  
+}
+
+// ── CHAR TASK SWITCHER ──
+function setCharTask(task,el){
+  document.querySelectorAll('#char-mtabs .mtab').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('ctask-new').style.display=task==='new'?'block':'none';
+  document.getElementById('ctask-existing').style.display=task==='existing'?'block':'none';
+}
+
+// ── NEW CHARACTER PIPELINE ──
+function _v(id){const e=document.getElementById(id);return e?e.value.trim():'';}
+function _show(outId,txtId,txt){
+  const out=document.getElementById(outId);out.style.display='block';
+  document.getElementById(txtId).textContent=txt;
+  out.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function copyEl(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent||'');
+  btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);
+}
+
+function genNewFace(){
+  const sn=_v('np-soulname')||'NEW_CHARACTER_SOUL_ID';
+  const age=_v('np-age')||'young adult',skin=_v('np-skin')||'[skin tone]';
+  const eyes=_v('np-eyes')||'[eye colour]',hc=_v('np-hcolor')||'[hair colour]',hs=_v('np-hstyle')||'[hair style]';
+  const feat=_v('np-features');
+  let p='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR]\n\n';
+  p+=IDENTITY_LOCK+'\n\n';
+  p+=STYLE_ANCHOR+'\n\n';
+  p+=PUPPET_SPEC+'\n\n';
+  p+=`NEW CHARACTER — SOUL ID: ${sn.toUpperCase()}\n`;
+  p+=`Age / type: ${age}.\n`;
+  p+=`Skin: ${skin} — translate to flat painted fibreglass resin, same tone, zero pores, no subsurface scattering, no warmth. Surface like painted ceramic.\n`;
+  p+=`Hair: ${hc}, ${hs} — single rigid sculpted mass. Zero strand separation. One specular highlight line across mass. Does not move.\n`;
+  p+=`Eyes: ${eyes} — large painted glass. One specular catchlight. No iris texture. No moisture.\n`;
+  if(feat)p+=`Distinctive features: ${feat} — translated as fixed moulded puppet equivalents.\n`;
+  p+='\nARTICULATION JOINTS — MANDATORY:\nVisible external connector rings at BOTH wrists. Visible at BOTH knees.\n\n';
+  p+='PROPORTIONS: 4.5 to 5 head-heights total. Oversized head dominant. Cylindrical torso, no waist taper, no hip curve.\n\n';
+  p+='OUTPUT: Portrait — head and shoulders. Camera at puppet eye-level, 85mm equivalent, front-facing. Cool grey background (RGB 185,185,195). Soft diffused studio lighting. Single clean specular hotspot on forehead.\n\n';
+  p+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, realistic human proportions, 7-head-tall figure, waist taper, CGI, anime, cartoon, bokeh.';
+  _show('np-face-out','np-face-txt',p.trim());
+}
+
+function genFaceSheet(){
+  const sn=_v('np-soulname')||'NEW_CHARACTER_SOUL_ID';
+  let p='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR]\n';
+  p+='REFERENCE IMAGE 2: [ATTACH: approved Step 1 face output — IDENTITY ANCHOR]\n\n';
+  p+=IDENTITY_LOCK+'\n\n';
+  p+=STYLE_ANCHOR+'\n\n';
+  p+=`FACE REFERENCE SHEET — SOUL ID: ${sn.toUpperCase()}\n\n`;
+  p+=`STRICT IDENTITY LOCK: The subject must remain identical to Reference Image 2 across every angle. Same face structure. Same jawline. Same eyes. Same nose. Same lips. Same hair. Same skin tone. Zero identity drift between views.\n\n`;
+  p+=`LAYOUT: Professional character reference sheet. Clean 2×4 grid on a neutral cool grey background (RGB 185,185,195). Consistent sizing and spacing across all eight portraits.\n\n`;
+  p+=`ANGLES — 8 PORTRAITS:\n1. Full front view — straight-on\n2. Left 3/4 view\n3. Right 3/4 view\n4. Left side profile\n5. Right side profile\n6. Slight upward angle\n7. Slight downward angle\n8. Back of head — showing hair mass shape and rigidity\n\n`;
+  p+=`PUPPET SPEC — ALL ANGLES:\n${PUPPET_SPEC}\n\n`;
+  p+=`EXPRESSION: Neutral mechanical rest across all angles. No smiling. No variation. Same solenoid mouth position in every portrait.\n\n`;
+  p+=`LIGHTING: Soft neutral studio lighting, consistent across all eight frames. Cool grey background. No shadows. No variation in light between portraits.\n\n`;
+  p+=`CAMERA: 85mm equivalent, no distortion. Consistent focal distance across all angles. Head and upper shoulders visible in every frame.\n\n`;
+  p+=`NEGATIVE: Different face between angles, identity drift, different hair between views, realistic human skin, pores, subsurface scattering, individual hair strands, missing joint rings, realistic proportions, CGI, anime, bokeh, expression change between frames, inconsistent lighting.`;
+  _show('np-facesheet-out','np-facesheet-txt',p.trim());
+}
+
+function genNewBody(){
+  const sn=_v('np-soulname')||'NEW_CHARACTER_SOUL_ID';
+  const costume=_v('np-costume')||'[DESCRIBE COSTUME]';
+  const role=_v('np-role');
+  const skin=_v('np-skin')||'[skin tone]',hc=_v('np-hcolor')||'[hair colour]',hs=_v('np-hstyle')||'[hair style]';
+  let p='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR]\n';
+  p+='REFERENCE IMAGE 2: [ATTACH: approved Step 2 face reference sheet — IDENTITY ANCHOR]\n\n';
+  p+=IDENTITY_LOCK+'\n\n';
+  p+=STYLE_ANCHOR+'\n\n';
+  p+=PUPPET_SPEC+'\n\n';
+  p+=`CHARACTER BODY — SOUL ID: ${sn.toUpperCase()}\n\n`;
+  p+=`Skin: ${skin} — flat painted fibreglass resin, zero pores, no subsurface scattering.\n`;
+  p+=`Hair: ${hc}, ${hs} — single rigid sculpted mass. No strand separation. No movement.\n`;
+  if(role)p+=`Character role: ${role}\n`;
+  p+=`\nCOSTUME: ${costume}\n\n`;
+  p+=`ARTICULATION JOINTS — MANDATORY:\nVisible external connector rings at BOTH wrists. Visible connector discs at BOTH knees.\n\n`;
+  p+=`PROPORTIONS: 4.5 to 5 head-heights total. Oversized head. Cylindrical torso — no waist taper, no hip curve. Simplified cylindrical arms and legs.\n\n`;
+  p+=`OUTPUT: Full body, front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent. Deep focus. Cool grey background (RGB 185,185,195). Soft diffused studio lighting. Wrist and knee joint rings fully visible.\n\n`;
+  p+=`NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, 7-head-tall figure, waist taper, hip curve, CGI, anime, cartoon, bokeh, identity drift from reference sheet.`;
+  _show('np-body-out','np-body-txt',p.trim());
+}
+
+function genBodySheet(){
+  const sn=_v('np-soulname')||'NEW_CHARACTER_SOUL_ID';
+  const costume=_v('np-costume')||'[COSTUME]';
+  const skin=_v('np-skin')||'[skin tone]',hc=_v('np-hcolor')||'[hair colour]';
+  let p='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR]\n';
+  p+='REFERENCE IMAGE 2: [ATTACH: approved Step 2 face reference sheet — IDENTITY ANCHOR]\n';
+  p+='REFERENCE IMAGE 3: [ATTACH: approved Step 3 body output — BODY ANCHOR]\n\n';
+  p+=IDENTITY_LOCK+'\n\n';
+  p+=STYLE_ANCHOR+'\n\n';
+  p+=`BODY REFERENCE SHEET — SOUL ID: ${sn.toUpperCase()}\n\n`;
+  p+=`STRICT IDENTITY LOCK: Subject must remain identical to Reference Images 2 and 3 across every angle and pose. Same face. Same body proportions. Same skin tone. Same hair. Same costume. Zero variation between frames.\n\n`;
+  p+=`LAYOUT: Professional character body reference sheet. Clean 2×4 grid on neutral cool grey background (RGB 185,185,195). Consistent sizing and cropping across all eight poses.\n\n`;
+  p+=`POSES — 8 FRAMES:\n1. Front view — straight-on, arms at sides\n2. Left 3/4 body view\n3. Right 3/4 body view\n4. Left side profile\n5. Right side profile\n6. Back view — showing hair mass from behind\n7. Relaxed standing pose — natural weight shift\n8. Slight contrapposto — subtle hip shift\n\n`;
+  p+=`PUPPET SPEC — ALL POSES:\n${PUPPET_SPEC}\n\n`;
+  p+=`Skin: ${skin} — flat painted fibreglass resin. Hair: ${hc} — rigid sculpted mass.\n`;
+  p+=`Costume: ${costume} — same in every frame, no variation.\n\n`;
+  p+=`FRAMING: Consistent 3/4 body framing — head to mid-thigh in every frame. Face clearly visible for identity cross-reference. Uniform cropping across all eight poses.\n\n`;
+  p+=`LIGHTING: Soft neutral studio lighting, consistent across all eight frames. Same colour temperature, same intensity, no variation.\n\n`;
+  p+=`NEGATIVE: Different person between frames, identity drift, body shape change between angles, missing joint rings at wrists or knees, realistic human proportions, realistic skin, individual hair strands, wardrobe change between poses, hair styling change between angles, CGI, anime, bokeh, inconsistent lighting, dramatic shadows.`;
+  _show('np-bodysheet-out','np-bodysheet-txt',p.trim());
+}
+
+// ── PUPPET CONVERSION GENERATOR ──
+function generateConv(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value.trim():'';}
+  const face=v('cv-face')||'oval',eyes=v('cv-eyes')||'dark brown',skin=v('cv-skin')||'medium / olive';
+  const hc=v('cv-haircolor')||'black',hs=v('cv-hairstyle')||'medium straight',feat=v('cv-features');
+  const costume=v('cv-costume')||'[ASSIGN COSTUME]',sn=v('cv-soulname')||'NEW_SOUL_ID',ot=v('cv-output')||'portrait';
+
+  let p='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR]\n';
+  p+='REFERENCE IMAGE 2: [ATTACH: photograph of the person to convert — IDENTITY ANCHOR]\n\n';
+  p+=STYLE_ANCHOR+'\n\nPUPPET CONVERSION — SOUL ID: '+sn.toUpperCase()+'\n\n';
+  p+='DUAL REFERENCE SYSTEM:\nReference Image 1 = STYLE ANCHOR — construction technique, proportions, materials\nReference Image 2 = IDENTITY ANCHOR — face shape, features, skin tone\n\n';
+  p+='IDENTITY DESCRIPTION:\nFace shape: '+face+'. Eye colour: '+eyes+'.\nSkin tone: '+skin+' — translate to flat painted fibreglass resin, same tone, zero pores, no subsurface scattering.\nHair: '+hc+', '+hs+' — translate to single rigid sculpted mass, same colour, one specular highlight, NO strand separation.'+(feat?'\nDistinctive features: '+feat+' — translate as fixed moulded puppet equivalents.':'')+'\n\n';
+  p+='MATERIAL TRANSLATION:\nSkin: flat painted fibreglass resin, matching tone, zero pores/subsurface/translucency\nHair: single rigid sculpted mass, matching colour, one specular highlight, no strands\nEyes: painted glass, matching colour, single specular catchlight, no iris texture\nClothing: '+costume+'\n\nARTICULATION JOINTS — MANDATORY:\nVisible external connector rings at BOTH wrists. Visible at BOTH knees.\n\nPROPORTIONS:\n4.5 to 5 head-heights total. Oversized head dominant. Cylindrical torso, no waist taper.\n\n';
+  p+=ot==='portrait'?'OUTPUT: Portrait only — head and shoulders. Camera at eye-level, 85mm. Cool grey background (RGB 185,185,195). Soft diffused studio lighting.\nPURPOSE: Verify face likeness before running full body. If portrait resembles reference person — proceed to full body. If not — adjust and retry.\n\n':'OUTPUT: Full body, front-facing, straight-on. Camera at puppet eye-level, 85mm. Deep focus. Cool grey background (RGB 185,185,195). Soft diffused studio lighting.\n\n';
+  p+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, 7-head-tall figure, waist taper, CGI, anime, cartoon, bokeh, identity drift from reference photo, style drift from master reference.';
+
+  document.getElementById('conv-txt-0').textContent=p.trim();
+  const box=document.getElementById('conv-out-box');box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  
+}
+
+// ── ANIMAL SOUL ID GENERATOR ──
+function generateAnimal(){
+  const v=id=>{const e=document.getElementById(id);return e?e.value.trim():'';}
+  const type=v('an-type')||'cat',name=v('an-name')||'BEATS_SOUL_ID';
+  const breed=v('an-breed')||'British Shorthair',colour=v('an-colour')||'Ginger tabby';
+  const personality=v('an-personality')||'Permanently grumpy. Unimpressed.',acc=v('an-accessories');
+
+  let p='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters]\n';
+  p+='REFERENCE IMAGE 2: [ATTACH: reference photo of the animal — breed and colour reference only]\n\n';
+  p+=STYLE_ANCHOR+'\n\nSOUL ID: '+name.toUpperCase()+'\n';
+  p+='Animal type: '+type+'. Breed: '+breed+'. Colour: '+colour+'.\n\n';
+  p+=`CONSTRUCTION — SAME CRAFTSMAN AS THE PUPPET CHARACTERS:
+This ${type} is built by the same craftsman who built the three puppet characters in REFERENCE IMAGE 1. Same materials. Same construction technique. Same world.
+
+BODY SHELL: hollow resin or fibreglass shell — compact and dense in the ${breed} proportions.
+Sitting upright. Front paws together — symmetrical, formal. Tail wrapped around front paws or straight behind.
+
+SURFACE — FUR TEXTURE:
+NOT realistic fur. NOT individual hair strands. NOT soft fluffy texture.
+Fur suggested entirely through paint — short directional brushstrokes of ${colour.toLowerCase()} applied over the resin shell. Result: looks like a hand-painted ceramic ${type} figurine — painted plaster, not real fur.
+One clean specular hotspot on the back and top of the head.
+
+FACE: flat painted resin mask — same material quality as the puppet characters.
+Expression: ${personality} Expression is painted on — it is FIXED and cannot change.
+
+JOINT RINGS — MANDATORY:
+Visible external connector rings at all four ankles — same rings as the puppet characters' wrists.
+Small painted resin rings. Cream or pale bone colour. Every leg has a visible ankle ring. Always.
+
+EYES: large painted glass — same construction as puppet characters.
+Fixed expression. One specular catchlight per eye. No moisture. No depth.
+
+SIZE: 0.4 units tall when sitting — reaches a standing puppet character's knee.
+Head slightly oversized relative to body.
+${acc?'ACCESSORIES: '+acc+'\n':''}\n`;
+  p+='SHOT 1 — FRONT FACING: sitting upright, front paws together, facing camera. Full body visible. Camera at '+type+' eye level.\n';
+  p+='SHOT 2 — THREE QUARTER: same pose, camera 45 right. Both eyes visible. Ankle joint rings visible on all four legs.\n\n';
+  p+='Background: flat neutral grey seamless backdrop (RGB 185,185,195). Soft diffused studio lighting.\n\n';
+  p+='NEGATIVE: realistic '+type+' fur — individual strands, fluffy photographic texture. CGI '+type+'. Pixar animal. Realistic animal eyes with depth. Missing ankle joint rings on any leg. Cartoon '+type+'. Real '+type+' photography.';
+
+  document.getElementById('animal-txt-0').textContent=p.trim();
+  const box=document.getElementById('animal-out-box');box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  
+}
+
+// ── CHECKLIST ──
+const CL_PRE={
+en:['Master reference image (3 characters) ready to attach in Nano Banana','Soul ID profiles activated for each character in scene','Nano Banana Premium model selected (not standard)','Generation count set to 4','Aspect ratio set correctly','For vehicle scenes: RITA_MINI_SOUL_ID.png attached as 2nd reference'],
+fr:["Image de reference maitre (3 personnages) prete a attacher","Profils Soul ID actives pour chaque personnage","Modele Nano Banana Premium selectionne (pas standard)","Nombre de generations regle sur 4","Format d'image regle correctement","Pour scenes vehicule : RITA_MINI_SOUL_ID.png attachee comme 2e reference"]};
+const CL_POST={
+en:['Wrist joint rings visible on ALL figures in scene','All characters at correct puppet head proportion — 4.5 to 5 heads tall','Yanissa skin: uniform pale cream-white — not brown or warm','Ashley hair: auburn, shoulder-length MAX','Rita hair: dark brown-black ponytail','Sky: hand-painted backdrop — NOT photographic (25% of frame max)','Buildings and set: miniature physical quality — NOT CGI smooth','Buildings correctly larger than characters','Deep focus throughout — no bokeh anywhere','Bystanders (if present): match main character puppet style'],
+fr:['Anneaux articulaires visibles aux poignets de TOUS les personnages','Toutes les tetes surdimensionnees — ratio 4.5 a 5 tetes','Peau de Yanissa : creme-blanche uniforme — PAS brune','Cheveux Ashley : roux mi-long MAX','Cheveux Rita : brun fonce queue de cheval','Ciel : toile de fond peinte — PAS photographique','Decor : qualite miniature physique — PAS CGI','Batiments correctement plus grands que les personnages','Focus total partout — pas de bokeh','Passants (si presents) : correspondent au style marionnette']};
+
+function renderCheck(){
+  const pre=CL_PRE[lang]||CL_PRE.en,post=CL_POST[lang]||CL_POST.en;
+  const mk=items=>items.map(i=>`<div class="cr" onclick="togCL(this)"><div class="cb"></div><span>${i}</span></div>`).join('');
+  const pe=document.getElementById('pre-cl'),po=document.getElementById('post-cl');
+  if(pe)pe.innerHTML=mk(pre);if(po)po.innerHTML=mk(post);
+}
+function togCL(row){const b=row.querySelector('.cb');const c=b.classList.toggle('on');row.classList.toggle('done',c);b.textContent=c?'v':'';}
+function resetCheck(){document.querySelectorAll('.cr').forEach(r=>{r.classList.remove('done');const b=r.querySelector('.cb');b.classList.remove('on');b.textContent='';})}
+
+// ── HISTORY ──
+function saveHist(type,txtId){
+  const el=document.getElementById(txtId);if(!el||!el.textContent)return;
+  const mem=document.getElementById('membname')?.value.trim()||'Anonymous';
+  const time=new Date().toLocaleString('en-GB',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'});
+  hist.unshift({id:Date.now(),type,mem,text:el.textContent,time});
+  if(hist.length>200)hist=hist.slice(0,200);
+  localStorage.setItem('yw_v4_hist',JSON.stringify(hist));
+  updateHCount();
+  const btns=document.querySelectorAll('.bsv');
+  btns.forEach(b=>{if(b.onclick||b.getAttribute('onclick')||true){const o=b.textContent;b.textContent='Saved!';setTimeout(()=>b.textContent=o,1500);}});
+}
+function updateHCount(){const e=document.getElementById('hcount');if(e)e.textContent=hist.length;}
+function filterHist(f,el){histFilter=f;document.querySelectorAll('.hf').forEach(b=>b.classList.remove('on'));el.classList.add('on');renderHist();}
+function renderHist(){
+  const list=document.getElementById('hlist'),sum=document.getElementById('hsummary');if(!list)return;
+  const filtered=histFilter==='all'?hist:hist.filter(h=>h.type===histFilter);
+  if(!filtered.length){list.innerHTML='<div class="hempty">Nothing saved yet.</div>';if(sum)sum.textContent='No history';return;}
+  if(sum)sum.textContent=filtered.length+' prompt'+(filtered.length===1?'':'s');
+  const tc={scene:'hts',vehicle:'htv',mv:'htm',sheet:'htsh'};
+  list.innerHTML=filtered.map(h=>`<div class="hi" onclick="openHist('${h.id}')">
+    <div class="hitop"><span class="htype ${tc[h.type]||'hts'}">${h.type}</span><span class="hmem">${h.mem}</span><span class="htime">${h.time}</span></div>
+    <div class="hprev">${h.text.slice(0,160).replace(/\n/g,' ')}...</div>
+  </div>`).join('');
+}
+function openHist(id){
+  const h=hist.find(x=>x.id==id);if(!h)return;
+  const w=window.open('','_blank');
+  if(w){w.document.write('<!DOCTYPE html><html><head><title>YW Prompt</title><style>body{font-family:monospace;white-space:pre-wrap;padding:20px;background:#080808;color:#c5e88a;font-size:11px;line-height:1.8}h2{color:#b8f04a;font-family:sans-serif;font-size:13px;margin-bottom:10px}button{background:#b8f04a;color:#080808;border:none;padding:6px 12px;font-family:sans-serif;font-size:11px;font-weight:700;cursor:pointer;border-radius:4px;margin-bottom:12px}</style></head><body><h2>'+h.type+' — '+h.mem+' — '+h.time+'</h2><button onclick="navigator.clipboard.writeText(document.getElementById(\'t\').textContent)">Copy</button><div id="t">'+h.text+'</div></body></html>');w.document.close();}
+}
+function clearHist(){if(!confirm('Clear all history?'))return;hist=[];localStorage.removeItem('yw_v4_hist');updateHCount();renderHist();}
+
+// ── NAVIGATION ──
+const HMAP={scene:['Scene','Build scene prompts for the full pipeline'],vehicle:['Vehicle',"Rita's Mini Cooper and vehicle scenes"],musicvideo:['Music Video','Jaw beat system — three-pass method'],character:['Character','Sheets, conversions, Soul IDs'],workflows:['Workflows','Camera rules, scale reference, production guides'],history:['History','All saved prompts']};
+const HMAP_FR={scene:['Scene','Creer les prompts scene pour le pipeline complet'],vehicle:['Vehicule','Mini Cooper de Rita et scenes vehicule'],musicvideo:['Clip musical','Systeme jaw beats — methode en 3 passes'],character:['Personnage','Fiches, conversions, Soul IDs'],workflows:['Workflows','Regles camera, references echelle, guides de production'],history:['Historique','Tous les prompts sauvegardes']};
+
+function goPanel(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  const panel=document.getElementById('panel-'+name);if(panel)panel.classList.add('on');
+  document.querySelectorAll('.ni').forEach(n=>{const oc=n.getAttribute('onclick');if(oc&&oc.includes("'"+name+"'"))n.classList.add('on');});
+  const map=lang==='fr'?HMAP_FR:HMAP;const meta=map[name]||['',''];
+  document.getElementById('htitle').textContent=meta[0];document.getElementById('hsub').textContent=meta[1];
+  if(name==='workflows')renderCheck();if(name==='history')renderHist();
+}
+
+// ── OUTPUT TABS ──
+// OT_LABELS removed
+function switchOT(panel,idx,el){/* no longer used */}
+
+function copyOut(id,btn){
+  const el=document.getElementById(id);if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,1500);});
+}
+
+// ── PILLS ──
+function togChar(el,name){
+  const cls={yanissa:'py',ashley:'pa',rita:'pr',beats:'pcat',grandmino:'pgm',gadget:'pg',new:'pon'};
+  if(selChars.has(name)){selChars.delete(name);el.className='pill';}
+  else{selChars.add(name);el.classList.add(cls[name]||'pon');}
+  const nr=document.getElementById('new-char-row');if(nr)nr.style.display=selChars.has('new')?'block':'none';
+}
+function togSig(el,name){
+  if(selSigs.has(name)){selSigs.delete(name);el.classList.remove('pon');}
+  else{selSigs.add(name);el.classList.add('pon');}
+  const fr=document.getElementById('falling-row');if(fr)fr.style.display=selSigs.has('falling')?'block':'none';
+}
+
+// ── UI CONTROLS ──
+function setVMot(mode,el){
+  vMotMode=mode;
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  ['tracking','approach','static'].forEach(m=>{const d=document.getElementById('vm-'+m);if(d)d.style.display=m===mode?'block':'none';});
+}
+function setCharTab(name,el){
+  document.querySelectorAll('#panel-character .tabs .tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  ['sheet','conversion','soulid'].forEach(n=>{const d=document.getElementById('ctab-'+n);if(d)d.style.display=n===name?'block':'none';});
+}
+function setWFTab(name,el){
+  document.querySelectorAll('#wf-tabs .tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  ['camera','scale','seedance','nanobana','vehicle','checklist'].forEach(n=>{const d=document.getElementById('wf-'+n);if(d)d.style.display=n===name?'block':'none';});
+  if(name==='checklist')renderCheck();
+}
+function togNeg(){negOn=!negOn;document.getElementById('tt-neg').classList.toggle('on',negOn);}
+function togVehDesc(){document.getElementById('v-new-desc-row').style.display=document.getElementById('v-veh').value==='new_car'?'block':'none';}
+function togSheetChar(){
+  document.getElementById('sh-custom-char-row').style.display=document.getElementById('sh-char').value==='custom'?'block':'none';
+}
+function togSheetCostume(){
+  document.getElementById('sh-costume-row').style.display=document.getElementById('sh-costume').value==='custom'?'block':'none';
+}
+function updSeats(){
+  ['driver','passenger','rear'].forEach(s=>{const el=document.getElementById('seat-'+s),sel=document.getElementById('v-'+s);if(el&&sel)el.classList.toggle('on',sel.value!=='none');});
+}
+function calcBPM(){
+  const bpm=parseFloat(document.getElementById('mv-bpm').value);
+  const el=document.getElementById('mv-interval');
+  if(el)el.value=bpm>0?(60/bpm).toFixed(3)+'s per beat':'';
+}
+
+// ── LANGUAGE ──
+function setLang(l,btn){
+  lang=l;
+  document.querySelectorAll('.lbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  document.querySelector('html').lang=l;
+
+  // 1. Update all data-k text nodes
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.getAttribute('data-k');
+    const val=STR[lang][k]||STR.en[k];
+    if(!val)return;
+    // Use innerHTML for keys that may contain HTML (banners)
+    const htmlKeys=['scene_banner_body','how_new_body'];
+    if(htmlKeys.includes(k))el.innerHTML=val;
+    else el.textContent=val;
+  });
+
+  // 2. Update all placeholders (data-ph)
+  document.querySelectorAll('[data-ph]').forEach(el=>{
+    const k=el.getAttribute('data-ph');
+    const val=STR[lang][k]||STR.en[k];
+    if(val)el.placeholder=val;
+  });
+
+  // 3. Rebuild select dropdowns
+  _rebuildSelects();
+
+  // 4. Update header meta
+  const cur=document.querySelector('.panel.on')?.id.replace('panel-','')||'scene';
+  const map=lang==='fr'?HMAP_FR:HMAP; const meta=map[cur]||['',''];
+  const ht=document.getElementById('htitle'),hs=document.getElementById('hsub');
+  if(ht)ht.textContent=meta[0]; if(hs)hs.textContent=meta[1];
+
+  // 5. Update logo sub
+  const ls=document.querySelector('.logo-sub');if(ls)ls.textContent=t('logo_sub');
+
+  // 6. Rebuild checklists
+  renderCheck();
+}
+
+// ── SELECT REBUILDER ──
+// Each select: value unchanged, only option text changes
+const SEL_OPTS={
+  's-time':[
+    ['overcast','opt_overcast'],['golden','opt_golden'],['night','opt_night'],
+    ['midday','opt_midday'],['dawn','opt_dawn'],['dusk','opt_dusk']],
+  's-aspect':[['16:9','opt_169'],['9:16','opt_916'],['1:1','opt_11']],
+  's-aspect-seed':[['16:9','opt_169'],['9:16','opt_916']],
+  's-emotion':[
+    ['neutral','opt_neutral'],['alert','opt_alert'],['subdued','opt_subdued'],
+    ['intense','opt_intense'],['open','opt_open'],['performing','opt_performing'],
+    ['joy','opt_joy'],['defiant','opt_defiant'],['melancholy','opt_neutral']],
+  's-mouth':[
+    ['neutral','opt_mouth_neutral'],['closed','opt_mouth_closed'],
+    ['mid','opt_mouth_mid'],['full','opt_mouth_full']],
+  's-camangle':[
+    ['eye_level','opt_cam_eye'],['road_level','opt_cam_road'],['low','opt_cam_low'],
+    ['front_on','opt_cam_front'],['three_quarter','opt_cam_tq'],['profile','opt_cam_profile']],
+  's-camdist':[
+    ['full_body','opt_dist_full'],['wide','opt_dist_wide'],['establishing','opt_dist_est'],
+    ['medium','opt_dist_med'],['portrait','opt_dist_port'],['close_up','opt_dist_cu']],
+  's-duration':[['3s','opt_3s'],['4s','opt_4s'],['6s','opt_6s'],['8s','opt_8s']],
+};
+function _rebuildSelects(){
+  Object.entries(SEL_OPTS).forEach(([id,opts])=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML=opts.map(([val,k])=>{
+      const label=STR[lang][k]||STR.en[k]||val;
+      const sel2=val===cur?' selected':'';
+      return `<option value="${val}"${sel2}>${label}</option>`;
+    }).join('');
+  });
+}
+
+// ── AUTO-TRANSLATION (MyMemory API — free, no key required) ──
+// Translates free-text inputs from FR→EN before generating
+// Called automatically when lang==='fr' and user hits generate
+const TRANSLATE_IDS_SCENE=['s-loc','s-action','s-arrange','s-extra','s-newchar','s-falling','s-motion','s-postprod'];
+const TRANSLATE_IDS_VEH=['v-loc','v-seed-extra'];
+const TRANSLATE_IDS_CHAR=['np-soulname','np-age','np-skin','np-eyes','np-hcolor','np-hstyle','np-features','np-costume','np-role',
+  'sh-costume-txt','sh-custom-char','sh-notes','cv-features','cv-costume'];
+
+async function _translateOne(text){
+  if(!text||!text.trim())return text;
+  try{
+    const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair=fr|en&de=yanissaworld.team@gmail.com';
+    const r=await fetch(url);
+    if(!r.ok)return text;
+    const d=await r.json();
+    if(d.responseStatus===200&&d.responseData?.translatedText){
+      // MyMemory sometimes returns the original if already EN — that's fine
+      return d.responseData.translatedText;
+    }
+  }catch(e){console.warn('Translation error:',e);}
+  return text;
+}
+
+async function translateInputsBefore(ids,btnEl){
+  if(lang!=='fr')return; // Only translate when UI is in French
+  const origTxt=btnEl.textContent;
+  btnEl.textContent=t('translating');
+  btnEl.disabled=true;
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(el&&el.value&&el.value.trim()){
+      el.value=await _translateOne(el.value);
+    }
+  }
+  btnEl.textContent=t('translation_done');
+  setTimeout(()=>{btnEl.textContent=origTxt;btnEl.disabled=false;},800);
+}
+
+
+// ── CLEAR ──
+function clearScene(){
+  ['s-loc','s-action','s-arrange','s-newchar','s-extra','s-motion','s-postprod','s-falling'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  selChars.clear();selSigs.clear();
+  document.querySelectorAll('#cpills .pill').forEach(p=>p.className='pill');
+  document.querySelectorAll('#sigpills .pill').forEach(p=>p.classList.remove('pon'));
+  document.getElementById('new-char-row').style.display='none';
+  document.getElementById('falling-row').style.display='none';
+  document.getElementById('scene-out-box').classList.remove('vis');
+}
+function clearVehicle(){['v-loc','v-seed-extra'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('vehicle-out-box').classList.remove('vis');}
+function clearMV(){['mv-bpm','mv-title','mv-lead-beats','mv-adlib1-beats','mv-adlib2-beats','mv-postprod','mv-interval'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('mv-out-box').classList.remove('vis');}
+function clearSheet(){['sh-costume-txt','sh-custom-char','sh-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('sheet-out-box').classList.remove('vis');}
+function clearConv(){['cv-features','cv-costume','cv-soulname'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('conv-out-box').classList.remove('vis');}
+function clearAnimal(){document.getElementById('animal-out-box').classList.remove('vis');}
+
+// ── MOBILE ──
+function toggleMob(){document.getElementById('mobnav').classList.toggle('open');}
+function closeMob(){document.getElementById('mobnav').classList.remove('open');}
+
+// ── INIT ──
+updateHCount();
+renderCheck();
+_rebuildSelects();
+
+
+
+// ── MODE SELECTOR — button-based, addEventListener only ──
+// Tracks which output tab is active per panel
+var sceneModeIdx = 0;
+var vehicleModeIdx = 0;
+
+var SCENE_LABELS = [
+  '🍌 Nano Banana — ready to paste',
+  '🎬 Seedance 2.0 — ready to paste',
+  '🎙 Post-production script',
+  '📋 Instructions FR'
+];
+var VEHICLE_LABELS = [
+  '🍌 Nano Banana — ready to paste',
+  '🎬 Seedance 2.0 — ready to paste',
+  '📋 Instructions FR'
+];
+
+function showSceneOutput(idx) {
+  sceneModeIdx = idx;
+  // Highlight pipeline card
+  document.querySelectorAll('#scene-pipeline .ps').forEach(function(c, i) {
+    c.classList.toggle('on', i === idx);
+  });
+  // Switch visible output pane
+  ['scene-txt-0','scene-txt-1','scene-txt-2','scene-txt-3'].forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = i === idx ? 'block' : 'none';
+  });
+  // Update label
+  var lbl = document.getElementById('scene-out-lbl');
+  if (lbl) lbl.textContent = SCENE_LABELS[idx] || '';
+}
+
+function showVehicleOutput(idx) {
+  vehicleModeIdx = idx;
+  // Highlight pipeline card
+  document.querySelectorAll('#vehicle-pipeline .ps').forEach(function(c, i) {
+    c.classList.toggle('on', i === idx);
+  });
+  ['vehicle-txt-0','vehicle-txt-1','vehicle-txt-2'].forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = i === idx ? 'block' : 'none';
+  });
+  var lbl = document.getElementById('vehicle-out-lbl');
+  if (lbl) lbl.textContent = VEHICLE_LABELS[idx] || '';
+}
+
+// Wire up mode selector buttons using addEventListener
+window.addEventListener('DOMContentLoaded', function() {
+
+  // ── SCENE PIPELINE CARDS ──
+  document.querySelectorAll('#scene-pipeline .ps').forEach(function(card) {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      switchSceneMode(idx);
+    });
+  });
+
+  // Scene: Nano Banana generate
+  var el = document.getElementById('scene-gen-btn');
+  if(el) el.addEventListener('click', function(){ generateScene(); });
+
+  // Scene: Seedance generate
+  el = document.getElementById('scene-seed-btn');
+  if(el) el.addEventListener('click', function(){ generateSceneSeedance(); });
+
+
+  // Scene: Post-prod copy
+  el = document.getElementById('scene-postprod-copy');
+  if(el) el.addEventListener('click', function(){
+    var txt = document.getElementById('s-postprod');
+    if(txt){ navigator.clipboard.writeText(txt.value); this.textContent='Copied!'; var b=this; setTimeout(function(){b.textContent='Copy script';},1500); }
+  });
+
+  // Scene: output copy
+  el = document.getElementById('scene-copy-btn');
+  if(el) el.addEventListener('click', function(){
+    var active = document.querySelector('#scene-out-box .out-txt[style*="block"], #scene-out-box .instr-txt[style*="block"]');
+    if(active){ navigator.clipboard.writeText(active.textContent); this.textContent='Copied!'; var b=this; setTimeout(function(){b.textContent='Copy';},1500); }
+  });
+
+  // Scene: output save
+  el = document.getElementById('scene-save-btn');
+  if(el) el.addEventListener('click', function(){
+    saveHist('scene','scene-txt-'+sceneModeIdx);
+  });
+
+  // ── VEHICLE PIPELINE CARDS ──
+  document.querySelectorAll('#vehicle-pipeline .ps').forEach(function(card) {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      showVehicleOutput(idx);
+    });
+  });
+
+  el = document.getElementById('vehicle-gen-btn');
+  if(el) el.addEventListener('click', function(){ generateVehicle(); });
+
+  el = document.getElementById('vehicle-copy-btn');
+  if(el) el.addEventListener('click', function(){
+    var id = 'vehicle-txt-' + vehicleModeIdx;
+    var txt = document.getElementById(id);
+    if(txt){ navigator.clipboard.writeText(txt.textContent); this.textContent='Copied!'; var b=this; setTimeout(function(){b.textContent='Copy';},1500); }
+  });
+
+  el = document.getElementById('vehicle-save-btn');
+  if(el) el.addEventListener('click', function(){ saveHist('vehicle','vehicle-txt-'+vehicleModeIdx); });
+
+});
+
+// ── SCENE MODE SWITCHER ──
+function switchSceneMode(idx) {
+  sceneModeIdx = idx;
+
+  // Highlight pipeline card
+  document.querySelectorAll('#scene-pipeline .ps').forEach(function(c,i){
+    c.classList.toggle('on', i===idx);
+  });
+
+  // Show correct form, hide others
+  [0,1,2,3].forEach(function(i){
+    var f = document.getElementById('scene-form-'+i);
+    if(f) f.style.display = i===idx ? 'block' : 'none';
+  });
+
+  // Update output label
+  var labels = ['🍌 Nano Banana — ready to paste','🎬 Seedance 2.0 — ready to paste','🎙 Post-production script','📋 Instructions FR'];
+  var lbl = document.getElementById('scene-out-lbl');
+  if(lbl) lbl.textContent = labels[idx] || '';
+
+  // Show correct output pane
+  ['scene-txt-0','scene-txt-1','scene-txt-2','scene-txt-3'].forEach(function(id,i){
+    var el = document.getElementById(id);
+    if(el) el.style.display = i===idx ? 'block' : 'none';
+  });
+}
+
+// ── SEEDANCE SCENE GENERATOR ──
+function generateSceneSeedance() {
+  var motion = document.getElementById('s-motion') ? document.getElementById('s-motion').value.trim() : '';
+  var duration = document.getElementById('s-duration') ? document.getElementById('s-duration').value : '6s';
+  var aspect = document.getElementById('s-aspect-seed') ? document.getElementById('s-aspect-seed').value : '16:9';
+
+  var sd = SEEDANCE_LOCKS + '\n\n';
+  sd += motion ? 'MOTION SCRIPT:\n' + motion + '\n\n' : 'MOTION: Characters hold positions with minimal puppet presence. No dramatic movement. Hold naturally until cut.\n\n';
+  sd += (PLATMAP[aspect]||'') + '\nDuration: ' + duration + '.';
+
+  document.getElementById('scene-txt-1').textContent = sd.trim();
+  showSceneOutput(1);
+  var box = document.getElementById('scene-out-box');
+  if(box) box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+
+
+
+// ── UI WIRING ──
+
+function wireBtn(id, fn){
+  var el = document.getElementById(id);
+  if(el) el.addEventListener('click', fn);
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+  // ── SCENE MODE TABS ──
+  document.querySelectorAll('#scene-mtabs .mtab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      document.querySelectorAll('#scene-mtabs .mtab').forEach(function(b) { b.classList.remove('on'); });
+      this.classList.add('on');
+      [0,1,2,3].forEach(function(i) {
+        var f = document.getElementById('scene-mode-'+i);
+        if(f) f.style.display = (i===idx) ? 'block' : 'none';
+      });
+      // Auto-generate instructions when that tab is selected
+      if(idx === 3) {
+        var el = document.getElementById('scene-txt-instr');
+        if(el) el.innerHTML = buildSceneInstr(selChars.has('yanissa'), selChars.has('rita'));
+      }
+    });
+  });
+
+  // ── VEHICLE MODE TABS ──
+  document.querySelectorAll('#vehicle-mtabs .mtab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-idx'));
+      document.querySelectorAll('#vehicle-mtabs .mtab').forEach(function(b) { b.classList.remove('on'); });
+      this.classList.add('on');
+      [0,1].forEach(function(i) {
+        var f = document.getElementById('vehicle-mode-'+i);
+        if(f) f.style.display = (i===idx) ? 'block' : 'none';
+      });
+    });
+  });
+
+  // Scene — with FR→EN translation before generating
+  wireBtn('scene-nb-btn', async function(){
+    await translateInputsBefore(TRANSLATE_IDS_SCENE, this);
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var loc=v('s-loc'), action=v('s-action');
+    if(!loc){alert('Location required');return;}
+    if(!action){alert('Action required');return;}
+    if(selChars.size===0){alert('Select at least one character');return;}
+    var time=v('s-time')||'overcast', aspect=v('s-aspect')||'16:9';
+    var angle=v('s-camangle')||'eye_level', dist=v('s-camdist')||'full_body';
+    var emotion=v('s-emotion')||'neutral', mouth=v('s-mouth')||'neutral';
+    var extra=v('s-extra'), arrange=v('s-arrange');
+    var nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters]\n';
+    if(selChars.has('rita')) nb+='VEHICLE REFERENCE (if car in scene): [ATTACH: RITA_MINI_SOUL_ID.png]\n';
+    nb+='\n'+STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n'+ARCH_BLOCK+'\n\n'+SCALE_BLOCK+'\n\n';
+    ['yanissa','ashley','rita','beats','grandmino','gadget'].forEach(function(c){if(selChars.has(c))nb+=CHARS[c]+'\n\n';});
+    var nc=v('s-newchar'); if(selChars.has('new')&&nc) nb+='CHARACTER — NEW: '+nc+'\n\n';
+    if(arrange) nb+='CHARACTER ARRANGEMENT:\n'+arrange+'\n\n';
+    nb+='LOCATION:\n'+loc+'\n\n'+SKY_BLOCK+'\n\n';
+    if(TIMEMAP[time]) nb+=TIMEMAP[time]+'\n\n';
+    nb+='SCENE ACTION:\n'+action+'\n\n';
+    if(extra) nb+='ADDITIONAL DETAILS:\n'+extra+'\n\n';
+    if(emotion&&EMOTMAP[emotion]) nb+=EMOTMAP[emotion]+'\n';
+    if(mouth&&MOUTHMAP[mouth]) nb+=MOUTHMAP[mouth]+'\n\n';
+    selSigs.forEach(function(s){
+      if(SIGMAP[s]){var sig=SIGMAP[s];if(s==='falling'){var fo=v('s-falling');if(fo)sig=sig.replace('Object falls',fo+' falls');}nb+=sig+'\n\n';}
+    });
+    nb+=(CAMMAP[angle]||'')+'\n'+(DISTMAP[dist]||'')+'\n'+(PLATMAP[aspect]||'')+'\n\n';
+    if(negOn){nb+=NEG;if(selChars.has('yanissa'))nb+='\n'+NEG_YANISSA;}
+    document.getElementById('scene-txt-0').textContent=nb.trim();
+    var out=document.getElementById('scene-nb-out');
+    if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+    // Inline instructions
+    var yi=selChars.has('yanissa');
+    document.getElementById('scene-instr-0').innerHTML=buildSceneInstr(yi, selChars.has('rita'));
+  });
+
+  wireBtn('scene-nb-copy', function(){copyBtn('scene-txt-0',this);});
+  wireBtn('scene-nb-save', function(){saveHist('scene','scene-txt-0');});
+
+  wireBtn('scene-sd-btn', async function(){
+    await translateInputsBefore(['s-motion'], this);
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var motion=v('s-motion'), duration=v('s-duration')||'6s', aspect=v('s-aspect-seed')||'16:9';
+    var sd=SEEDANCE_LOCKS+'\n\n';
+    sd+=motion?'MOTION SCRIPT:\n'+motion+'\n\n':'MOTION: Characters hold positions. No dramatic movement. Hold naturally until cut.\n\n';
+    sd+=(PLATMAP[aspect]||'')+'\nDuration: '+duration+'.';
+    document.getElementById('scene-txt-1').textContent=sd.trim();
+    var out=document.getElementById('scene-sd-out');
+    if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('scene-sd-copy', function(){copyBtn('scene-txt-1',this);});
+
+  wireBtn('scene-pp-copy', function(){
+    var el=document.getElementById('s-postprod');
+    if(el){navigator.clipboard.writeText(el.value);this.textContent='Copied!';var b=this;setTimeout(function(){b.textContent='Copy dialogue script';},1500);}
+  });
+
+  wireBtn('scene-instr-copy', function(){
+    var el = document.getElementById('scene-txt-instr');
+    if(el){ navigator.clipboard.writeText(el.innerText); this.textContent='Copied!'; var b=this; setTimeout(function(){b.textContent='Copy';},1500); }
+  });
+
+  // Vehicle
+  wireBtn('vehicle-nb-btn', async function(){
+    await translateInputsBefore(TRANSLATE_IDS_VEH, this);
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var veh=v('v-veh')||'ritas_mini', loc=v('v-loc'), time=v('v-time')||'overcast', aspect=v('v-aspect')||'16:9';
+    var driver=v('v-driver')||'rita', passenger=v('v-passenger')||'yanissa', rear=v('v-rear')||'ashley';
+    var VDESC={ritas_mini:"RITA'S MINI COOPER F67 — Soul ID: RITA_MINI_SOUL_ID.png:\nUK RIGHT-HAND DRIVE. Steering wheel on the RIGHT side. Driver on the RIGHT. Passenger on the LEFT.\nBody: graphite grey matte — flat painted, NOT metallic. ONE narrow specular line along bonnet ridge only.\nTWO parallel Adidas green racing stripes on bonnet — both clearly visible.\nGreen mirror caps. Green brake calipers. BPM 140 plate — must read exactly BPM 140.\nVirgin de Guadalupe card and pearl rosary from rear view mirror.\nConvertible top fully open. Gold MINI bonnet badge. Lowered suspension.",taxi:"VEHICLE: London black cab. 1970s style. UK right-hand drive. Hand-built miniature at 1:6 scale. Flat black painted body."};
+    var CDESC={rita:'dark brown-black ponytail, green Mexico football jersey, grey sweatpants, gold chain, gold hoops. NO glasses. Both hands on steering wheel.',yanissa:'large cream-blonde afro (single rigid sculpted mass), pale cream-white skin (unbleached white paper tone — zero warmth), green Adidas zip-up track jacket. NO glasses.',ashley:'auburn-red straight hair shoulder-length, BLACK RECTANGULAR GLASSES — only this character wears glasses. White Brasil number 8 jersey, black shorts.'};
+    var nb='REFERENCE IMAGE 1: [ATTACH: character master reference]\nREFERENCE IMAGE 2: [ATTACH: RITA_MINI_SOUL_ID.png]\n\n';
+    nb+=STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n';
+    nb+='CRITICAL — CHARACTER STYLE: Every character must look exactly like Reference Image 1. Flat painted ceramic skin. Rigid sculpted hair. Oversized head. Visible wrist joint rings. If realistic — WRONG.\n\n';
+    nb+=(VDESC[veh]||v('v-new-desc'))+'\n\n';
+    if(loc){nb+=ARCH_BLOCK+'\n\n'+SCALE_BLOCK+'\n\nCAMERA — ROAD SURFACE LEVEL:\nCamera lens at road surface level. Looking very slightly upward. Buildings stretch dramatically upward. NOT eye level.\n\nFORCED PERSPECTIVE:\nBuildings directly behind car: full scale. Each successive element 20% smaller. Vanishing point ahead.\n\nSTREET SCENE:\n'+loc+'\n\n'+SKY_BLOCK+'\n\n';if(TIMEMAP[time])nb+=TIMEMAP[time]+'\n\n';}
+    nb+='CHARACTERS — UK RIGHT-HAND DRIVE:\nIN THE FRONT:\nFront passenger (LEFT side): '+(CDESC[passenger]||passenger)+'\nDriver (RIGHT side, steering wheel): '+(CDESC[driver]||driver)+'\n';
+    if(rear&&rear!=='none') nb+='IN THE BACK:\nRear centre: '+(CDESC[rear]||rear)+'\n';
+    nb+='\n'+(PLATMAP[aspect]||'')+'\n\n'+NEG+'\n'+NEG_YANISSA;
+    nb+='\nOnly one green stripe — must be TWO. Afro in rear seat — must be in front passenger seat.';
+    document.getElementById('vehicle-txt-0').textContent=nb.trim();
+    var out=document.getElementById('vehicle-nb-out');
+    if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('vehicle-nb-copy', function(){copyBtn('vehicle-txt-0',this);});
+  wireBtn('vehicle-nb-save', function(){saveHist('vehicle','vehicle-txt-0');});
+
+  wireBtn('vehicle-sd-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var duration=v('v-duration')||'6s', aspect=v('v-aspect-seed')||'16:9', extra=v('v-seed-extra');
+    var motDesc={tracking:'The background slides continuously from right to left.\nThe car stays perfectly centred and same size in frame. Camera tracks with the car.\nSky at top of frame stays completely static. Road surface moves beneath the car.\nTyres rotate forward smoothly. Very slight suspension sway — 1 to 2mm only.\n\nBACKGROUND: hand-built miniature facades — balsa, foam core, painted card. Hand-painted. NOT photorealistic.\nBuildings so tall their rooflines are NOT visible — cut off above frame top.',approach:'The car drives toward the camera in a straight line.\nFront of car faces camera throughout. NO rotation. NO spinning. NO turning.\nCamera completely static — locked. Tyres rotate forward smoothly.',static:'The car remains stationary. Characters have subtle puppet presence reactions only.'};
+    var sd=SEEDANCE_LOCKS+'\n\nVEHICLE MOTION:\n'+(motDesc[vMotMode]||motDesc.tracking)+'\n\n';
+    if(extra) sd+='ADDITIONAL MOTION:\n'+extra+'\n\n';
+    sd+='Afro stays rigid — does not blow. Characters stay seated. Smooth motion only.\n\nDuration: '+duration+'. '+(PLATMAP[aspect]||'');
+    document.getElementById('vehicle-txt-1').textContent=sd.trim();
+    var out=document.getElementById('vehicle-sd-out');
+    if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('vehicle-sd-copy', function(){copyBtn('vehicle-txt-1',this);});
+
+  // Music Video
+  function buildMVPass(num, pos, beats, style){
+    var posName={left:'LEFT character (cream-blonde afro, pale cream-white skin)',centre:'CENTRE character (auburn-red hair, black rectangular glasses)',right:'RIGHT character (dark brown-black ponytail, green football jersey)'};
+    var others=Object.keys(posName).filter(function(p){return p!==pos;}).map(function(p){return posName[p].split('(')[0].trim();}).join(' and ');
+    var p='SEEDANCE 2.0 — MOTION ONLY — PASS '+num+' OF 3\nSilent — audio added in post. DO NOT generate audio.\n\n';
+    p+=SEEDANCE_LOCKS+'\n\n';
+    p+='MOUTH — '+posName[pos].toUpperCase()+' ONLY:\nLower jaw drops 8mm max. Binary open/close. Upper lip does NOT move. No phoneme shapes.\n';
+    p+=style==='staccato'?'Delivery: staccato. Jaw snaps open fast and closes immediately.\n':'Delivery: deliberate, minimal. Each jaw beat is isolated.\n';
+    p+=others+': mouths FULLY CLOSED throughout. SEALED SHUT. Zero jaw movement.\n\n';
+    if(beats) p+='JAW BEATS:\n'+beats+'\n\n';
+    p+='BODY: all three characters completely still. No dancing. Jaw movement is the ONLY animation this pass.\n';
+    p+='CAMERA: static locked. Full body — all three in frame.\nASPECT RATIO: 9:16 vertical.\n';
+    p+='Duration: '+(document.getElementById('mv-duration')?document.getElementById('mv-duration').value:'6s')+'.';
+    return p;
+  }
+  wireBtn('mv-p1-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    document.getElementById('mv-txt-0').textContent=buildMVPass(1,v('mv-lead')||'left',v('mv-lead-beats'),'sustained');
+    var out=document.getElementById('mv-p1-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('mv-p1-copy', function(){copyBtn('mv-txt-0',this);});
+  wireBtn('mv-p2-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    document.getElementById('mv-txt-1').textContent=buildMVPass(2,v('mv-adlib1')||'centre',v('mv-adlib1-beats'),v('mv-adlib1-style')||'staccato');
+    var out=document.getElementById('mv-p2-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('mv-p2-copy', function(){copyBtn('mv-txt-1',this);});
+  wireBtn('mv-p3-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    document.getElementById('mv-txt-2').textContent=buildMVPass(3,v('mv-adlib2')||'right',v('mv-adlib2-beats'),v('mv-adlib2-style')||'deliberate');
+    var out=document.getElementById('mv-p3-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('mv-p3-copy', function(){copyBtn('mv-txt-2',this);});
+  wireBtn('mv-pp-copy', function(){
+    var el=document.getElementById('mv-postprod');if(el){navigator.clipboard.writeText(el.value);this.textContent='Copied!';var b=this;setTimeout(function(){b.textContent='Copy dialogue';},1500);}
+  });
+  wireBtn('mv-comp-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var bpm=v('mv-bpm')||'140', title=v('mv-title')||'Track', duration=v('mv-duration')||'6s';
+    var bi=(60/parseFloat(bpm)).toFixed(3);
+    var guide='COMPOSITING GUIDE — '+title+'\n\nLayer stack (bottom to top):\n1. Pass 1 (lead vocal) — base layer, full frame\n2. Pass 2 (ad-lib A) — masked to face only\n3. Pass 3 (ad-lib B) — masked to face only\n\nAll three passes use the identical input frame. All are '+duration+'.\n\nAUDIO SYNC:\nImport '+title+' audio after compositing.\nAlign jaw opens to syllable starts using the post-production dialogue.\nBPM: '+bpm+' — beat interval: '+bi+'s';
+    document.getElementById('mv-txt-comp').textContent=guide;
+    var out=document.getElementById('mv-comp-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('mv-comp-copy', function(){copyBtn('mv-txt-comp',this);});
+
+  // Character sheet
+  wireBtn('sheet-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var char=v('sh-char')||'yanissa', view=v('sh-view')||'full', emotion=v('sh-emotion')||'none';
+    var costume=v('sh-costume')||'default', costumeTxt=v('sh-costume-txt'), customChar=v('sh-custom-char'), notes=v('sh-notes');
+    var viewMap={full:'VIEW: Full body front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent, deep focus. Both wrist joint rings visible. Both knee joint rings visible.',portrait:'VIEW: Portrait — head and shoulders. Camera at eye-level. Sharp focus on eyes.',face:'VIEW: Extreme close-up — face only. Front-facing. Sharp focus on eyes.',tq:'VIEW: Full body three-quarter — camera 45 right of front. Eye-level.',back:'VIEW: Full body from behind. Eye-level. Deep focus.',hands:'VIEW: Detail — both hands at 3x scale + wrist joint ring close-up.'};
+    var nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters]\n\n';
+    nb+=STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n';
+    if(char==='custom'&&customChar) nb+='CHARACTER — '+customChar.toUpperCase()+'\nSame puppet construction — flat painted resin, 4.5-5 heads tall, visible wrist and knee joint rings.\n\n';
+    else nb+=(CHARS[char]||'')+'\n\n';
+    nb+=(viewMap[view]||'')+'\n\n';
+    if(emotion&&emotion!=='none'&&EMOTMAP[emotion]) nb+=EMOTMAP[emotion]+'\n\n';
+    var cs=costume==='default'?'Master reference default.':costume==='kit'?'Alternative football kit — [SPECIFY WHICH KIT].':costumeTxt||'[describe costume]';
+    nb+='Costume: '+cs+'\n\n';
+    if(notes) nb+='Additional notes: '+notes+'\n\n';
+    nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195). Soft diffused studio portrait lighting.\n\n';
+    nb+='NEGATIVE: realistic human skin, pores, individual hair strands, missing joint rings, realistic proportions, CGI, anime, bokeh.';
+    if(char==='yanissa') nb+='\n'+NEG_YANISSA;
+    document.getElementById('sheet-txt-0').textContent=nb.trim();
+    var yanCheck=document.getElementById('sheet-yanissa-check');
+    if(yanCheck) yanCheck.textContent=char==='yanissa'?' · Yanissa peau crème-blanche PAS brune':'';
+    var out=document.getElementById('sheet-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('sheet-copy', function(){copyBtn('sheet-txt-0',this);});
+  wireBtn('sheet-save', function(){saveHist('sheet','sheet-txt-0');});
+
+  // Puppet conversion
+  wireBtn('conv-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var face=v('cv-face')||'oval', eyes=v('cv-eyes')||'dark brown', skin=v('cv-skin')||'medium / olive';
+    var hc=v('cv-haircolor')||'black', hs=v('cv-hairstyle')||'medium straight', feat=v('cv-features');
+    var costume=v('cv-costume')||'[ASSIGN COSTUME]', sn=v('cv-soulname')||'NEW_SOUL_ID', ot=v('cv-output')||'portrait';
+    var p='REFERENCE IMAGE 1: [ATTACH: character master reference — STYLE ANCHOR]\nREFERENCE IMAGE 2: [ATTACH: photograph of person to convert — IDENTITY ANCHOR]\n\n';
+    p+=STYLE_ANCHOR+'\n\nPUPPET CONVERSION — SOUL ID: '+sn.toUpperCase()+'\n\n';
+    p+='IDENTITY: Face shape: '+face+'. Eye colour: '+eyes+'.\nSkin tone: '+skin+' — translate to flat painted fibreglass resin, same tone, zero pores.\nHair: '+hc+', '+hs+' — single rigid sculpted mass, same colour, NO strand separation.'+(feat?'\nDistinctive features: '+feat+' — moulded puppet equivalents.':'')+' Clothing: '+costume+'\n\n';
+    p+='JOINT RINGS — MANDATORY: Visible at BOTH wrists. Visible at BOTH knees.\nPROPORTIONS: 4.5 to 5 head-heights total. Oversized head. Cylindrical torso.\n\n';
+    p+=ot==='portrait'?'OUTPUT: Portrait — head and shoulders. Cool grey background (RGB 185,185,195). Studio lighting.\nPURPOSE: Verify face likeness before full body.\n\n':'OUTPUT: Full body front-facing. Deep focus. Cool grey background (RGB 185,185,195).\n\n';
+    p+='NEGATIVE: realistic human skin, pores, soft hair strands, missing joint rings, realistic proportions, 7-head figure, CGI, anime, identity drift.';
+    document.getElementById('conv-txt-0').textContent=p.trim();
+    var out=document.getElementById('conv-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('conv-copy', function(){copyBtn('conv-txt-0',this);});
+
+  // Animal
+  wireBtn('animal-btn', function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var type=v('an-type')||'cat', name=v('an-name')||'BEATS_SOUL_ID';
+    var breed=v('an-breed')||'British Shorthair', colour=v('an-colour')||'Ginger tabby';
+    var personality=v('an-personality')||'Permanently grumpy.', acc=v('an-accessories');
+    var p='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters]\nREFERENCE IMAGE 2: [ATTACH: reference photo of the animal]\n\n';
+    p+=STYLE_ANCHOR+'\n\nSOUL ID: '+name.toUpperCase()+'\nAnimal: '+type+'. Breed: '+breed+'. Colour: '+colour+'.\n\n';
+    p='CONSTRUCTION — SAME CRAFTSMAN AS THE PUPPET CHARACTERS:\nBody: hollow resin shell, compact and dense.\nFur: NOT realistic. Short directional brushstrokes of '+colour.toLowerCase()+' on resin surface. Like a hand-painted ceramic figurine.\nFace: flat painted resin mask. Expression: '+personality+' FIXED. Cannot change.\nANKLE JOINT RINGS: visible external connector rings at all four ankles — same rings as human characters\' wrists. Always visible.\nEyes: round painted glass — fixed expression, one catchlight.\nSize: 0.4 units tall sitting.\n'+(acc?'Accessories: '+acc+'\n':'');
+    p+='\nSHOT 1 — FRONT FACING: sitting upright, paws together, facing camera.\nSHOT 2 — THREE QUARTER: same pose, camera 45 right. Ankle rings visible on all four legs.\n\nBackground: flat neutral grey (RGB 185,185,195). Soft studio lighting.\n\nNEGATIVE: realistic '+type+' fur, individual hair strands, CGI '+type+', missing ankle joint rings on any leg, cartoon '+type+'.';
+    document.getElementById('animal-txt-0').textContent=p.trim();
+    var out=document.getElementById('animal-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  wireBtn('animal-copy', function(){copyBtn('animal-txt-0',this);});
+
+  updateHCount();
+  renderCheck();
+});
+
+function buildSceneInstr(hasYanissa, hasRita){
+  return '<div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Nano Banana Premium</div><div class="sd">Ouvrir Higgsfield. Activer Nano Banana Premium. Activer les Soul IDs.</div><span class="sa">Référence : image maître des 3 personnages'+(hasYanissa?'\nATTENTION : vérifier peau crème-blanche sur Yanissa':'')+(hasRita?'\nSi voiture : attacher RITA_MINI_SOUL_ID.png':'')+'</span></div></div><div class="instr-step"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Vérifier avant Seedance</div><div class="sd">Anneaux aux poignets · Têtes surdimensionnées · Peau plate peinte · Ciel peint (25% du cadre) · Bâtiments plus grands que les personnages</div></div></div><div class="instr-step" style="margin-bottom:0"><div class="sn" style="background:var(--bl)">2</div><div class="sb2"><div class="st">Passer à Seedance</div><div class="sd">Utiliser la meilleure image comme input frame dans Seedance. Générer 4 fois. Choisir les 2 meilleurs clips.</div></div></div>';
+}
+
+function clearScene(){
+  ['s-loc','s-action','s-arrange','s-newchar','s-extra','s-motion','s-postprod','s-falling'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  selChars.clear(); selSigs.clear();
+  document.querySelectorAll('#cpills .pill').forEach(function(p){p.className='pill';});
+  document.querySelectorAll('#sigpills .pill').forEach(function(p){p.classList.remove('pon');});
+  var nr=document.getElementById('new-char-row');if(nr)nr.style.display='none';
+  var fr=document.getElementById('falling-row');if(fr)fr.style.display='none';
+  ['scene-nb-out','scene-sd-out'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
+}
+function clearVehicle(){
+  ['v-loc','v-seed-extra'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  ['vehicle-nb-out','vehicle-sd-out'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
+}
+function clearSheet(){
+  ['sh-costume-txt','sh-custom-char','sh-notes'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var out=document.getElementById('sheet-out');if(out)out.style.display='none';
+}
+function clearConv(){
+  ['cv-features','cv-costume','cv-soulname'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var out=document.getElementById('conv-out');if(out)out.style.display='none';
+}
+function clearAnimal(){var out=document.getElementById('animal-out');if(out)out.style.display='none';}
+function toggleMob(){}
+function closeMob(){}
+</script>
+</body>
+</html>
