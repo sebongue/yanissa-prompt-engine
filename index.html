@@ -207,6 +207,7 @@ textarea{resize:vertical;min-height:60px;line-height:1.6}
     <div class="ni" onclick="goPanel('vehicle',this)">🚗 <span data-k="nav_veh">Vehicle</span></div>
     <div class="ni" onclick="goPanel('musicvideo',this)">🎵 <span data-k="nav_mv">Music Video</span></div>
     <div class="ni" onclick="goPanel('character',this)">🎭 <span data-k="nav_char">Character</span></div>
+    <div class="ni" onclick="goPanel('locations',this)">📍 <span data-k="nav_loc">Locations</span></div>
     <div class="ns" data-k="ns_ref">Reference</div>
     <div class="ni" onclick="goPanel('workflows',this)">📋 <span data-k="nav_wf">Workflows</span></div>
     <div class="ni" onclick="goPanel('history',this)">🕐 <span data-k="nav_hist">History</span> <span class="nbadge" id="hcount">0</span></div>
@@ -815,350 +816,519 @@ Référence 2 : RITA_MINI_SOUL_ID.png</span>
 
 <!-- ═══ CHARACTER ═══ -->
 <div id="panel-character" class="panel">
-
-  <!-- TASK SELECTOR -->
-  <div class="mtabs" id="char-mtabs" style="margin-bottom:14px">
-    <button class="mtab on" data-ctask="new" onclick="setCharTask('new',this)">
-      <div class="mtab-title" data-k="char_task_new">✦ New character</div>
-      <div class="mtab-sub" data-k="char_task_new_sub">Build from zero → 4-step pipeline</div>
+  <div class="mtabs" id="char-mtabs">
+    <button class="mtab on" data-ctask="main" onclick="setCharTask('main',this)">
+      <div class="mtab-title">🎭 Main Cast</div>
+      <div class="mtab-sub">Yanissa · Ashley · Rita · Beats · Minö · Gadget</div>
     </button>
-    <button class="mtab" data-ctask="existing" onclick="setCharTask('existing',this)">
-      <div class="mtab-title" data-k="char_task_existing">🎭 Existing character</div>
-      <div class="mtab-sub" data-k="char_task_existing_sub">Sheet · Conversion · Animal</div>
+    <button class="mtab" data-ctask="newchar" onclick="setCharTask('newchar',this)">
+      <div class="mtab-title">✦ New Character</div>
+      <div class="mtab-sub">Scratch · From photo · Animal</div>
     </button>
   </div>
 
-  <!-- ═══ NEW CHARACTER PIPELINE ═══ -->
-  <div id="ctask-new">
-    <div class="how">
-      <div class="how-title" data-k="how_new_title">🔑 New character — 4-step pipeline</div>
-      <div class="how-body" data-k="how_new_body">Follow these steps in order. Complete each step and approve the output before moving to the next. Do not skip steps — the reference sheets built in steps 2 and 4 are what lock identity in every future scene.</div>
+  <!-- ═══ MAIN CAST ═══ -->
+  <div id="ctask-main">
+    <div class="itabs" id="cast-itabs">
+      <button class="itab on" onclick="setCastTab('yanissa',this)">Yanissa</button>
+      <button class="itab" onclick="setCastTab('ashley',this)">Ashley</button>
+      <button class="itab" onclick="setCastTab('rita',this)">Rita</button>
+      <button class="itab" onclick="setCastTab('beats',this)">Beats 🐱</button>
+      <button class="itab" onclick="setCastTab('grandmino',this)">Grand Minö</button>
+      <button class="itab" onclick="setCastTab('gadget',this)">Gadget</button>
+      <button class="itab" onclick="setCastTab('ilock',this)">🔒 Identity Lock</button>
     </div>
 
-    <!-- STEP 1: FACE PROMPT -->
-    <div class="pass-section">
-      <div class="pass-title"><div class="pass-num">1</div> Base Face Prompt</div>
-      <div class="info" style="margin-bottom:12px">Generates the character's face for the first time. This is the foundation — all other steps reference this output.</div>
+    <!-- YANISSA -->
+    <div id="cast-tab-yanissa" class="cast-tab">
+      <div class="info" style="margin-bottom:12px"><b>YANISSA_SOUL_ID</b> · Left figure · Cream-blonde afro · Pale cream-white skin (unbleached white paper tone) · Forest green Adidas zip-up track jacket · Blue painted glass eyes · Cream-white wrist joint rings</div>
       <div class="fs">
-        <div class="fst">🆔 Character identity</div>
+        <div class="fst">📸 Generate Sheet Prompt</div>
         <div class="fr">
-          <div><div class="fl">Soul ID name</div><input type="text" id="np-soulname" placeholder="e.g. COACH_MARISOL_SOUL_ID"></div>
-          <div><div class="fl">Age / gender</div><input type="text" id="np-age" placeholder="e.g. 28, woman"></div>
+          <div><div class="fl">View</div>
+            <select id="cy-view">
+              <option value="full">Full body front</option><option value="portrait">Portrait</option>
+              <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
+              <option value="back">Back view</option><option value="hands">Hands + joint rings</option>
+              <option value="sheet8">8-angle reference sheet</option>
+            </select>
+          </div>
+          <div><div class="fl">Emotional state</div>
+            <select id="cy-emotion">
+              <option value="none">Structural (none)</option><option value="neutral">Neutral</option>
+              <option value="alert">Alert</option><option value="subdued">Subdued</option>
+              <option value="intense">Intense</option><option value="performing">Performing / singing</option><option value="defiant">Defiant</option>
+            </select>
+          </div>
         </div>
         <div class="fr">
-          <div><div class="fl">Skin tone</div><input type="text" id="np-skin" placeholder="e.g. warm olive, medium brown"></div>
-          <div><div class="fl">Eye colour</div><input type="text" id="np-eyes" placeholder="e.g. dark brown, hazel"></div>
+          <div><div class="fl">Costume</div>
+            <select id="cy-costume" onchange="document.getElementById('cy-ctrow').style.display=this.value==='custom'?'block':'none'">
+              <option value="default">Default — green Adidas</option><option value="custom">Custom — describe below</option>
+            </select>
+          </div>
+          <div id="cy-ctrow" style="display:none"><div class="fl">Custom costume</div>
+            <input type="text" id="cy-costume-txt" placeholder="e.g. white Nigeria jersey, black jeans">
+          </div>
         </div>
-        <div class="fr">
-          <div><div class="fl">Hair colour</div><input type="text" id="np-hcolor" placeholder="e.g. black, auburn"></div>
-          <div><div class="fl">Hair style</div><input type="text" id="np-hstyle" placeholder="e.g. short afro, straight shoulder-length"></div>
-        </div>
-        <div><div class="fl">Distinctive features <span class="hint">optional</span></div>
-          <input type="text" id="np-features" placeholder="e.g. strong jaw, high cheekbones, wide nose">
+        <div><div class="fl">Notes <span class="hint">optional</span></div>
+          <input type="text" id="cy-notes" placeholder="e.g. emphasise wrist joint rings">
         </div>
       </div>
-      <div class="gbar">
-        <button class="bgen" onclick="genNewFace()">Generate Step 1 — Face prompt</button>
-      </div>
-      <div class="out-card" id="np-face-out" style="display:none">
-        <div class="out-hdr">
-          <div class="out-lbl">Step 1 — Base face · Nano Banana</div>
-          <div class="out-acts"><button class="bcp" onclick="copyEl('np-face-txt',this)">Copy</button></div>
+      <div class="gbar"><button class="bgen" id="cy-btn">Generate Yanissa prompt</button></div>
+      <div class="out-card" id="cy-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">🍌 YANISSA_SOUL_ID — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="cy-copy">Copy</button><button class="bsv" id="cy-save">Save</button></div>
         </div>
-        <div class="out-txt" id="np-face-txt"></div>
-        <div class="instr-block">
-          <div class="instr-block-title">📋 Step 1 instructions</div>
-          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Open Nano Banana Premium in Higgsfield</div><div class="sd">Attach the master reference image (3 puppet characters). This locks the puppet style.</div></div></div>
-          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Paste and generate</div><div class="sd">Generate 6–10 times. Select the 2 best face outputs. Verify: puppet proportions, joint rings visible, skin flat painted.</div></div></div>
-          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Approve before Step 2</div><div class="sd">Only proceed to Step 2 once the face is correct and resembles the intended character.</div></div></div>
-        </div>
+        <div class="out-txt" id="cy-txt"></div>
       </div>
     </div>
 
-    <!-- STEP 2: FACE REFERENCE SHEET -->
-    <div class="pass-section">
-      <div class="pass-title"><div class="pass-num">2</div> Face Reference Sheet — 8 angles</div>
-      <div class="info" style="margin-bottom:12px">Use your approved Step 1 output as a reference image. This creates the multi-angle reference sheet that locks face identity in Higgsfield.</div>
-      <div class="gbar">
-        <button class="bgen" onclick="genFaceSheet()">Generate Step 2 — Face reference sheet</button>
-      </div>
-      <div class="out-card" id="np-facesheet-out" style="display:none">
-        <div class="out-hdr">
-          <div class="out-lbl">Step 2 — Face reference sheet · Nano Banana</div>
-          <div class="out-acts"><button class="bcp" onclick="copyEl('np-facesheet-txt',this)">Copy</button></div>
-        </div>
-        <div class="out-txt" id="np-facesheet-txt"></div>
-        <div class="instr-block">
-          <div class="instr-block-title">📋 Step 2 instructions</div>
-          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach two references</div><div class="sd">Reference 1: master character image (3 puppets — style anchor). Reference 2: your approved Step 1 face output (identity anchor).</div></div></div>
-          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Layout: 8 portraits in a grid</div>
-            <div class="sd">The prompt requests 8 angles in one image:<br>
-            1. Full front · 2. Left 3/4 · 3. Right 3/4 · 4. Left profile<br>
-            5. Right profile · 6. Slight upward · 7. Slight downward · 8. Back of head<br><br>
-            Generate 3–4 times. Select the sheet where identity is most consistent across all 8 angles.</div></div></div>
-          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">This sheet becomes your Soul ID anchor</div><div class="sd">Save this image — it is what you attach as the character reference in every future scene prompt.</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 3: BODY PROMPT -->
-    <div class="pass-section">
-      <div class="pass-title"><div class="pass-num">3</div> Body Creation Prompt</div>
-      <div class="info" style="margin-bottom:12px">Builds the full body using the approved face sheet as identity lock. Establishes puppet proportions, costume, and joint rings.</div>
+    <!-- ASHLEY -->
+    <div id="cast-tab-ashley" class="cast-tab" style="display:none">
+      <div class="info" style="margin-bottom:12px"><b>ASHLEY_SOUL_ID</b> · Centre figure · Auburn-copper-red hair (shoulder-length MAX) · Black rectangular glasses — always present · Brasil no.8 jersey · Brown-red wrist rings + red string bracelet left wrist</div>
       <div class="fs">
-        <div class="fst">👘 Costume & character details</div>
-        <div class="fr f1"><div>
-          <div class="fl">Costume <span class="req">required</span></div>
-          <input type="text" id="np-costume" placeholder="e.g. Coral Adidas tracksuit, white trainers, gold chain">
-        </div></div>
-        <div><div class="fl">Role / personality <span class="hint">optional — informs posture</span></div>
-          <input type="text" id="np-role" placeholder="e.g. Cuban-American PE coach. Confident, direct.">
+        <div class="fst">📸 Generate Sheet Prompt</div>
+        <div class="fr">
+          <div><div class="fl">View</div>
+            <select id="ca-view">
+              <option value="full">Full body front</option><option value="portrait">Portrait</option>
+              <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
+              <option value="back">Back view</option><option value="hands">Hands + joint rings</option>
+              <option value="sheet8">8-angle reference sheet</option>
+            </select>
+          </div>
+          <div><div class="fl">Emotional state</div>
+            <select id="ca-emotion">
+              <option value="none">Structural (none)</option><option value="neutral">Neutral</option>
+              <option value="alert">Alert</option><option value="intense">Intense</option>
+              <option value="performing">Performing</option><option value="defiant">Defiant</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Costume</div>
+            <select id="ca-costume" onchange="document.getElementById('ca-ctrow').style.display=this.value==='custom'?'block':'none'">
+              <option value="default">Default — Brasil no.8 jersey</option><option value="custom">Custom — describe below</option>
+            </select>
+          </div>
+          <div id="ca-ctrow" style="display:none"><div class="fl">Custom costume</div>
+            <input type="text" id="ca-costume-txt" placeholder="e.g. black hoodie, white jeans">
+          </div>
+        </div>
+        <div><div class="fl">Notes <span class="hint">optional</span></div>
+          <input type="text" id="ca-notes" placeholder="e.g. show red string bracelet on left wrist clearly">
+        </div>
+      </div>
+      <div class="gbar"><button class="bgen" id="ca-btn">Generate Ashley prompt</button></div>
+      <div class="out-card" id="ca-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">🍌 ASHLEY_SOUL_ID — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="ca-copy">Copy</button><button class="bsv" id="ca-save">Save</button></div>
+        </div>
+        <div class="out-txt" id="ca-txt"></div>
+      </div>
+    </div>
+
+    <!-- RITA -->
+    <div id="cast-tab-rita" class="cast-tab" style="display:none">
+      <div class="info" style="margin-bottom:12px"><b>RITA_SOUL_ID</b> · Right figure · Dark brown-black centre-parted ponytail · Warm olive skin · Mexico Adidas jersey · Gold Cuban chain + pearl rosary + gold hoops · Right hand always in pocket</div>
+      <div class="fs">
+        <div class="fst">📸 Generate Sheet Prompt</div>
+        <div class="fr">
+          <div><div class="fl">View</div>
+            <select id="cr-view">
+              <option value="full">Full body front</option><option value="portrait">Portrait</option>
+              <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
+              <option value="back">Back view</option><option value="hands">Hands + jewellery</option>
+              <option value="sheet8">8-angle reference sheet</option>
+            </select>
+          </div>
+          <div><div class="fl">Emotional state</div>
+            <select id="cr-emotion">
+              <option value="none">Structural (none)</option><option value="neutral">Neutral</option>
+              <option value="alert">Alert</option><option value="subdued">Subdued</option>
+              <option value="intense">Intense</option><option value="defiant">Defiant</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Costume</div>
+            <select id="cr-costume" onchange="document.getElementById('cr-ctrow').style.display=this.value==='custom'?'block':'none'">
+              <option value="default">Default — Mexico Adidas jersey</option><option value="custom">Custom — describe below</option>
+            </select>
+          </div>
+          <div id="cr-ctrow" style="display:none"><div class="fl">Custom costume</div>
+            <input type="text" id="cr-costume-txt" placeholder="e.g. red dress, gold jewellery">
+          </div>
+        </div>
+        <div><div class="fl">Notes <span class="hint">optional</span></div>
+          <input type="text" id="cr-notes" placeholder="e.g. show pearl rosary, right hand in pocket">
+        </div>
+      </div>
+      <div class="gbar"><button class="bgen" id="cr-btn">Generate Rita prompt</button></div>
+      <div class="out-card" id="cr-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">🍌 RITA_SOUL_ID — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="cr-copy">Copy</button><button class="bsv" id="cr-save">Save</button></div>
+        </div>
+        <div class="out-txt" id="cr-txt"></div>
+      </div>
+    </div>
+
+    <!-- BEATS -->
+    <div id="cast-tab-beats" class="cast-tab" style="display:none">
+      <div class="info" style="margin-bottom:12px"><b>BEATS_SOUL_ID</b> · British Shorthair ginger tabby · Permanently grumpy · Hollow resin shell · Ginger brushstroke fur · Ankle joint rings on all 4 legs · 0.4 units tall sitting</div>
+      <div class="fs">
+        <div class="fst">🐱 Generate Sheet Prompt</div>
+        <div class="fr">
+          <div><div class="fl">Shot</div>
+            <select id="cb-shot">
+              <option value="front">Front facing — sitting upright</option>
+              <option value="tq">Three-quarter</option>
+              <option value="both">Both shots in one prompt</option>
+              <option value="sheet8">Full reference sheet</option>
+            </select>
+          </div>
+          <div><div class="fl">Accessories <span class="hint">optional</span></div>
+            <input type="text" id="cb-acc" placeholder="e.g. small gold chain">
+          </div>
+        </div>
+        <div><div class="fl">Notes <span class="hint">optional</span></div>
+          <input type="text" id="cb-notes" placeholder="e.g. emphasise ankle joint rings on all 4 legs">
+        </div>
+      </div>
+      <div class="gbar"><button class="bgen" id="cb-btn">Generate Beats prompt</button></div>
+      <div class="out-card" id="cb-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">🍌 BEATS_SOUL_ID — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="cb-copy">Copy</button><button class="bsv" id="cb-save">Save</button></div>
+        </div>
+        <div class="out-txt" id="cb-txt"></div>
+      </div>
+    </div>
+
+    <!-- GRAND MINO -->
+    <div id="cast-tab-grandmino" class="cast-tab" style="display:none">
+      <div class="warn" style="margin-bottom:12px"><b>Grand Minö is never fully revealed in Season 1.</b> Only shadow, reflection, silhouette, red bear-ear balaclava at frame edge, or hand with gold signet ring are permitted.</div>
+      <div class="fs">
+        <div class="fst">👤 Generate Presence Prompt</div>
+        <div class="fr">
+          <div><div class="fl">Reveal type</div>
+            <select id="cm-type">
+              <option value="shadow">Shadow on wall</option>
+              <option value="reflection">Reflection in glass / mirror</option>
+              <option value="silhouette">Silhouette in crowd</option>
+              <option value="hand">Hand with gold signet ring only</option>
+              <option value="balaclava">Red bear-ear balaclava at frame edge</option>
+            </select>
+          </div>
+          <div><div class="fl">Scene context</div>
+            <input type="text" id="cm-context" placeholder="e.g. Yanissa walks past a shop window">
+          </div>
+        </div>
+        <div><div class="fl">Notes <span class="hint">optional</span></div>
+          <input type="text" id="cm-notes" placeholder="e.g. shadow falls across the wall behind Yanissa">
+        </div>
+      </div>
+      <div class="gbar"><button class="bgen" id="cm-btn">Generate Grand Minö presence prompt</button></div>
+      <div class="out-card" id="cm-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">👤 Grand Minö presence — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="cm-copy">Copy</button></div>
+        </div>
+        <div class="out-txt" id="cm-txt"></div>
+      </div>
+    </div>
+
+    <!-- GADGET -->
+    <div id="cast-tab-gadget" class="cast-tab" style="display:none">
+      <div class="info" style="margin-bottom:12px"><b>GADGET_SOUL_ID</b> · Parisian influencer · Pink hoodie · White jeans · Gold chain · Same puppet construction — flat painted resin, oversized head 4.5–5 heads, visible wrist joint rings</div>
+      <div class="fs">
+        <div class="fst">📸 Generate Sheet Prompt</div>
+        <div class="fr">
+          <div><div class="fl">View</div>
+            <select id="cg-view">
+              <option value="full">Full body front</option><option value="portrait">Portrait</option>
+              <option value="tq">Three-quarter</option><option value="sheet8">8-angle reference sheet</option>
+            </select>
+          </div>
+          <div><div class="fl">Emotional state</div>
+            <select id="cg-emotion">
+              <option value="none">Structural (none)</option><option value="neutral">Neutral</option>
+              <option value="alert">Alert</option><option value="defiant">Defiant</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Costume</div>
+            <select id="cg-costume" onchange="document.getElementById('cg-ctrow').style.display=this.value==='custom'?'block':'none'">
+              <option value="default">Default — pink hoodie, white jeans</option><option value="custom">Custom — describe below</option>
+            </select>
+          </div>
+          <div id="cg-ctrow" style="display:none"><div class="fl">Custom costume</div>
+            <input type="text" id="cg-costume-txt" placeholder="e.g. black tracksuit, silver chain">
+          </div>
+        </div>
+        <div><div class="fl">Notes <span class="hint">optional</span></div>
+          <input type="text" id="cg-notes" placeholder="e.g. show gold chain clearly">
+        </div>
+      </div>
+      <div class="gbar"><button class="bgen" id="cg-btn">Generate Gadget prompt</button></div>
+      <div class="out-card" id="cg-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">🍌 GADGET_SOUL_ID — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="cg-copy">Copy</button><button class="bsv" id="cg-save">Save</button></div>
+        </div>
+        <div class="out-txt" id="cg-txt"></div>
+      </div>
+    </div>
+
+    <!-- IDENTITY LOCK reference tab -->
+    <div id="cast-tab-ilock" class="cast-tab" style="display:none">
+      <div class="how">
+        <div class="how-title">🔒 Identity Lock — what it does</div>
+        <div class="how-body">Automatically injected into every scene, vehicle, and character sheet prompt. Instructs the AI to maintain strict visual consistency with the reference images across every frame and angle — same face, skin tone, hair, proportions, costume, and joint rings. Zero drift. Reject and regenerate if any character drifts.</div>
+      </div>
+      <div class="out-card">
+        <div class="out-hdr"><div class="out-lbl">🔒 Active Identity Lock block</div>
+          <div class="out-acts"><button class="bcp" onclick="copyEl('ilock-txt',this)">Copy</button></div>
+        </div>
+        <div class="out-txt" id="ilock-txt" style="font-size:10px;line-height:1.6"></div>
+      </div>
+      <div class="how" style="margin-top:14px">
+        <div class="how-title">📋 Soul ID register</div>
+        <div class="how-body">
+          <div class="how-step"><div class="how-num" style="background:var(--g);color:#080808">Y</div><div><b>YANISSA_SOUL_ID</b> — Left · Cream-blonde afro · Cream-white skin · Green Adidas jacket · Cream-white wrist rings</div></div>
+          <div class="how-step"><div class="how-num" style="background:var(--am);color:#080808">A</div><div><b>ASHLEY_SOUL_ID</b> — Centre · Auburn hair (shoulder max) · Black glasses always · Brasil no.8 jersey · Brown-red rings + red bracelet</div></div>
+          <div class="how-step"><div class="how-num" style="background:var(--bl);color:#080808">R</div><div><b>RITA_SOUL_ID</b> — Right · Dark ponytail · Olive skin · Mexico jersey · Right hand in pocket · Gold chain + pearl rosary + gold hoops</div></div>
+          <div class="how-step"><div class="how-num">B</div><div><b>BEATS_SOUL_ID</b> — Ginger British Shorthair · Grumpy · Ankle rings all 4 legs · 0.4u sitting</div></div>
+          <div class="how-step"><div class="how-num">M</div><div><b>GRAND_MINO</b> — NEVER revealed S1 · Shadow / reflection / silhouette / hand+ring / balaclava edge only</div></div>
+          <div class="how-step"><div class="how-num">G</div><div><b>GADGET_SOUL_ID</b> — Parisian influencer · Pink hoodie · White jeans · Gold chain</div></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /ctask-main -->
+
+  <!-- ═══ NEW CHARACTER ═══ -->
+  <div id="ctask-newchar" style="display:none">
+    <div class="itabs" id="newchar-itabs">
+      <button class="itab on" onclick="setNewCharTab('scratch',this)">✦ From Scratch</button>
+      <button class="itab" onclick="setNewCharTab('photo',this)">📷 From Photo</button>
+      <button class="itab" onclick="setNewCharTab('animal',this)">🐾 Animal Soul ID</button>
+    </div>
+
+    <!-- FROM SCRATCH: 4-STEP PIPELINE -->
+    <div id="nctab-scratch">
+      <div class="how">
+        <div class="how-title">🔑 4-step pipeline — new character from scratch</div>
+        <div class="how-body">Complete each step in order. Approve before proceeding. Steps 2 and 4 build the reference sheets that lock identity in every future scene.</div>
+      </div>
+      <div class="pass-section">
+        <div class="pass-title"><div class="pass-num">1</div> Base Face Prompt</div>
+        <div class="info" style="margin-bottom:12px">Generates the character's face for the first time — the identity foundation.</div>
+        <div class="fs">
+          <div class="fst">🆔 Identity</div>
+          <div class="fr">
+            <div><div class="fl">Soul ID name <span class="req">required</span></div><input type="text" id="np-soulname" placeholder="e.g. COACH_MARISOL_SOUL_ID"></div>
+            <div><div class="fl">Age / gender</div><input type="text" id="np-age" placeholder="e.g. 28, woman"></div>
+          </div>
+          <div class="fr">
+            <div><div class="fl">Skin tone</div><input type="text" id="np-skin" placeholder="e.g. warm olive, medium brown"></div>
+            <div><div class="fl">Eye colour</div><input type="text" id="np-eyes" placeholder="e.g. dark brown, hazel"></div>
+          </div>
+          <div class="fr">
+            <div><div class="fl">Hair colour</div><input type="text" id="np-hcolor" placeholder="e.g. black, auburn"></div>
+            <div><div class="fl">Hair style</div><input type="text" id="np-hstyle" placeholder="e.g. short afro, shoulder-length straight"></div>
+          </div>
+          <div><div class="fl">Distinctive features <span class="hint">optional</span></div>
+            <input type="text" id="np-features" placeholder="e.g. strong jaw, high cheekbones, wide nose">
+          </div>
+        </div>
+        <div class="gbar"><button class="bgen" onclick="genNewFace()">Generate Step 1 — Face prompt</button></div>
+        <div class="out-card" id="np-face-out" style="display:none">
+          <div class="out-hdr"><div class="out-lbl">Step 1 — Base face · Nano Banana</div>
+            <div class="out-acts"><button class="bcp" onclick="copyEl('np-face-txt',this)">Copy</button></div>
+          </div>
+          <div class="out-txt" id="np-face-txt"></div>
+          <div class="instr-block">
+            <div class="instr-block-title">📋 Step 1 instructions</div>
+            <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Open Nano Banana Premium</div><div class="sd">Attach master reference (3 puppets — style anchor). Generate 6–10 times. Select 2 best face outputs.</div></div></div>
+            <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Approve before Step 2</div><div class="sd">Puppet proportions correct · joint rings visible · skin flat painted · face resembles intended character.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pass-section">
+        <div class="pass-title"><div class="pass-num">2</div> Face Reference Sheet — 8 angles</div>
+        <div class="info" style="margin-bottom:12px">Attach approved Step 1 output as Ref 2. Creates multi-angle sheet that locks face identity.</div>
+        <div class="gbar"><button class="bgen" onclick="genFaceSheet()">Generate Step 2 — Face reference sheet</button></div>
+        <div class="out-card" id="np-facesheet-out" style="display:none">
+          <div class="out-hdr"><div class="out-lbl">Step 2 — Face reference sheet · Nano Banana</div>
+            <div class="out-acts"><button class="bcp" onclick="copyEl('np-facesheet-txt',this)">Copy</button></div>
+          </div>
+          <div class="out-txt" id="np-facesheet-txt"></div>
+          <div class="instr-block">
+            <div class="instr-block-title">📋 Step 2 instructions</div>
+            <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach two references</div><div class="sd">Ref 1: master image (style anchor). Ref 2: approved Step 1 face (identity anchor).</div></div></div>
+            <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">8-angle grid</div><div class="sd">Front · Left 3/4 · Right 3/4 · Left profile · Right profile · Slight up · Slight down · Back. Generate 3–4×. Most consistent sheet = keep.</div></div></div>
+            <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">This becomes the Soul ID face anchor</div><div class="sd">Save — attach in every future scene prompt for this character.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pass-section">
+        <div class="pass-title"><div class="pass-num">3</div> Body Creation Prompt</div>
+        <div class="info" style="margin-bottom:12px">Uses approved face sheet as identity lock. Builds full body with puppet proportions, costume, and joint rings.</div>
+        <div class="fs">
+          <div class="fst">👘 Costume & character</div>
+          <div class="fr f1"><div>
+            <div class="fl">Costume <span class="req">required</span></div>
+            <input type="text" id="np-costume" placeholder="e.g. Coral Adidas tracksuit, white trainers, gold chain">
+          </div></div>
+          <div><div class="fl">Role / personality <span class="hint">informs posture</span></div>
+            <input type="text" id="np-role" placeholder="e.g. Cuban-American PE coach. Confident, direct.">
+          </div>
+        </div>
+        <div class="gbar"><button class="bgen" onclick="genNewBody()">Generate Step 3 — Body prompt</button></div>
+        <div class="out-card" id="np-body-out" style="display:none">
+          <div class="out-hdr"><div class="out-lbl">Step 3 — Body creation · Nano Banana</div>
+            <div class="out-acts"><button class="bcp" onclick="copyEl('np-body-txt',this)">Copy</button></div>
+          </div>
+          <div class="out-txt" id="np-body-txt"></div>
+          <div class="instr-block">
+            <div class="instr-block-title">📋 Step 3 instructions</div>
+            <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach two references</div><div class="sd">Ref 1: master image (style). Ref 2: approved Step 2 face sheet (identity).</div></div></div>
+            <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Generate 6–8×</div><div class="sd">4.5–5 head proportions · cylindrical torso · wrist + knee joint rings · correct costume · face matches Step 2 sheet.</div></div></div>
+            <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Select 2 best outputs then go to Step 4</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pass-section">
+        <div class="pass-title"><div class="pass-num">4</div> Body Reference Sheet — 8 angles</div>
+        <div class="info" style="margin-bottom:12px">Final step. Full-body multi-angle sheet. With Step 2 = complete Soul ID for all future scenes.</div>
+        <div class="gbar"><button class="bgen" onclick="genBodySheet()">Generate Step 4 — Body reference sheet</button></div>
+        <div class="out-card" id="np-bodysheet-out" style="display:none">
+          <div class="out-hdr"><div class="out-lbl">Step 4 — Body reference sheet · Nano Banana</div>
+            <div class="out-acts"><button class="bcp" onclick="copyEl('np-bodysheet-txt',this)">Copy</button></div>
+          </div>
+          <div class="out-txt" id="np-bodysheet-txt"></div>
+          <div class="instr-block">
+            <div class="instr-block-title">📋 Step 4 instructions</div>
+            <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach three references</div><div class="sd">Ref 1: master image. Ref 2: Step 2 face sheet. Ref 3: approved Step 3 body.</div></div></div>
+            <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">8-body-pose grid</div><div class="sd">Front · Left 3/4 · Right 3/4 · Left profile · Right profile · Back · Relaxed · Contrapposto. Generate 3–4×.</div></div></div>
+            <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Soul ID complete</div><div class="sd">Face sheet (Step 2) + Body sheet (Step 4) = complete Soul ID. Attach both to Higgsfield in every scene.</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /nctab-scratch -->
+
+    <!-- FROM PHOTO: PUPPET CONVERSION -->
+    <div id="nctab-photo" style="display:none">
+      <div class="info">Convert a real person into a Yanissa World puppet. Attach their photo as Reference Image 2.</div>
+      <div class="fs">
+        <div class="fst">🔄 Identity from photo</div>
+        <div class="fr">
+          <div><div class="fl">Face shape</div>
+            <select id="cv-face"><option value="oval">Oval</option><option value="round">Round</option><option value="square">Square / strong jaw</option><option value="heart">Heart / wide forehead</option><option value="long">Long / angular</option></select>
+          </div>
+          <div><div class="fl">Eye colour</div>
+            <select id="cv-eyes"><option value="dark brown">Dark brown</option><option value="light brown">Light brown</option><option value="green">Green</option><option value="blue">Blue</option><option value="grey">Grey</option></select>
+          </div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Skin tone</div>
+            <select id="cv-skin">
+              <option value="very light / pale">Very light / pale</option><option value="light / fair">Light / fair</option>
+              <option value="light-medium / warm">Light-medium / warm</option><option value="medium / olive">Medium / olive</option>
+              <option value="medium-dark / warm brown">Medium-dark / warm brown</option><option value="dark brown">Dark brown</option><option value="very dark">Very dark</option>
+            </select>
+          </div>
+          <div><div class="fl">Hair colour</div>
+            <select id="cv-haircolor">
+              <option value="black">Black</option><option value="dark brown">Dark brown</option><option value="auburn / red">Auburn / red</option>
+              <option value="blonde">Blonde</option><option value="platinum">Platinum</option><option value="grey / silver">Grey / silver</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Hair style</div>
+            <select id="cv-hairstyle">
+              <option value="short close-cropped">Short — close cropped</option><option value="medium straight">Medium — straight</option>
+              <option value="long straight">Long — straight</option><option value="large natural afro">Large natural afro</option>
+              <option value="locs or braids">Locs / braids</option><option value="high bun">High bun</option>
+            </select>
+          </div>
+          <div><div class="fl">Distinctive features</div>
+            <input type="text" id="cv-features" placeholder="e.g. beard, glasses, strong brow">
+          </div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Costume <span class="req">required</span></div>
+            <input type="text" id="cv-costume" placeholder="e.g. Pink hoodie, white jeans, gold chain">
+          </div>
+          <div><div class="fl">Soul ID name <span class="req">required</span></div>
+            <input type="text" id="cv-soulname" placeholder="e.g. GADGET_SOUL_ID">
+          </div>
+        </div>
+        <div><div class="fl">Start with</div>
+          <select id="cv-output">
+            <option value="portrait">Portrait — verify face likeness first</option>
+            <option value="full">Full body — if likeness already confirmed</option>
+          </select>
         </div>
       </div>
       <div class="gbar">
-        <button class="bgen" onclick="genNewBody()">Generate Step 3 — Body prompt</button>
+        <button class="bgen" id="conv-btn">Generate conversion prompt</button>
+        <button class="bsec" onclick="clearConv()">Clear</button>
       </div>
-      <div class="out-card" id="np-body-out" style="display:none">
-        <div class="out-hdr">
-          <div class="out-lbl">Step 3 — Body creation · Nano Banana</div>
-          <div class="out-acts"><button class="bcp" onclick="copyEl('np-body-txt',this)">Copy</button></div>
+      <div class="out-card" id="conv-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">🍌 Puppet conversion — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="conv-copy">Copy</button></div>
         </div>
-        <div class="out-txt" id="np-body-txt"></div>
+        <div class="out-txt" id="conv-txt-0"></div>
         <div class="instr-block">
-          <div class="instr-block-title">📋 Step 3 instructions</div>
-          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach two references</div><div class="sd">Reference 1: master character image (style anchor). Reference 2: your approved Step 2 face sheet (identity anchor).</div></div></div>
-          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Generate 6–8 times</div><div class="sd">Verify: 4.5–5 head-height proportions, cylindrical torso, visible wrist and knee joint rings, correct costume, face consistent with Step 2 reference sheet.</div></div></div>
-          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Approve before Step 4</div><div class="sd">Select the 2 best full-body outputs where proportions and costume are correct.</div></div></div>
+          <div class="instr-block-title">📋 How to use</div>
+          <div class="instr-step" style="margin-bottom:0"><div class="sn">→</div><div class="sb2">
+            <div class="sd">Ref 1: master character image (3 puppets — style). Ref 2: photo of person to convert (identity). Start with portrait to verify likeness, then generate full body.</div>
+          </div></div>
         </div>
       </div>
-    </div>
+    </div><!-- /nctab-photo -->
 
-    <!-- STEP 4: BODY REFERENCE SHEET -->
-    <div class="pass-section">
-      <div class="pass-title"><div class="pass-num">4</div> Body Reference Sheet — 8 angles</div>
-      <div class="info" style="margin-bottom:12px">Final step. Creates a full-body multi-angle reference sheet. Combined with Step 2, this becomes the complete Soul ID your team attaches to every future scene.</div>
+    <!-- ANIMAL SOUL ID -->
+    <div id="nctab-animal" style="display:none">
+      <div class="info">Creates a puppet-world Soul ID for an animal. Attach a reference photo alongside the master character reference.</div>
+      <div class="fs">
+        <div class="fst">🐾 Animal Identity</div>
+        <div class="fr">
+          <div><div class="fl">Animal type</div>
+            <select id="an-type"><option value="cat">Cat</option><option value="dog">Dog</option><option value="bird">Bird / pigeon</option><option value="monkey">Monkey</option></select>
+          </div>
+          <div><div class="fl">Soul ID name</div><input type="text" id="an-name" value="BEATS_SOUL_ID"></div>
+        </div>
+        <div class="fr">
+          <div><div class="fl">Breed</div><input type="text" id="an-breed" value="British Shorthair"></div>
+          <div><div class="fl">Colour</div><input type="text" id="an-colour" value="Ginger tabby"></div>
+        </div>
+        <div><div class="fl">Personality</div>
+          <input type="text" id="an-personality" value="Permanently grumpy. Unimpressed. Judges silently.">
+        </div>
+        <div style="margin-top:8px"><div class="fl">Accessories <span class="hint">optional</span></div>
+          <input type="text" id="an-accessories" placeholder="e.g. Small gold chain">
+        </div>
+      </div>
       <div class="gbar">
-        <button class="bgen" onclick="genBodySheet()">Generate Step 4 — Body reference sheet</button>
+        <button class="bgen" id="animal-btn">Generate animal Soul ID prompt</button>
+        <button class="bsec" onclick="clearAnimal()">Clear</button>
       </div>
-      <div class="out-card" id="np-bodysheet-out" style="display:none">
-        <div class="out-hdr">
-          <div class="out-lbl">Step 4 — Body reference sheet · Nano Banana</div>
-          <div class="out-acts"><button class="bcp" onclick="copyEl('np-bodysheet-txt',this)">Copy</button></div>
+      <div class="out-card" id="animal-out" style="display:none">
+        <div class="out-hdr"><div class="out-lbl">🍌 Animal Soul ID — ready to paste</div>
+          <div class="out-acts"><button class="bcp" id="animal-copy">Copy</button></div>
         </div>
-        <div class="out-txt" id="np-bodysheet-txt"></div>
+        <div class="out-txt" id="animal-txt-0"></div>
         <div class="instr-block">
-          <div class="instr-block-title">📋 Step 4 instructions</div>
-          <div class="instr-step"><div class="sn">1</div><div class="sb2"><div class="st">Attach three references</div><div class="sd">Reference 1: master character image (style anchor). Reference 2: approved Step 2 face sheet. Reference 3: approved Step 3 body output.</div></div></div>
-          <div class="instr-step"><div class="sn">2</div><div class="sb2"><div class="st">Layout: 8 body poses in a grid</div>
-            <div class="sd">1. Front straight-on · 2. Left 3/4 · 3. Right 3/4 · 4. Left profile<br>
-            5. Right profile · 6. Back view · 7. Relaxed stance · 8. Slight contrapposto<br><br>
-            Generate 3–4 times. Select the sheet where body proportions and face are most consistent.</div></div></div>
-          <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--am)">✓</div><div class="sb2"><div class="st">Soul ID complete — ready for scenes</div><div class="sd">Your character now has a complete Soul ID: face sheet (Step 2) + body sheet (Step 4). Upload both to Higgsfield and reference in every scene prompt.</div></div></div>
+          <div class="instr-block-title">📋 How to use</div>
+          <div class="instr-step" style="margin-bottom:0"><div class="sn">→</div><div class="sb2">
+            <div class="sd">Ref 1: master character image (3 puppets). Ref 2: photo of the animal. Generate 4–6× front-facing and 4–6× at 3/4. Verify ankle joint rings on all four legs.</div>
+          </div></div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- ═══ EXISTING CHARACTER TOOLS ═══ -->
-  <div id="ctask-existing" style="display:none">
-    <div class="itabs" id="char-itabs">
-      <button class="itab on" onclick="setCharTab('sheet',this)">Character Sheet</button>
-      <button class="itab" onclick="setCharTab('conversion',this)">Puppet Conversion</button>
-      <button class="itab" onclick="setCharTab('soulid',this)">Animal Soul ID</button>
-    </div>
-
-  <!-- CHARACTER SHEET -->
-  <div id="ctab-sheet">
-    <div class="fs">
-      <div class="fst">🎭 Character Sheet</div>
-      <div class="fr">
-        <div><div class="fl">Character</div>
-          <select id="sh-char" onchange="togSheetChar()">
-            <option value="yanissa">Yanissa</option><option value="ashley">Ashley</option>
-            <option value="rita">Rita</option><option value="beats">Beats (the cat)</option>
-            <option value="grandmino">Grand Minö</option><option value="custom">Custom Soul ID</option>
-          </select>
-        </div>
-        <div><div class="fl">View</div>
-          <select id="sh-view">
-            <option value="full">Full body front</option><option value="portrait">Portrait</option>
-            <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
-            <option value="back">Back view</option><option value="hands">Hands + joint rings</option>
-          </select>
-        </div>
-      </div>
-      <div class="fr">
-        <div><div class="fl">Emotional state</div>
-          <select id="sh-emotion">
-            <option value="none">— structural (none) —</option>
-            <option value="neutral">Neutral</option><option value="alert">Alert / observing</option>
-            <option value="subdued">Subdued</option><option value="intense">Intense</option>
-            <option value="performing">Performing / singing</option><option value="defiant">Defiant</option>
-          </select>
-        </div>
-        <div><div class="fl">Costume</div>
-          <select id="sh-costume" onchange="togSheetCostume()">
-            <option value="default">Default (master reference)</option>
-            <option value="kit">Alternative football kit</option>
-            <option value="custom">Custom — describe below</option>
-          </select>
-        </div>
-      </div>
-      <div id="sh-costume-row" style="display:none"><div class="fl" style="margin-top:8px">Custom costume</div>
-        <input type="text" id="sh-costume-txt" placeholder="e.g. White Nigeria away jersey, black jeans, gold chain">
-      </div>
-      <div id="sh-custom-char-row" style="display:none"><div class="fl" style="margin-top:8px">Soul ID name + description</div>
-        <input type="text" id="sh-custom-char" placeholder="e.g. GADGET_SOUL_ID — Parisian influencer, pink hoodie">
-      </div>
-      <div style="margin-top:8px"><div class="fl">Notes <span class="hint">optional</span></div>
-        <input type="text" id="sh-notes" placeholder="e.g. Emphasise wrist joint rings clearly.">
-      </div>
-    </div>
-    <div class="gbar">
-      <button class="bgen" id="sheet-btn">Generate character sheet prompt</button>
-      <button class="bsec" onclick="clearSheet()">Clear</button>
-    </div>
-    <div class="out-card" id="sheet-out" style="display:none">
-      <div class="out-hdr">
-        <div class="out-lbl">🍌 Nano Banana — ready to paste</div>
-        <div class="out-acts">
-          <button class="bcp" id="sheet-copy">Copy</button>
-          <button class="bsv" id="sheet-save">Save</button>
-        </div>
-      </div>
-      <div class="out-txt" id="sheet-txt-0"></div>
-      <div class="instr-block">
-        <div class="instr-block-title">📋 How to build a Soul ID</div>
-        <div class="instr-step"><div class="sn">1</div><div class="sb2">
-          <div class="st">Nano Banana Premium</div>
-          <div class="sd">Open Higgsfield Nano Banana Premium. Activate the character's Soul ID profile.</div>
-          <span class="sa">Attacher : image maître des 3 personnages Yanissa World</span>
-        </div></div>
-        <div class="instr-step"><div class="sn">2</div><div class="sb2">
-          <div class="st">Generate 20–70 images</div>
-          <div class="sd">Generate 4–6 times per view. Repeat for all views and emotions. The more images, the more consistent the Soul ID.</div>
-        </div></div>
-        <div class="instr-step" style="margin-bottom:0"><div class="sn" style="background:var(--am)">✓</div><div class="sb2">
-          <div class="st">Vérifier</div>
-          <div class="sd">Anneaux aux poignets visibles · Cheveux masse rigide · Tête surdimensionnée · Peau plate peinte<span id="sheet-yanissa-check"></span></div>
-        </div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PUPPET CONVERSION -->
-  <div id="ctab-conversion" style="display:none">
-    <div class="info">Convert a real person into a Yanissa World puppet. Attach their photo as Reference Image 2.</div>
-    <div class="fs">
-      <div class="fst">🔄 Identity</div>
-      <div class="fr">
-        <div><div class="fl">Face shape</div>
-          <select id="cv-face"><option value="oval">Oval</option><option value="round">Round</option><option value="square">Square / strong jaw</option><option value="heart">Heart / wide forehead</option><option value="long">Long / angular</option></select>
-        </div>
-        <div><div class="fl">Eye colour</div>
-          <select id="cv-eyes"><option value="dark brown">Dark brown</option><option value="light brown">Light brown</option><option value="green">Green</option><option value="blue">Blue</option><option value="grey">Grey</option></select>
-        </div>
-      </div>
-      <div class="fr">
-        <div><div class="fl">Skin tone</div>
-          <select id="cv-skin">
-            <option value="very light / pale">Very light / pale</option><option value="light / fair">Light / fair</option>
-            <option value="light-medium / warm">Light-medium / warm</option><option value="medium / olive">Medium / olive</option>
-            <option value="medium-dark / warm brown">Medium-dark / warm brown</option><option value="dark brown">Dark brown</option><option value="very dark">Very dark</option>
-          </select>
-        </div>
-        <div><div class="fl">Hair colour</div>
-          <select id="cv-haircolor">
-            <option value="black">Black</option><option value="dark brown">Dark brown</option><option value="auburn / red">Auburn / red</option>
-            <option value="blonde">Blonde</option><option value="platinum">Platinum</option><option value="grey / silver">Grey / silver</option>
-          </select>
-        </div>
-      </div>
-      <div class="fr">
-        <div><div class="fl">Hair style</div>
-          <select id="cv-hairstyle">
-            <option value="short close-cropped">Short — close cropped</option><option value="medium straight">Medium — straight</option>
-            <option value="long straight">Long — straight</option><option value="large natural afro">Large natural afro</option>
-            <option value="locs or braids">Locs / braids</option><option value="high bun">High bun</option>
-          </select>
-        </div>
-        <div><div class="fl">Distinctive features</div>
-          <input type="text" id="cv-features" placeholder="e.g. beard, glasses, strong brow">
-        </div>
-      </div>
-      <div class="fr">
-        <div><div class="fl">Costume</div>
-          <input type="text" id="cv-costume" placeholder="e.g. Pink hoodie, white jeans, gold chain">
-        </div>
-        <div><div class="fl">Soul ID name</div>
-          <input type="text" id="cv-soulname" placeholder="e.g. GADGET_SOUL_ID">
-        </div>
-      </div>
-      <div><div class="fl">Output type</div>
-        <select id="cv-output"><option value="portrait">Portrait verification first</option><option value="full">Full body front</option></select>
-      </div>
-    </div>
-    <div class="gbar">
-      <button class="bgen" id="conv-btn">Generate conversion prompt</button>
-      <button class="bsec" onclick="clearConv()">Clear</button>
-    </div>
-    <div class="out-card" id="conv-out" style="display:none">
-      <div class="out-hdr">
-        <div class="out-lbl">🍌 Puppet conversion — ready to paste</div>
-        <div class="out-acts"><button class="bcp" id="conv-copy">Copy</button></div>
-      </div>
-      <div class="out-txt" id="conv-txt-0"></div>
-      <div class="instr-block">
-        <div class="instr-block-title">📋 How to use</div>
-        <div class="instr-step" style="margin-bottom:0"><div class="sn">→</div><div class="sb2">
-          <div class="sd">Attach Reference 1: master character image (3 puppets — style anchor). Attach Reference 2: photo of the person to convert (identity anchor). Start with portrait output to verify likeness before generating full body.</div>
-        </div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ANIMAL SOUL ID -->
-  <div id="ctab-soulid" style="display:none">
-    <div class="info">Creates a puppet-world Soul ID for an animal. Attach a reference photo of the animal alongside the master character reference.</div>
-    <div class="fs">
-      <div class="fst">🐱 Animal Soul ID</div>
-      <div class="fr">
-        <div><div class="fl">Animal type</div>
-          <select id="an-type"><option value="cat">Cat</option><option value="dog">Dog</option><option value="bird">Bird / pigeon</option><option value="monkey">Monkey</option></select>
-        </div>
-        <div><div class="fl">Soul ID name</div><input type="text" id="an-name" value="BEATS_SOUL_ID"></div>
-      </div>
-      <div class="fr">
-        <div><div class="fl">Breed</div><input type="text" id="an-breed" value="British Shorthair"></div>
-        <div><div class="fl">Colour</div><input type="text" id="an-colour" value="Ginger tabby"></div>
-      </div>
-      <div><div class="fl">Personality</div>
-        <input type="text" id="an-personality" value="Permanently grumpy. Unimpressed. Judges silently.">
-      </div>
-      <div style="margin-top:8px"><div class="fl">Accessories <span class="hint">optional</span></div>
-        <input type="text" id="an-accessories" placeholder="e.g. Small gold chain">
-      </div>
-    </div>
-    <div class="gbar">
-      <button class="bgen" id="animal-btn">Generate animal Soul ID prompt</button>
-      <button class="bsec" onclick="clearAnimal()">Clear</button>
-    </div>
-    <div class="out-card" id="animal-out" style="display:none">
-      <div class="out-hdr">
-        <div class="out-lbl">🍌 Animal Soul ID — ready to paste</div>
-        <div class="out-acts"><button class="bcp" id="animal-copy">Copy</button></div>
-      </div>
-      <div class="out-txt" id="animal-txt-0"></div>
-      <div class="instr-block">
-        <div class="instr-block-title">📋 How to use</div>
-        <div class="instr-step" style="margin-bottom:0"><div class="sn">→</div><div class="sb2">
-          <div class="sd">Attach Reference 1: master character image (3 puppets). Attach Reference 2: photo of the animal. Generate 4–6 times front-facing and 4–6 times at 3/4. Verify joint rings at all four ankles.</div>
-        </div></div>
-      </div>
-    </div>
-  </div>
-  </div><!-- /ctab-soulid -->
-  </div><!-- /ctask-existing -->
+    </div><!-- /nctab-animal -->
+  </div><!-- /ctask-newchar -->
 </div><!-- /panel-character -->
 
 <!-- ═══ WORKFLOWS ═══ -->
@@ -1244,6 +1414,234 @@ IN THE BACK: auburn-red hair, black glasses.</code></div>
   </div>
   <div class="hl" id="hlist"><div class="hempty" data-k="hist_empty">Nothing saved yet.</div></div>
 </div>
+
+<!-- ═══ LOCATIONS ═══ -->
+<div id="panel-locations" class="panel">
+  <div class="how">
+    <div class="how-title">📍 Location Soul IDs — how they work</div>
+    <div class="how-body">A Location Soul ID is a Nano Banana set prompt with no characters — just the environment. Generate it once, approve it, and attach it as a reference image in every scene set in that location. This locks architecture, colour palette, scale, and painted sky backdrop consistently across all episodes.</div>
+  </div>
+  <div class="mtabs" id="loc-mtabs">
+    <button class="mtab on" data-loctype="exterior" onclick="setLocType('exterior',this)">
+      <div class="mtab-title">🏙 Street / Exterior</div>
+      <div class="mtab-sub">London streets, markets, public spaces</div>
+    </button>
+    <button class="mtab" data-loctype="interior" onclick="setLocType('interior',this)">
+      <div class="mtab-title">🏠 Interior</div>
+      <div class="mtab-sub">Rooms, shops, studios</div>
+    </button>
+    <button class="mtab" data-loctype="vehicle" onclick="setLocType('vehicle',this)">
+      <div class="mtab-title">🚗 Vehicle Interior</div>
+      <div class="mtab-sub">Car interiors, POV shots</div>
+    </button>
+  </div>
+
+  <!-- EXTERIOR -->
+  <div id="loc-mode-exterior">
+    <div class="fs">
+      <div class="fst">📍 Location Identity</div>
+      <div class="fr">
+        <div><div class="fl">Location Soul ID name <span class="req">required</span></div>
+          <input type="text" id="le-soulname" placeholder="e.g. BRIXTON_MARKET_SOUL_ID">
+        </div>
+        <div><div class="fl">Area / neighbourhood</div>
+          <input type="text" id="le-area" placeholder="e.g. Brixton, South London">
+        </div>
+      </div>
+      <div class="fr f1"><div>
+        <div class="fl">Location description <span class="req">required</span></div>
+        <textarea id="le-desc" rows="3" placeholder="e.g. Atlantic Road market. Caribbean food shop with painted shutters. Record shop with vinyl crates in window. Chicken shop. Graffiti on roller shutters. Pigeons on rooftop parapet."></textarea>
+      </div></div>
+    </div>
+    <div class="fs">
+      <div class="fst">🏗 Architecture & Scale</div>
+      <div class="fr">
+        <div><div class="fl">Building style</div>
+          <select id="le-arch">
+            <option value="london_victorian">London Victorian / Edwardian — stock brick</option>
+            <option value="london_estate">London council estate — concrete panel</option>
+            <option value="london_market">London market — painted iron + timber</option>
+            <option value="paris_haussmann">Paris Haussmann — cream stone</option>
+            <option value="generic_modern">Generic modern — glass + steel</option>
+          </select>
+        </div>
+        <div><div class="fl">Street width</div>
+          <select id="le-street">
+            <option value="narrow">Narrow — alley / passage</option>
+            <option value="medium">Medium — one-lane road</option>
+            <option value="wide">Wide — high street / boulevard</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div><div class="fl">Foreground elements</div>
+          <input type="text" id="le-fg" placeholder="e.g. market stalls, pavement, kerbstone">
+        </div>
+        <div><div class="fl">Background depth</div>
+          <select id="le-depth">
+            <option value="medium">Medium — one block visible</option>
+            <option value="short">Short — facade close</option>
+            <option value="deep">Deep — street to vanishing point</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="fs">
+      <div class="fst">🌤 Atmosphere</div>
+      <div class="fr">
+        <div><div class="fl">Time of day</div>
+          <select id="le-time">
+            <option value="overcast">Overcast / grey</option><option value="golden">Golden hour</option>
+            <option value="night">Night</option><option value="midday">Midday</option>
+            <option value="dawn">Dawn / blue hour</option><option value="dusk">Dusk / magic hour</option>
+          </select>
+        </div>
+        <div><div class="fl">Output type</div>
+          <select id="le-output">
+            <option value="establishing">Establishing — full set, no characters</option>
+            <option value="sheet">Soul ID sheet — 3 angles of location</option>
+          </select>
+        </div>
+      </div>
+      <div><div class="fl">Signature elements <span class="hint">props, signage, recurring details</span></div>
+        <input type="text" id="le-sigs" placeholder="e.g. BPM 140 shop sign, pigeon on parapet, vinyl crates in window">
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="le-btn">Generate exterior location prompt</button>
+      <button class="bsec" onclick="clearLocationExt()">Clear</button>
+    </div>
+    <div class="out-card" id="le-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">📍 Location Soul ID — ready to paste</div>
+        <div class="out-acts">
+          <button class="bcp" id="le-copy">Copy</button>
+          <button class="bsv" id="le-save">Save</button>
+        </div>
+      </div>
+      <div class="out-txt" id="le-txt"></div>
+      <div class="instr-block">
+        <div class="instr-block-title">📋 How to build a Location Soul ID</div>
+        <div class="instr-step"><div class="sn">1</div><div class="sb2">
+          <div class="st">Generate the environment — no characters</div>
+          <div class="sd">Open Higgsfield Nano Banana Premium. Attach master reference (3 puppets — style anchor only). Do NOT include character Soul IDs. This is environment-only.</div>
+        </div></div>
+        <div class="instr-step"><div class="sn">2</div><div class="sb2">
+          <div class="st">Generate 4–6 times. Select best 2.</div>
+          <div class="sd">Miniature physical quality · forced perspective correct · buildings taller than puppet scale · hand-painted sky (25% of frame) · no CGI smoothness.</div>
+        </div></div>
+        <div class="instr-step" style="margin-bottom:0"><div class="sn" style="background:var(--am)">✓</div><div class="sb2">
+          <div class="st">Save as Location Soul ID</div>
+          <div class="sd">Approved image becomes the Location Soul ID. Attach as additional reference in every scene set at this location.</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERIOR -->
+  <div id="loc-mode-interior" style="display:none">
+    <div class="fs">
+      <div class="fst">📍 Interior Identity</div>
+      <div class="fr">
+        <div><div class="fl">Location Soul ID name <span class="req">required</span></div>
+          <input type="text" id="li-soulname" placeholder="e.g. YANISSA_BEDROOM_SOUL_ID">
+        </div>
+        <div><div class="fl">Room type</div>
+          <select id="li-type">
+            <option value="bedroom">Bedroom</option><option value="living_room">Living room</option>
+            <option value="studio">Recording / music studio</option><option value="shop_interior">Shop interior</option>
+            <option value="bar_club">Bar / club</option><option value="kitchen">Kitchen</option><option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr f1"><div>
+        <div class="fl">Interior description <span class="req">required</span></div>
+        <textarea id="li-desc" rows="3" placeholder="e.g. Small bedroom. Vinyl records stacked against the wall. Football posters. Fairy lights above the bed. Hand-painted walls, flat painted furniture, miniature scale."></textarea>
+      </div></div>
+      <div class="fr">
+        <div><div class="fl">Lighting source</div>
+          <select id="li-light">
+            <option value="window_overcast">Window — overcast daylight</option>
+            <option value="window_golden">Window — golden hour</option>
+            <option value="practical_warm">Practical lights — warm</option>
+            <option value="night_multiple">Night — multiple practicals</option>
+            <option value="single_overhead">Single overhead — dramatic</option>
+          </select>
+        </div>
+        <div><div class="fl">Camera</div>
+          <select id="li-cam">
+            <option value="eye_level">Eye level — puppet eye height</option>
+            <option value="low">Low — looking slightly up</option>
+            <option value="establishing">Establishing — full room visible</option>
+          </select>
+        </div>
+      </div>
+      <div><div class="fl">Key props / signature elements <span class="hint">optional</span></div>
+        <input type="text" id="li-props" placeholder="e.g. vinyl record on turntable, football on floor, gold chain on bedside table">
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="li-btn">Generate interior location prompt</button>
+      <button class="bsec" onclick="clearLocationInt()">Clear</button>
+    </div>
+    <div class="out-card" id="li-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">📍 Interior Location Soul ID — ready to paste</div>
+        <div class="out-acts">
+          <button class="bcp" id="li-copy">Copy</button>
+          <button class="bsv" id="li-save">Save</button>
+        </div>
+      </div>
+      <div class="out-txt" id="li-txt"></div>
+    </div>
+  </div>
+
+  <!-- VEHICLE INTERIOR -->
+  <div id="loc-mode-vehicle" style="display:none">
+    <div class="info">Generates a vehicle interior reference — POV from inside the car or interior-facing shot. Use alongside the Vehicle panel for animated sequences.</div>
+    <div class="fs">
+      <div class="fst">🚗 Vehicle Interior</div>
+      <div class="fr">
+        <div><div class="fl">Vehicle</div>
+          <select id="lv-veh">
+            <option value="ritas_mini">Rita's Mini Cooper (BPM 140)</option>
+            <option value="taxi">London black cab</option>
+            <option value="custom">Custom vehicle</option>
+          </select>
+        </div>
+        <div><div class="fl">Shot angle</div>
+          <select id="lv-angle">
+            <option value="pov_front">POV from rear seat — looking forward</option>
+            <option value="pov_rear">POV from driver — looking back / mirror</option>
+            <option value="side_window">Side window — street visible outside</option>
+            <option value="dashboard">Dashboard detail</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div><div class="fl">Time of day</div>
+          <select id="lv-time">
+            <option value="overcast">Overcast / grey</option><option value="golden">Golden hour</option>
+            <option value="night">Night</option><option value="midday">Midday</option>
+          </select>
+        </div>
+        <div><div class="fl">Custom vehicle description <span class="hint">if custom</span></div>
+          <input type="text" id="lv-custom" placeholder="e.g. 1970s black cab interior, worn leather seats">
+        </div>
+      </div>
+    </div>
+    <div class="gbar">
+      <button class="bgen" id="lv-btn">Generate vehicle interior prompt</button>
+    </div>
+    <div class="out-card" id="lv-out" style="display:none">
+      <div class="out-hdr">
+        <div class="out-lbl">📍 Vehicle Interior — ready to paste</div>
+        <div class="out-acts"><button class="bcp" id="lv-copy">Copy</button></div>
+      </div>
+      <div class="out-txt" id="lv-txt"></div>
+    </div>
+  </div>
+</div><!-- /panel-locations -->
 
 </div></div></div>
 <script>
@@ -1658,38 +2056,6 @@ function generateScene(){
   var box=document.getElementById('scene-out-box');
   if(box)box.scrollIntoView({behavior:'smooth',block:'nearest'});
   
-}
-
-function buildSceneInstr(){
-  const hasY=selChars.has('yanissa'),hasR=selChars.has('rita');
-  return `<div class="instr-step"><div class="sn">1</div><div class="sb2">
-    <div class="st">Etape 1 — Nano Banana : image de production</div>
-    <div class="sd">Ouvrir Higgsfield. Activer Nano Banana Premium. Activer les profils Soul ID.</div>
-    <div class="sa">Attacher : image maitre des 3 personnages Yanissa World${hasY?'\nATTENTION Yanissa : verifier peau creme-blanche (ton papier non blanchi)':''}${hasR?'\nSi voiture visible : attacher RITA_MINI_SOUL_ID.png':''}</div>
-    <div class="sd" style="margin-top:5px">Generer 4 fois. Choisir la meilleure image. Verifier les points ci-dessous.</div>
-  </div></div>
-  <div class="instr-step"><div class="sn" style="background:var(--am)">V</div><div class="sb2">
-    <div class="st">Verification Nano Banana</div>
-    <div class="sd">
-      Anneaux articulaires visibles aux poignets de TOUS les personnages<br>
-      Tetes surdimensionnees — ratio 4.5 a 5 tetes<br>
-      Peau plate peinte — PAS de texture organique<br>
-      Cheveux = masse rigide sculptee — PAS de meches<br>
-      ${hasY?'Yanissa : peau creme-blanche — PAS brune<br>':''}Ciel = toile de fond peinte (25% du cadre max)<br>
-      Decor = set miniature physique — PAS de rendu CGI
-    </div>
-  </div></div>
-  <div class="instr-step"><div class="sn" style="background:var(--bl)">2</div><div class="sb2">
-    <div class="st">Etape 2 — Seedance 2.0 : animation</div>
-    <div class="sd">Dans Higgsfield, passer a Seedance 2.0. Coller le prompt Seedance.</div>
-    <div class="sa">Image d'entree : meilleur resultat de l'Etape 1
-Seedance anime A PARTIR de cette image — ne pas regenerer la scene</div>
-    <div class="sd" style="margin-top:5px">Generer 4 fois. Choisir les meilleurs 2. Duree recommandee : 3-6 secondes par clip.</div>
-  </div></div>
-  <div class="instr-step" style="border-bottom:none"><div class="sn" style="background:var(--pu)">3</div><div class="sb2">
-    <div class="st">Etape 3 — Post-production</div>
-    <div class="sd">Utiliser le script post-production (onglet Post-prod script) pour la session d'enregistrement vocal. Ce script ne va JAMAIS dans Seedance.</div>
-  </div></div>`;
 }
 
 // ── VEHICLE GENERATOR ──
@@ -2129,6 +2495,11 @@ function copyOut(id,btn){
   const el=document.getElementById(id);if(!el)return;
   navigator.clipboard.writeText(el.textContent).then(()=>{const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,1500);});
 }
+function copyBtn(id,btn){
+  const el=document.getElementById(id);if(!el)return;
+  const text=(el.tagName==='TEXTAREA'||el.tagName==='INPUT')?el.value:el.textContent;
+  navigator.clipboard.writeText(text).then(()=>{const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,1500);});
+}
 
 // ── PILLS ──
 function togChar(el,name){
@@ -2146,15 +2517,15 @@ function togSig(el,name){
 // ── UI CONTROLS ──
 function setVMot(mode,el){
   vMotMode=mode;
-  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('#v-motion-tabs .itab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
   ['tracking','approach','static'].forEach(m=>{const d=document.getElementById('vm-'+m);if(d)d.style.display=m===mode?'block':'none';});
 }
 function setCharTab(name,el){
-  document.querySelectorAll('#panel-character .tabs .tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('#char-itabs .itab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
   ['sheet','conversion','soulid'].forEach(n=>{const d=document.getElementById('ctab-'+n);if(d)d.style.display=n===name?'block':'none';});
 }
 function setWFTab(name,el){
-  document.querySelectorAll('#wf-tabs .tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('#wf-itabs .itab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
   ['camera','scale','seedance','nanobana','vehicle','checklist'].forEach(n=>{const d=document.getElementById('wf-'+n);if(d)d.style.display=n===name?'block':'none';});
   if(name==='checklist')renderCheck();
 }
@@ -2288,22 +2659,6 @@ async function translateInputsBefore(ids,btnEl){
   setTimeout(()=>{btnEl.textContent=origTxt;btnEl.disabled=false;},800);
 }
 
-
-// ── CLEAR ──
-function clearScene(){
-  ['s-loc','s-action','s-arrange','s-newchar','s-extra','s-motion','s-postprod','s-falling'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  selChars.clear();selSigs.clear();
-  document.querySelectorAll('#cpills .pill').forEach(p=>p.className='pill');
-  document.querySelectorAll('#sigpills .pill').forEach(p=>p.classList.remove('pon'));
-  document.getElementById('new-char-row').style.display='none';
-  document.getElementById('falling-row').style.display='none';
-  document.getElementById('scene-out-box').classList.remove('vis');
-}
-function clearVehicle(){['v-loc','v-seed-extra'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('vehicle-out-box').classList.remove('vis');}
-function clearMV(){['mv-bpm','mv-title','mv-lead-beats','mv-adlib1-beats','mv-adlib2-beats','mv-postprod','mv-interval'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('mv-out-box').classList.remove('vis');}
-function clearSheet(){['sh-costume-txt','sh-custom-char','sh-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('sheet-out-box').classList.remove('vis');}
-function clearConv(){['cv-features','cv-costume','cv-soulname'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('conv-out-box').classList.remove('vis');}
-function clearAnimal(){document.getElementById('animal-out-box').classList.remove('vis');}
 
 // ── MOBILE ──
 function toggleMob(){document.getElementById('mobnav').classList.toggle('open');}
@@ -2710,7 +3065,7 @@ window.addEventListener('DOMContentLoaded', function(){
     var personality=v('an-personality')||'Permanently grumpy.', acc=v('an-accessories');
     var p='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters]\nREFERENCE IMAGE 2: [ATTACH: reference photo of the animal]\n\n';
     p+=STYLE_ANCHOR+'\n\nSOUL ID: '+name.toUpperCase()+'\nAnimal: '+type+'. Breed: '+breed+'. Colour: '+colour+'.\n\n';
-    p='CONSTRUCTION — SAME CRAFTSMAN AS THE PUPPET CHARACTERS:\nBody: hollow resin shell, compact and dense.\nFur: NOT realistic. Short directional brushstrokes of '+colour.toLowerCase()+' on resin surface. Like a hand-painted ceramic figurine.\nFace: flat painted resin mask. Expression: '+personality+' FIXED. Cannot change.\nANKLE JOINT RINGS: visible external connector rings at all four ankles — same rings as human characters\' wrists. Always visible.\nEyes: round painted glass — fixed expression, one catchlight.\nSize: 0.4 units tall sitting.\n'+(acc?'Accessories: '+acc+'\n':'');
+    p+='CONSTRUCTION — SAME CRAFTSMAN AS THE PUPPET CHARACTERS:\nBody: hollow resin shell, compact and dense.\nFur: NOT realistic. Short directional brushstrokes of '+colour.toLowerCase()+' on resin surface. Like a hand-painted ceramic figurine.\nFace: flat painted resin mask. Expression: '+personality+' FIXED. Cannot change.\nANKLE JOINT RINGS: visible external connector rings at all four ankles — same rings as human characters\' wrists. Always visible.\nEyes: round painted glass — fixed expression, one catchlight.\nSize: 0.4 units tall sitting.\n'+(acc?'Accessories: '+acc+'\n':'');
     p+='\nSHOT 1 — FRONT FACING: sitting upright, paws together, facing camera.\nSHOT 2 — THREE QUARTER: same pose, camera 45 right. Ankle rings visible on all four legs.\n\nBackground: flat neutral grey (RGB 185,185,195). Soft studio lighting.\n\nNEGATIVE: realistic '+type+' fur, individual hair strands, CGI '+type+', missing ankle joint rings on any leg, cartoon '+type+'.';
     document.getElementById('animal-txt-0').textContent=p.trim();
     var out=document.getElementById('animal-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
@@ -2749,6 +3104,265 @@ function clearConv(){
 function clearAnimal(){var out=document.getElementById('animal-out');if(out)out.style.display='none';}
 function toggleMob(){}
 function closeMob(){}
+
+// ═══════════════════════════════════════════════════════════
+// CAST TAB NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function setCastTab(name, el){
+  document.querySelectorAll('#cast-itabs .itab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  document.querySelectorAll('.cast-tab').forEach(function(d){d.style.display='none';});
+  var tab=document.getElementById('cast-tab-'+name);if(tab)tab.style.display='block';
+  if(name==='ilock'){var el2=document.getElementById('ilock-txt');if(el2)el2.textContent=IDENTITY_LOCK;}
+}
+function setNewCharTab(name, el){
+  document.querySelectorAll('#newchar-itabs .itab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  ['scratch','photo','animal'].forEach(function(n){var d=document.getElementById('nctab-'+n);if(d)d.style.display=n===name?'block':'none';});
+}
+function setCharTask(task, el){
+  document.querySelectorAll('#char-mtabs .mtab').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+  document.getElementById('ctask-main').style.display=task==='main'?'block':'none';
+  document.getElementById('ctask-newchar').style.display=task==='newchar'?'block':'none';
+}
+function setLocType(name, el){
+  document.querySelectorAll('#loc-mtabs .mtab').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');
+  ['exterior','interior','vehicle'].forEach(function(n){var d=document.getElementById('loc-mode-'+n);if(d)d.style.display=n===name?'block':'none';});
+}
+
+// ═══════════════════════════════════════════════════════════
+// CAST SHEET GENERATOR — shared for all main cast members
+// ═══════════════════════════════════════════════════════════
+const VIEW_MAP_FULL={
+  full:'VIEW: Full body front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent, deep focus. Both wrist joint rings visible. Both knee joint rings visible.',
+  portrait:'VIEW: Portrait — head and shoulders. Camera at eye-level. Sharp focus on eyes. Top of hair to mid-chest.',
+  face:'VIEW: Extreme close-up — face only. Front-facing. Sharp focus on eyes. Face filling 80% of frame.',
+  tq:'VIEW: Full body three-quarter — camera 45° right of front. Eye-level. Head turned to face camera.',
+  back:'VIEW: Full body from behind. Eye-level. Deep focus.',
+  hands:'VIEW: Detail study — both hands at 3× scale, showing wrist joint rings and any accessories clearly.',
+  sheet8:'LAYOUT: Professional 8-angle character reference sheet. Clean 2×4 grid on neutral cool grey background (RGB 185,185,195). Consistent sizing and spacing.\nANGLES: 1. Full front · 2. Left 3/4 · 3. Right 3/4 · 4. Left profile · 5. Right profile · 6. Slight upward · 7. Slight downward · 8. Back of head.\nIDENTITY LOCK ACROSS ALL 8 ANGLES: Same face. Same hair. Same skin tone. Same costume. Same joint rings. Zero drift between frames.'
+};
+
+function genCastSheet(charKey, viewId, emotionId, costumeId, costumeTxtId, notesId, outTxtId, outCardId, isYanissa){
+  var view=document.getElementById(viewId)?document.getElementById(viewId).value:'full';
+  var emotion=document.getElementById(emotionId)?document.getElementById(emotionId).value:'none';
+  var costume=document.getElementById(costumeId)?document.getElementById(costumeId).value:'default';
+  var costumeTxt=document.getElementById(costumeTxtId)?document.getElementById(costumeTxtId).value.trim():'';
+  var notes=document.getElementById(notesId)?document.getElementById(notesId).value.trim():'';
+
+  var nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters]\n\n';
+  nb+=IDENTITY_LOCK+'\n\n';
+  nb+=STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n';
+  nb+=(CHARS[charKey]||'')+'\n\n';
+  nb+=(VIEW_MAP_FULL[view]||'')+'\n\n';
+  if(emotion&&emotion!=='none'&&EMOTMAP[emotion])nb+=EMOTMAP[emotion]+'\n\n';
+  var cs=costume==='default'?'Costume: Master reference default — use Soul ID reference image.':costume==='custom'&&costumeTxt?'Costume: '+costumeTxt:null;
+  if(cs)nb+=cs+'\n\n';
+  if(notes)nb+='Additional notes: '+notes+'\n\n';
+  nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195). Soft diffused studio portrait lighting. Single clean specular hotspot on resin skin.\n\n';
+  nb+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, CGI, anime, cartoon, bokeh, lens flare.';
+  if(isYanissa)nb+='\n'+NEG_YANISSA;
+
+  var txt=document.getElementById(outTxtId);if(txt)txt.textContent=nb.trim();
+  var out=document.getElementById(outCardId);if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
+// Wire cast sheet buttons on DOMContentLoaded
+window.addEventListener('DOMContentLoaded',function(){
+  // Yanissa
+  var el=document.getElementById('cy-btn');
+  if(el)el.addEventListener('click',function(){genCastSheet('yanissa','cy-view','cy-emotion','cy-costume','cy-costume-txt','cy-notes','cy-txt','cy-out',true);});
+  el=document.getElementById('cy-copy');if(el)el.addEventListener('click',function(){copyBtn('cy-txt',this);});
+  el=document.getElementById('cy-save');if(el)el.addEventListener('click',function(){saveHist('sheet','cy-txt');});
+  // Ashley
+  el=document.getElementById('ca-btn');
+  if(el)el.addEventListener('click',function(){genCastSheet('ashley','ca-view','ca-emotion','ca-costume','ca-costume-txt','ca-notes','ca-txt','ca-out',false);});
+  el=document.getElementById('ca-copy');if(el)el.addEventListener('click',function(){copyBtn('ca-txt',this);});
+  el=document.getElementById('ca-save');if(el)el.addEventListener('click',function(){saveHist('sheet','ca-txt');});
+  // Rita
+  el=document.getElementById('cr-btn');
+  if(el)el.addEventListener('click',function(){genCastSheet('rita','cr-view','cr-emotion','cr-costume','cr-costume-txt','cr-notes','cr-txt','cr-out',false);});
+  el=document.getElementById('cr-copy');if(el)el.addEventListener('click',function(){copyBtn('cr-txt',this);});
+  el=document.getElementById('cr-save');if(el)el.addEventListener('click',function(){saveHist('sheet','cr-txt');});
+  // Beats
+  el=document.getElementById('cb-btn');
+  if(el)el.addEventListener('click',function(){
+    var shot=document.getElementById('cb-shot')?document.getElementById('cb-shot').value:'front';
+    var acc=document.getElementById('cb-acc')?document.getElementById('cb-acc').value.trim():'';
+    var notes=document.getElementById('cb-notes')?document.getElementById('cb-notes').value.trim():'';
+    var nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters]\n\n';
+    nb+=IDENTITY_LOCK+'\n\n'+STYLE_ANCHOR+'\n\n';
+    nb+=CHARS['beats']+'\n\n';
+    if(acc)nb+='Accessories: '+acc+'\n\n';
+    var shotMap={front:'SHOT: Front facing. Sitting upright, front paws together, facing camera directly. Full body visible. Camera at cat eye level.',tq:'SHOT: Three-quarter. Same sitting pose. Camera 45° right. Both eyes visible. Ankle joint rings visible on all four legs.',both:'SHOT 1 — FRONT FACING: Sitting upright, paws together, facing camera. Full body visible.\nSHOT 2 — THREE QUARTER: Same pose, camera 45° right. Ankle rings on all four legs.',sheet8:'LAYOUT: Full reference sheet. 8 poses in 2×4 grid: front · 3/4 left · 3/4 right · left profile · right profile · back · sitting high · lying down. Ankle joint rings visible in every frame. Cool grey background (RGB 185,185,195).'};
+    nb+=(shotMap[shot]||shotMap.front)+'\n\n';
+    if(notes)nb+='Additional notes: '+notes+'\n\n';
+    nb+='Background: flat neutral grey seamless backdrop (RGB 185,185,195). Soft diffused studio lighting.\n\nNEGATIVE: realistic cat fur, individual hair strands, fluffy photographic texture, CGI cat, Pixar animal, missing ankle joint rings, realistic animal eyes with depth.';
+    var txt=document.getElementById('cb-txt');if(txt)txt.textContent=nb.trim();
+    var out=document.getElementById('cb-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  el=document.getElementById('cb-copy');if(el)el.addEventListener('click',function(){copyBtn('cb-txt',this);});
+  el=document.getElementById('cb-save');if(el)el.addEventListener('click',function(){saveHist('sheet','cb-txt');});
+  // Grand Mino
+  el=document.getElementById('cm-btn');
+  if(el)el.addEventListener('click',function(){
+    var type=document.getElementById('cm-type')?document.getElementById('cm-type').value:'shadow';
+    var context=document.getElementById('cm-context')?document.getElementById('cm-context').value.trim():'';
+    var notes=document.getElementById('cm-notes')?document.getElementById('cm-notes').value.trim():'';
+    var typeMap={shadow:'Grand Minö presence: shadow only — his shadow falls across a wall or floor. The shadow has the silhouette of a large figure in a red bear-ear balaclava. NO full figure visible. Body is off-frame.',reflection:'Grand Minö presence: reflection only — his reflection appears briefly in a shop window, mirror, or glass surface. Red bear-ear balaclava visible in the reflection. Immediately out of frame.',silhouette:'Grand Minö presence: silhouette only — a large figure in a balaclava is visible as a dark silhouette in a crowd or doorway. No features or colours. Just shape.',hand:'Grand Minö presence: one hand only — a large hand with a gold signet ring on the right ring finger. Rest of body off-frame or in shadow. Same puppet construction — flat painted resin, visible wrist joint ring.',balaclava:'Grand Minö presence: red bear-ear balaclava at the extreme edge of frame — partially cropped. Large figure moving out of frame. NEVER a full reveal. Just the balaclava and one shoulder visible.'};
+    var nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters]\n\n';
+    nb+=STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n';
+    nb+=CHARS['grandmino']+'\n\n';
+    nb+=(typeMap[type]||typeMap.shadow)+'\n\n';
+    if(context)nb+='SCENE CONTEXT:\n'+context+'\n\n';
+    if(notes)nb+='Additional notes: '+notes+'\n\n';
+    nb+='CRITICAL — NEVER A FULL REVEAL: Grand Minö must not be shown as a complete figure in Season 1. Only the permitted element above is visible. Everything else is off-frame, in shadow, or cropped out.\n\n';
+    nb+='NEGATIVE: full figure reveal, face visible, body fully in frame, standing character in focus.';
+    var txt=document.getElementById('cm-txt');if(txt)txt.textContent=nb.trim();
+    var out=document.getElementById('cm-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  el=document.getElementById('cm-copy');if(el)el.addEventListener('click',function(){copyBtn('cm-txt',this);});
+  // Gadget
+  el=document.getElementById('cg-btn');
+  if(el)el.addEventListener('click',function(){genCastSheet('gadget','cg-view','cg-emotion','cg-costume','cg-costume-txt','cg-notes','cg-txt','cg-out',false);});
+  el=document.getElementById('cg-copy');if(el)el.addEventListener('click',function(){copyBtn('cg-txt',this);});
+  el=document.getElementById('cg-save');if(el)el.addEventListener('click',function(){saveHist('sheet','cg-txt');});
+});
+
+// ═══════════════════════════════════════════════════════════
+// LOCATION GENERATORS
+// ═══════════════════════════════════════════════════════════
+var ARCH_STYLE_MAP={
+  london_victorian:'ARCHITECTURE: London Victorian / Edwardian. London stock brick — buff-yellow hand-painted surface, dark mortar wash in every joint. Raised brick faces: dry-brush highlight. Window frames: white painted balsa strip. Glazing: clear acrylic sheet, slightly blue-tinted. Cornices: white painted resin strips with shadow line below. Sash windows. Painted shopfronts at ground floor.',
+  london_estate:'ARCHITECTURE: London post-war council estate. Concrete panel construction — flat painted grey surface. Repetitive window pattern. Raw concrete soffit visible. Brutalist forms.',
+  london_market:'ARCHITECTURE: London covered market or street market structure. Painted cast-iron columns. Corrugated metal roof. Timber market stalls. Hand-painted signage on boards.',
+  paris_haussmann:'ARCHITECTURE: Paris Haussmann boulevard. Cream-limestone stone facades, hand-painted pale ochre. Tall arched windows with wrought-iron juliet balconies. Continuous cornice line.',
+  generic_modern:'ARCHITECTURE: Contemporary commercial building. Flat glass and steel facade. Clean geometric forms. Minimal surface decoration.'};
+var LOC_LIGHT_INT={
+  window_overcast:'LIGHTING: Interior — diffused cold daylight from window. Cool 5500K fill. Flat even light.',
+  window_golden:'LIGHTING: Interior — warm golden shaft from window at 30° angle. Long shadow cast across floor. 3000K warm key.',
+  practical_warm:'LIGHTING: Interior — multiple warm practical light sources. Tungsten quality. 2700K. Deep shadow pools.',
+  night_multiple:'LIGHTING: Interior — night. Multiple low practical sources. High contrast. Deep shadows. Warm pools at fixtures.',
+  single_overhead:'LIGHTING: Interior — single overhead source. Hard key from above. Dramatic top light. Deep shadow below eyeline.'};
+
+window.addEventListener('DOMContentLoaded',function(){
+  // Exterior location
+  var el=document.getElementById('le-btn');
+  if(el)el.addEventListener('click',function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var sn=v('le-soulname'),desc=v('le-desc');
+    if(!sn){alert('Location Soul ID name required');return;}
+    if(!desc){alert('Location description required');return;}
+    var area=v('le-area'),arch=document.getElementById('le-arch')?document.getElementById('le-arch').value:'london_victorian';
+    var street=document.getElementById('le-street')?document.getElementById('le-street').value:'medium';
+    var fg=v('le-fg'),depth=document.getElementById('le-depth')?document.getElementById('le-depth').value:'medium';
+    var time=document.getElementById('le-time')?document.getElementById('le-time').value:'overcast';
+    var output=document.getElementById('le-output')?document.getElementById('le-output').value:'establishing';
+    var sigs=v('le-sigs');
+    var streetW={narrow:'Street width: narrow — alley or passage. 2–3 metres. Buildings close on both sides.',medium:'Street width: medium — one-lane road. 5–6 metres.',wide:'Street width: wide — high street or boulevard. 10+ metres. Room for market stalls and traffic.'};
+    var depthD={short:'DEPTH: Shallow. Building facades close — 2–3 units behind foreground.',medium:'DEPTH: Medium. One full street block visible. Buildings at midground.',deep:'DEPTH: Deep. Street perspective receding to painted vanishing point. Background buildings 50% scale.'};
+    var outputMap={establishing:'OUTPUT: Establishing shot — full miniature set revealed with no characters present. Architecture, street, and sky all visible. Characters are entirely absent from this image.',sheet:'OUTPUT: Location reference sheet — 3 views of this location in one image: wide establishing shot · medium street-level view · close detail of key architectural element. Consistent miniature quality across all 3 panels.'};
+    var nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR ONLY]\n';
+    nb+='NOTE: No character Soul IDs are activated. This is a location-only generation — no characters appear in the scene.\n\n';
+    nb+='LOCATION SOUL ID: '+sn.toUpperCase()+'\n';
+    if(area)nb+='Area: '+area+'\n';
+    nb+='\n'+STYLE_ANCHOR+'\n\n'+ARCH_BLOCK+'\n\n'+SCALE_BLOCK+'\n\n';
+    nb+=(ARCH_STYLE_MAP[arch]||'')+'\n\n';
+    nb+=(streetW[street]||'')+'\n\n';
+    nb+=(depthD[depth]||'')+'\n\n';
+    nb+='LOCATION DESCRIPTION:\n'+desc+'\n\n';
+    if(fg)nb+='FOREGROUND ELEMENTS:\n'+fg+'\n\n';
+    if(sigs)nb+='SIGNATURE ELEMENTS (must be present and legible):\n'+sigs+'\n\n';
+    nb+=SKY_BLOCK+'\n\n';
+    if(TIMEMAP[time])nb+=TIMEMAP[time]+'\n\n';
+    nb+=(outputMap[output]||outputMap.establishing)+'\n\n';
+    nb+='FORCED PERSPECTIVE: background elements 15–20% smaller per step. Buildings painted progressively flatter as they recede.\n\n';
+    nb+='NEGATIVE: characters in the scene, real street photography, photographic sky, CGI render, smooth digital surfaces, bokeh.';
+    var txt=document.getElementById('le-txt');if(txt)txt.textContent=nb.trim();
+    var out=document.getElementById('le-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  el=document.getElementById('le-copy');if(el)el.addEventListener('click',function(){copyBtn('le-txt',this);});
+  el=document.getElementById('le-save');if(el)el.addEventListener('click',function(){saveHist('scene','le-txt');});
+
+  // Interior location
+  el=document.getElementById('li-btn');
+  if(el)el.addEventListener('click',function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var sn=v('li-soulname'),desc=v('li-desc');
+    if(!sn){alert('Location Soul ID name required');return;}
+    if(!desc){alert('Interior description required');return;}
+    var type=document.getElementById('li-type')?document.getElementById('li-type').value:'bedroom';
+    var light=document.getElementById('li-light')?document.getElementById('li-light').value:'window_overcast';
+    var cam=document.getElementById('li-cam')?document.getElementById('li-cam').value:'eye_level';
+    var props=v('li-props');
+    var camMap={eye_level:'CAMERA: Puppet eye-level height (0.5 units). 85mm equivalent. Deep focus throughout. No bokeh.',low:'CAMERA: Below puppet eye-level. Looking 10–15° upward. Architecture fills upper frame.',establishing:'CAMERA: Wide establishing. Full room visible — ceiling, walls, floor. Characters would appear small if present.'};
+    var nb='REFERENCE IMAGE: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR ONLY]\n';
+    nb+='NOTE: No character Soul IDs. Interior environment generation only — no characters appear.\n\n';
+    nb+='LOCATION SOUL ID: '+sn.toUpperCase()+'\nRoom type: '+type+'\n\n';
+    nb+=STYLE_ANCHOR+'\n\n';
+    nb+='INTERIOR CONSTRUCTION — SAME CRAFTSMAN AS THE EXTERIOR SETS:\nWalls: flat painted plaster surface — brushstroke direction visible. Skirting: painted balsa strip. Ceiling: flat painted card with visible painter\'s seam join at wall. Floor: hand-painted boards or hand-laid tile pattern — painted card. Furniture: simplified forms — flat painted MDF or balsa, no realistic grain, every surface hand-painted.\n\n';
+    nb+='INTERIOR DESCRIPTION:\n'+desc+'\n\n';
+    if(props)nb+='KEY PROPS AND SIGNATURE ELEMENTS (must be clearly visible):\n'+props+'\n\n';
+    nb+=(LOC_LIGHT_INT[light]||'')+'\n\n';
+    nb+=(camMap[cam]||camMap.eye_level)+'\n\n';
+    nb+=SCALE_BLOCK+'\n\n';
+    nb+='OUTPUT: Establishing shot — full interior set with no characters present.\n\n';
+    nb+='NEGATIVE: characters in the scene, realistic room photography, CGI render, photorealistic textures, bokeh.';
+    var txt=document.getElementById('li-txt');if(txt)txt.textContent=nb.trim();
+    var out=document.getElementById('li-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  el=document.getElementById('li-copy');if(el)el.addEventListener('click',function(){copyBtn('li-txt',this);});
+  el=document.getElementById('li-save');if(el)el.addEventListener('click',function(){saveHist('scene','li-txt');});
+
+  // Vehicle interior
+  el=document.getElementById('lv-btn');
+  if(el)el.addEventListener('click',function(){
+    var v=function(id){var e=document.getElementById(id);return e?e.value.trim():'';};
+    var veh=document.getElementById('lv-veh')?document.getElementById('lv-veh').value:'ritas_mini';
+    var angle=document.getElementById('lv-angle')?document.getElementById('lv-angle').value:'pov_front';
+    var time=document.getElementById('lv-time')?document.getElementById('lv-time').value:'overcast';
+    var custom=v('lv-custom');
+    var vDesc={ritas_mini:"RITA'S MINI COOPER F67 — interior:\nUK RIGHT-HAND DRIVE. Steering wheel on the RIGHT. Gear stick centre-right.\nInterior: flat painted grey fabric headliner. Dark painted dash. Steering wheel: black painted resin ring. Speedometer face: hand-painted circular face, analogue needle. Gear knob: painted resin ball. Rear view mirror: small rectangular painted frame — Virgin de Guadalupe card and pearl rosary hanging from it.\nTwo green Adidas racing stripes visible on bonnet through windscreen.",taxi:'LONDON BLACK CAB interior:\nUK right-hand drive. Partition glass between front and rear. Jump seats folded. Black painted panels. Worn leather-effect painted seats. Roof-mounted passenger light.',custom:custom||'[DESCRIBE VEHICLE INTERIOR]'};
+    var angleMap={pov_front:'CAMERA: POV from rear seat, looking toward the windscreen and dashboard. Driver and passenger seats visible from behind. Street / exterior visible through windscreen.',pov_rear:'CAMERA: POV from driver position, looking back toward rear seat. Rear-view mirror prominent in upper frame. Rear seat visible. Street visible in rear side windows.',side_window:'CAMERA: Side profile interior — camera at passenger window level. Miniature street exterior moving past outside window. Interior side of door visible.',dashboard:'CAMERA: Close detail of dashboard instruments, steering wheel, and gear stick. Miniature-quality painted surfaces visible.'};
+    var nb='REFERENCE IMAGE 1: [ATTACH: character master reference — three puppet characters — STYLE ANCHOR]\n';
+    if(veh==='ritas_mini')nb+='REFERENCE IMAGE 2: [ATTACH: RITA_MINI_SOUL_ID.png]\n';
+    nb+='\nNOTE: Vehicle interior — no characters present. Environment reference only.\n\n';
+    nb+=STYLE_ANCHOR+'\n\n';
+    nb+=(vDesc[veh]||vDesc.custom)+'\n\n';
+    nb+=(angleMap[angle]||angleMap.pov_front)+'\n\n';
+    if(TIMEMAP[time])nb+=TIMEMAP[time]+'\n\n';
+    nb+='All interior surfaces: hand-painted miniature quality. Flat painted resin and painted card. No photographic textures. No CGI smoothness. Every surface shows paint direction and hand-craft.\n\n';
+    nb+='NEGATIVE: realistic car interior photography, CGI render, characters in the scene, photorealistic textures, bokeh.';
+    var txt=document.getElementById('lv-txt');if(txt)txt.textContent=nb.trim();
+    var out=document.getElementById('lv-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  });
+  el=document.getElementById('lv-copy');if(el)el.addEventListener('click',function(){copyBtn('lv-txt',this);});
+});
+
+// ═══════════════════════════════════════════════════════════
+// CLEAR FUNCTIONS (authoritative versions)
+// ═══════════════════════════════════════════════════════════
+function clearLocationExt(){
+  ['le-soulname','le-area','le-desc','le-fg','le-sigs'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var out=document.getElementById('le-out');if(out)out.style.display='none';
+}
+function clearLocationInt(){
+  ['li-soulname','li-desc','li-props'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var out=document.getElementById('li-out');if(out)out.style.display='none';
+}
+
+// Update HMAP with new panels
+HMAP['locations']=['Locations','Build Location Soul IDs for sets and environments'];
+HMAP_FR['locations']=['Lieux','Créer les Soul IDs de décors et d\'environnements'];
+
+// Update goPanel to handle locations
+var _goPanelOrig=goPanel;
+goPanel=function(name,el){
+  _goPanelOrig(name,el);
+  // locations needs no special init, but ensure nav item highlight works
+};
 </script>
 </body>
 </html>
