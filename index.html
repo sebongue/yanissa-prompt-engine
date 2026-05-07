@@ -847,10 +847,12 @@ Référence 2 : RITA_MINI_SOUL_ID.png</span>
         <div class="fr">
           <div><div class="fl">View</div>
             <select id="cy-view">
-              <option value="full">Full body front</option><option value="portrait">Portrait</option>
-              <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
-              <option value="back">Back view</option><option value="hands">Hands + joint rings</option>
-              <option value="sheet8">8-angle reference sheet</option>
+              <option value="full_body">Full body — front</option>
+              <option value="full_sheet">Full body — multiple angles (8-angle sheet)</option>
+              <option value="face_cu">Face — close-up</option>
+              <option value="face_sheet">Face — multiple angles (8-angle sheet)</option>
+              <option value="face_emotions">Face — emotions sheet (6 states)</option>
+              <option value="hands">Hands + joint rings</option>
             </select>
           </div>
           <div><div class="fl">Emotional state</div>
@@ -892,10 +894,12 @@ Référence 2 : RITA_MINI_SOUL_ID.png</span>
         <div class="fr">
           <div><div class="fl">View</div>
             <select id="ca-view">
-              <option value="full">Full body front</option><option value="portrait">Portrait</option>
-              <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
-              <option value="back">Back view</option><option value="hands">Hands + joint rings</option>
-              <option value="sheet8">8-angle reference sheet</option>
+              <option value="full_body">Full body — front</option>
+              <option value="full_sheet">Full body — multiple angles (8-angle sheet)</option>
+              <option value="face_cu">Face — close-up</option>
+              <option value="face_sheet">Face — multiple angles (8-angle sheet)</option>
+              <option value="face_emotions">Face — emotions sheet (6 states)</option>
+              <option value="hands">Hands + joint rings</option>
             </select>
           </div>
           <div><div class="fl">Emotional state</div>
@@ -937,10 +941,12 @@ Référence 2 : RITA_MINI_SOUL_ID.png</span>
         <div class="fr">
           <div><div class="fl">View</div>
             <select id="cr-view">
-              <option value="full">Full body front</option><option value="portrait">Portrait</option>
-              <option value="face">Face close-up</option><option value="tq">Three-quarter</option>
-              <option value="back">Back view</option><option value="hands">Hands + jewellery</option>
-              <option value="sheet8">8-angle reference sheet</option>
+              <option value="full_body">Full body — front</option>
+              <option value="full_sheet">Full body — multiple angles (8-angle sheet)</option>
+              <option value="face_cu">Face — close-up</option>
+              <option value="face_sheet">Face — multiple angles (8-angle sheet)</option>
+              <option value="face_emotions">Face — emotions sheet (6 states)</option>
+              <option value="hands">Hands + jewellery</option>
             </select>
           </div>
           <div><div class="fl">Emotional state</div>
@@ -1045,8 +1051,12 @@ Référence 2 : RITA_MINI_SOUL_ID.png</span>
         <div class="fr">
           <div><div class="fl">View</div>
             <select id="cg-view">
-              <option value="full">Full body front</option><option value="portrait">Portrait</option>
-              <option value="tq">Three-quarter</option><option value="sheet8">8-angle reference sheet</option>
+              <option value="full_body">Full body — front</option>
+              <option value="full_sheet">Full body — multiple angles (8-angle sheet)</option>
+              <option value="face_cu">Face — close-up</option>
+              <option value="face_sheet">Face — multiple angles (8-angle sheet)</option>
+              <option value="face_emotions">Face — emotions sheet (6 states)</option>
+              <option value="hands">Hands + joint rings</option>
             </select>
           </div>
           <div><div class="fl">Emotional state</div>
@@ -1887,7 +1897,7 @@ Car door height: 0.35 units. Market stall table: 0.4 units. Chair seat: 0.25 uni
 const NEG=`NEGATIVE PROMPT:
 CGI render. 3D render. Unreal Engine. Keyshot. Blender. Real street photography. Real sky photography. HDRI sky. Photographic clouds. Bokeh or depth of field blur anywhere. Realistic human skin with pores or subsurface scattering on any figure. Soft hair with individual strands or flyaways on any figure. Realistic human proportions — 7 heads tall. Waist taper. Hip curve. Missing wrist joint rings on any figure. Pixar style. Aardman clay aesthetic. Anime. Cartoon. Perfectly uniform surfaces with zero weathering. CGI environment. Seamless digital sky. High camera angle looking down. Bird's eye view.`;
 
-const NEG_YANISSA=`Brown skin on Yanissa. Warm skin tone on Yanissa. Dark skin on Yanissa. Any skin tone warmer than cream-white on Yanissa.`;
+const NEG_YANISSA=`Brown skin on the pale figure. Warm skin tone. Dark skin. Any skin warmth or undertone on the light-skinned character. Melanin expression of any kind on the cream-white figure.`;
 
 const IDENTITY_LOCK=`IDENTITY LOCK — MANDATORY:
 Every character in this scene must remain identical to their reference images across every frame and every angle.
@@ -2269,10 +2279,7 @@ function _show(outId,txtId,txt){
   document.getElementById(txtId).textContent=txt;
   out.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-function copyEl(id,btn){
-  navigator.clipboard.writeText(document.getElementById(id).textContent||'');
-  btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);
-}
+function copyEl(id,btn){copyBtn(id,btn);}
 
 function genNewFace(){
   const sn=_v('np-soulname')||'NEW_CHARACTER_SOUL_ID';
@@ -2491,14 +2498,24 @@ function goPanel(name){
 // OT_LABELS removed
 function switchOT(panel,idx,el){/* no longer used */}
 
-function copyOut(id,btn){
-  const el=document.getElementById(id);if(!el)return;
-  navigator.clipboard.writeText(el.textContent).then(()=>{const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,1500);});
-}
 function copyBtn(id,btn){
   const el=document.getElementById(id);if(!el)return;
   const text=(el.tagName==='TEXTAREA'||el.tagName==='INPUT')?el.value:el.textContent;
-  navigator.clipboard.writeText(text).then(()=>{const o=btn.textContent;btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,1500);});
+  const o=btn.textContent;
+  const done=()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent=o,1500);};
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done).catch(()=>_fallbackCopy(text,done));
+  } else { _fallbackCopy(text,done); }
+}
+function _fallbackCopy(text,done){
+  const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');done();}catch(e){}
+  document.body.removeChild(ta);
+}
+function copyOut(id,btn){
+  const el=document.getElementById(id);if(!el)return;
+  copyBtn(id,btn);
 }
 
 // ── PILLS ──
@@ -3136,17 +3153,21 @@ function setLocType(name, el){
 // CAST SHEET GENERATOR — shared for all main cast members
 // ═══════════════════════════════════════════════════════════
 const VIEW_MAP_FULL={
-  full:'VIEW: Full body front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent, deep focus. Both wrist joint rings visible. Both knee joint rings visible.',
-  portrait:'VIEW: Portrait — head and shoulders. Camera at eye-level. Sharp focus on eyes. Top of hair to mid-chest.',
-  face:'VIEW: Extreme close-up — face only. Front-facing. Sharp focus on eyes. Face filling 80% of frame.',
-  tq:'VIEW: Full body three-quarter — camera 45° right of front. Eye-level. Head turned to face camera.',
-  back:'VIEW: Full body from behind. Eye-level. Deep focus.',
-  hands:'VIEW: Detail study — both hands at 3× scale, showing wrist joint rings and any accessories clearly.',
-  sheet8:'LAYOUT: Professional 8-angle character reference sheet. Clean 2×4 grid on neutral cool grey background (RGB 185,185,195). Consistent sizing and spacing.\nANGLES: 1. Full front · 2. Left 3/4 · 3. Right 3/4 · 4. Left profile · 5. Right profile · 6. Slight upward · 7. Slight downward · 8. Back of head.\nIDENTITY LOCK ACROSS ALL 8 ANGLES: Same face. Same hair. Same skin tone. Same costume. Same joint rings. Zero drift between frames.'
+  full_body:'VIEW: Full body, front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent. Both wrist joint rings visible. Both knee joint rings visible. Full figure from top of hair to sole of shoe.\n\nCAMERA & LENS:\n85mm equivalent focal length. Camera at puppet eye-level (0.5 units height). Perfectly centred, straight-on composition. Deep focus throughout — no bokeh. Sharp focus locked on the face and wrist joint rings.\n\nLIGHTING:\nSoft diffused studio lighting. Evenly balanced illumination across the entire figure. Neutral-to-cool colour temperature. Single clean specular hotspot on the forehead resin surface. Minimal shadow — clean separation from background only.\n\nSTYLE & QUALITY:\nHand-built physical puppet — flat painted fibreglass resin construction. Ultra-sharp, highly detailed output. Every surface shows paint direction and the craftsman\'s hand. Same world, same materials, same craftsman as the master reference image.',
+
+  full_sheet:'LAYOUT:\nProfessional character reference sheet. Clean 2×4 grid on neutral cool grey background (RGB 185,185,195). Consistent sizing and spacing across all eight frames.\n\nANGLES (8 POSES — FULL BODY):\n1. Full front view — straight-on, arms at sides\n2. Left 3/4 body view\n3. Right 3/4 body view\n4. Left side profile\n5. Right side profile\n6. Back view — showing hair mass from behind\n7. Relaxed standing pose — natural weight distribution\n8. Slight contrapposto — subtle hip shift\n\nIDENTITY LOCK ACROSS ALL 8 FRAMES: Same face. Same hair. Same skin tone. Same costume. Same joint rings. Zero identity drift between frames.\n\nCAMERA & LENS:\n85mm equivalent focal length. Consistent focal distance across all eight frames. Camera at puppet eye-level for all angles. Deep focus throughout. No bokeh in any frame.\n\nLIGHTING:\nSoft neutral studio lighting, consistent across all eight frames. Same colour temperature, same intensity. No variation in light between frames.\n\nSTYLE & QUALITY:\nHand-built physical puppet — flat painted fibreglass resin construction. Ultra-sharp output. Same world and craftsman as the master reference image.',
+
+  face_cu:'VIEW: Face close-up — face only, front-facing. Painted glass eyes fill the centre of the frame. Top of hair mass to base of chin. Camera straight-on.\n\nCAMERA & LENS:\n85mm equivalent focal length. Camera at puppet eye-level. Perfectly centred, straight-on. Sharp focus locked on the painted glass eyes. Face fills 80% of frame. Deep focus — no bokeh.\n\nLIGHTING:\nSoft diffused studio portrait lighting. Evenly balanced illumination across the face. Neutral-to-cool colour temperature. Single clean specular hotspot on forehead resin surface. Just enough contrast to define the painted bone structure. No harsh shadows.\n\nSTYLE & QUALITY:\nHand-built physical puppet — flat painted fibreglass resin face. Ultra-sharp, highly detailed. Every brushstroke visible on the painted resin surface. Same world and craftsman as the master reference image.',
+
+  face_sheet:'LAYOUT:\nProfessional face reference sheet. Clean 2×4 grid on neutral cool grey background (RGB 185,185,195). Consistent framing — head and upper shoulders in every frame.\n\nANGLES (8 PORTRAITS):\n1. Full front view — straight-on\n2. Left 3/4 view\n3. Right 3/4 view\n4. Left side profile\n5. Right side profile\n6. Slight upward angle\n7. Slight downward angle\n8. Back of the head — showing hair mass texture, shape, and rigidity\n\nIDENTITY LOCK ACROSS ALL 8 PORTRAITS: Same face. Same hair. Same skin tone. Same painted glass eyes. Zero identity drift between angles.\n\nCAMERA & LENS:\n85mm equivalent focal length. Consistent focal distance across all eight portraits. Camera at face level, centred, no distortion. Sharp focus on the painted glass eyes in every frame. No bokeh.\n\nLIGHTING:\nSoft neutral studio lighting, consistent across all eight frames. No variation between portraits.\n\nSTYLE & QUALITY:\nHand-built physical puppet — flat painted fibreglass resin face. Ultra-sharp. Same craftsman and materials as the master reference image.',
+
+  face_emotions:'LAYOUT:\nEmotion reference sheet. Clean 2×3 grid on neutral cool grey background (RGB 185,185,195). Six portrait frames, consistent sizing and framing — head and upper shoulders.\n\nEMOTIONS (6 FRAMES):\n1. NEUTRAL — face square-on, solenoid mouth at mechanical rest (2mm gap)\n2. ALERT / OBSERVING — head 5° to side, mouth closed tight\n3. SUBDUED / INWARD — head 8° downward, mouth closed\n4. INTENSE / FOCUSED — head perfectly square, jaw clenched tight\n5. PERFORMING / SINGING — head 8° upward, solenoid mouth full 8mm drop — binary mechanical open\n6. DEFIANT / CONFIDENT — head perfectly square, eyes front, mouth tight\n\nIDENTITY LOCK ACROSS ALL 6 FRAMES: Same face. Same hair. Same skin tone. Same costume. Zero drift between emotion states. Only the head angle and solenoid mouth position changes.\n\nCAMERA & LENS:\n85mm equivalent. Consistent centred framing across all six frames. Sharp focus on the painted glass eyes. No bokeh.\n\nLIGHTING:\nSoft neutral studio lighting, consistent across all six frames. No variation.\n\nSTYLE & QUALITY:\nHand-built physical puppet — flat painted fibreglass resin face. Emotion expressed entirely through head tilt and mechanical solenoid mouth position — no soft tissue expression, no muscle movement. Same craftsman as the master reference image.',
+
+  hands:'VIEW: Detail study — both hands at 3× scale. Wrist joint rings prominent. Any accessories on hands or wrists clearly visible. Camera straight-on. Neutral grey background.\n\nCAMERA & LENS:\nMacro equivalent. Both hands centred in frame. Deep focus — every joint ring clearly sharp.\n\nLIGHTING:\nSoft raking studio light from upper-left. Enough contrast to show the hand-painted resin surface texture and the connector ring detail.\n\nSTYLE & QUALITY:\nHand-built physical puppet — flat painted fibreglass resin hands. Visible connector rings at wrists. Same craftsman as the master reference image.'
 };
 
 function genCastSheet(charKey, viewId, emotionId, costumeId, costumeTxtId, notesId, outTxtId, outCardId, isYanissa){
-  var view=document.getElementById(viewId)?document.getElementById(viewId).value:'full';
+  var view=document.getElementById(viewId)?document.getElementById(viewId).value:'full_body';
   var emotion=document.getElementById(emotionId)?document.getElementById(emotionId).value:'none';
   var costume=document.getElementById(costumeId)?document.getElementById(costumeId).value:'default';
   var costumeTxt=document.getElementById(costumeTxtId)?document.getElementById(costumeTxtId).value.trim():'';
@@ -3156,13 +3177,16 @@ function genCastSheet(charKey, viewId, emotionId, costumeId, costumeTxtId, notes
   nb+=IDENTITY_LOCK+'\n\n';
   nb+=STYLE_ANCHOR+'\n\n'+PUPPET_SPEC+'\n\n';
   nb+=(CHARS[charKey]||'')+'\n\n';
-  nb+=(VIEW_MAP_FULL[view]||'')+'\n\n';
-  if(emotion&&emotion!=='none'&&EMOTMAP[emotion])nb+=EMOTMAP[emotion]+'\n\n';
+  nb+=(VIEW_MAP_FULL[view]||VIEW_MAP_FULL.full_body)+'\n\n';
+  // Only add emotion if not a sheet/multi-angle view
+  if(emotion&&emotion!=='none'&&EMOTMAP[emotion]&&view!=='full_sheet'&&view!=='face_sheet'&&view!=='face_emotions'){
+    nb+=EMOTMAP[emotion]+'\n\n';
+  }
   var cs=costume==='default'?'Costume: Master reference default — use Soul ID reference image.':costume==='custom'&&costumeTxt?'Costume: '+costumeTxt:null;
   if(cs)nb+=cs+'\n\n';
   if(notes)nb+='Additional notes: '+notes+'\n\n';
-  nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195). Soft diffused studio portrait lighting. Single clean specular hotspot on resin skin.\n\n';
-  nb+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, CGI, anime, cartoon, bokeh, lens flare.';
+  nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195).\n\n';
+  nb+='NEGATIVE: realistic human skin with pores or subsurface scattering on the figure in the reference image, individual hair strands or flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions (7 heads tall), waist taper, hip curve, CGI render, anime, cartoon, bokeh, lens flare, identity drift from reference image, soft tissue expression on the face.';
   if(isYanissa)nb+='\n'+NEG_YANISSA;
 
   var txt=document.getElementById(outTxtId);if(txt)txt.textContent=nb.trim();
