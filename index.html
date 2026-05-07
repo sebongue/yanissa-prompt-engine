@@ -1865,7 +1865,7 @@ HEAD: 4.5 to 5 times head-height tall. Head dramatically oversized. NOT 7-head r
 
 BODY: cylindrical torso — no waist narrowing, no hip curve. Simplified cylindrical arms and legs.
 
-JOINT RINGS: visible external connector rings at both wrists on every figure. Painted resin rings. Always visible. Never hidden. Never missing.
+JOINT RINGS: painted resin connector rings at wrists and knees. WRIST RINGS: always visible at the gap between sleeve cuff and hand — never hidden by sleeves. KNEE RINGS: structural connectors that sit beneath fabric — visible only where the leg is bare or at the hem of cropped trousers. Never render knee rings on top of or through closed pant fabric. Rings are under clothing, not above it.
 
 EYES: large painted glass — fixed forward. One specular catchlight. No moisture. No corneal depth. No iris texture.
 
@@ -2235,7 +2235,7 @@ function generateSheet(){
   nb+='Costume: '+cs+'\n\n';
   if(notes)nb+='Additional notes: '+notes+'\n\n';
   nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195). Soft diffused studio portrait lighting. Single clean specular hotspot on resin skin.\n\n';
-  nb+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, CGI, anime, cartoon, bokeh, lens flare.';
+  nb+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic human proportions, CGI, anime, cartoon, bokeh, lens flare.';
   if(char==='yanissa')nb+='\n'+NEG_YANISSA;
 
   const ihtml=lang==='fr'?`<div class="instr-step"><div class="sn">1</div><div class="sb2">
@@ -2317,7 +2317,7 @@ function genFaceSheet(){
   p+=`EXPRESSION: Neutral mechanical rest across all angles. No smiling. No variation. Same solenoid mouth position in every portrait.\n\n`;
   p+=`LIGHTING: Soft neutral studio lighting, consistent across all eight frames. Cool grey background. No shadows. No variation in light between portraits.\n\n`;
   p+=`CAMERA: 85mm equivalent, no distortion. Consistent focal distance across all angles. Head and upper shoulders visible in every frame.\n\n`;
-  p+=`NEGATIVE: Different face between angles, identity drift, different hair between views, realistic human skin, pores, subsurface scattering, individual hair strands, missing joint rings, realistic proportions, CGI, anime, bokeh, expression change between frames, inconsistent lighting.`;
+  p+=`NEGATIVE: Different face between angles, identity drift, different hair between views, realistic human skin, pores, subsurface scattering, individual hair strands, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic proportions, CGI, anime, bokeh, expression change between frames, inconsistent lighting.`;
   _show('np-facesheet-out','np-facesheet-txt',p.trim());
 }
 
@@ -2339,7 +2339,7 @@ function genNewBody(){
   p+=`ARTICULATION JOINTS — MANDATORY:\nVisible external connector rings at BOTH wrists. Visible connector discs at BOTH knees.\n\n`;
   p+=`PROPORTIONS: 4.5 to 5 head-heights total. Oversized head. Cylindrical torso — no waist taper, no hip curve. Simplified cylindrical arms and legs.\n\n`;
   p+=`OUTPUT: Full body, front-facing, straight-on. Camera at puppet eye-level, 85mm equivalent. Deep focus. Cool grey background (RGB 185,185,195). Soft diffused studio lighting. Wrist and knee joint rings fully visible.\n\n`;
-  p+=`NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, 7-head-tall figure, waist taper, hip curve, CGI, anime, cartoon, bokeh, identity drift from reference sheet.`;
+  p+=`NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic human proportions, 7-head-tall figure, waist taper, hip curve, CGI, anime, cartoon, bokeh, identity drift from reference sheet.`;
   _show('np-body-out','np-body-txt',p.trim());
 }
 
@@ -2361,7 +2361,7 @@ function genBodySheet(){
   p+=`Costume: ${costume} — same in every frame, no variation.\n\n`;
   p+=`FRAMING: Consistent 3/4 body framing — head to mid-thigh in every frame. Face clearly visible for identity cross-reference. Uniform cropping across all eight poses.\n\n`;
   p+=`LIGHTING: Soft neutral studio lighting, consistent across all eight frames. Same colour temperature, same intensity, no variation.\n\n`;
-  p+=`NEGATIVE: Different person between frames, identity drift, body shape change between angles, missing joint rings at wrists or knees, realistic human proportions, realistic skin, individual hair strands, wardrobe change between poses, hair styling change between angles, CGI, anime, bokeh, inconsistent lighting, dramatic shadows.`;
+  p+=`NEGATIVE: Different person between frames, identity drift, body shape change between angles, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic human proportions, realistic skin, individual hair strands, wardrobe change between poses, hair styling change between angles, CGI, anime, bokeh, inconsistent lighting, dramatic shadows.`;
   _show('np-bodysheet-out','np-bodysheet-txt',p.trim());
 }
 
@@ -2379,7 +2379,7 @@ function generateConv(){
   p+='IDENTITY DESCRIPTION:\nFace shape: '+face+'. Eye colour: '+eyes+'.\nSkin tone: '+skin+' — translate to flat painted fibreglass resin, same tone, zero pores, no subsurface scattering.\nHair: '+hc+', '+hs+' — translate to single rigid sculpted mass, same colour, one specular highlight, NO strand separation.'+(feat?'\nDistinctive features: '+feat+' — translate as fixed moulded puppet equivalents.':'')+'\n\n';
   p+='MATERIAL TRANSLATION:\nSkin: flat painted fibreglass resin, matching tone, zero pores/subsurface/translucency\nHair: single rigid sculpted mass, matching colour, one specular highlight, no strands\nEyes: painted glass, matching colour, single specular catchlight, no iris texture\nClothing: '+costume+'\n\nARTICULATION JOINTS — MANDATORY:\nVisible external connector rings at BOTH wrists. Visible at BOTH knees.\n\nPROPORTIONS:\n4.5 to 5 head-heights total. Oversized head dominant. Cylindrical torso, no waist taper.\n\n';
   p+=ot==='portrait'?'OUTPUT: Portrait only — head and shoulders. Camera at eye-level, 85mm. Cool grey background (RGB 185,185,195). Soft diffused studio lighting.\nPURPOSE: Verify face likeness before running full body. If portrait resembles reference person — proceed to full body. If not — adjust and retry.\n\n':'OUTPUT: Full body, front-facing, straight-on. Camera at puppet eye-level, 85mm. Deep focus. Cool grey background (RGB 185,185,195). Soft diffused studio lighting.\n\n';
-  p+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions, 7-head-tall figure, waist taper, CGI, anime, cartoon, bokeh, identity drift from reference photo, style drift from master reference.';
+  p+='NEGATIVE: realistic human skin, pores, subsurface scattering, individual hair strands, flyaway hair, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic human proportions, 7-head-tall figure, waist taper, CGI, anime, cartoon, bokeh, identity drift from reference photo, style drift from master reference.';
 
   document.getElementById('conv-txt-0').textContent=p.trim();
   const box=document.getElementById('conv-out-box');box.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -3047,7 +3047,7 @@ window.addEventListener('DOMContentLoaded', function(){
     nb+='Costume: '+cs+'\n\n';
     if(notes) nb+='Additional notes: '+notes+'\n\n';
     nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195). Soft diffused studio portrait lighting.\n\n';
-    nb+='NEGATIVE: realistic human skin, pores, individual hair strands, missing joint rings, realistic proportions, CGI, anime, bokeh.';
+    nb+='NEGATIVE: realistic human skin, pores, individual hair strands, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic proportions, CGI, anime, bokeh.';
     if(char==='yanissa') nb+='\n'+NEG_YANISSA;
     document.getElementById('sheet-txt-0').textContent=nb.trim();
     var yanCheck=document.getElementById('sheet-yanissa-check');
@@ -3068,7 +3068,7 @@ window.addEventListener('DOMContentLoaded', function(){
     p+='IDENTITY: Face shape: '+face+'. Eye colour: '+eyes+'.\nSkin tone: '+skin+' — translate to flat painted fibreglass resin, same tone, zero pores.\nHair: '+hc+', '+hs+' — single rigid sculpted mass, same colour, NO strand separation.'+(feat?'\nDistinctive features: '+feat+' — moulded puppet equivalents.':'')+' Clothing: '+costume+'\n\n';
     p+='JOINT RINGS — MANDATORY: Visible at BOTH wrists. Visible at BOTH knees.\nPROPORTIONS: 4.5 to 5 head-heights total. Oversized head. Cylindrical torso.\n\n';
     p+=ot==='portrait'?'OUTPUT: Portrait — head and shoulders. Cool grey background (RGB 185,185,195). Studio lighting.\nPURPOSE: Verify face likeness before full body.\n\n':'OUTPUT: Full body front-facing. Deep focus. Cool grey background (RGB 185,185,195).\n\n';
-    p+='NEGATIVE: realistic human skin, pores, soft hair strands, missing joint rings, realistic proportions, 7-head figure, CGI, anime, identity drift.';
+    p+='NEGATIVE: realistic human skin, pores, soft hair strands, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic proportions, 7-head figure, CGI, anime, identity drift.';
     document.getElementById('conv-txt-0').textContent=p.trim();
     var out=document.getElementById('conv-out');if(out){out.style.display='block';out.scrollIntoView({behavior:'smooth',block:'nearest'});}
   });
@@ -3186,7 +3186,7 @@ function genCastSheet(charKey, viewId, emotionId, costumeId, costumeTxtId, notes
   if(cs)nb+=cs+'\n\n';
   if(notes)nb+='Additional notes: '+notes+'\n\n';
   nb+='Background: smooth cool grey seamless backdrop (RGB 185,185,195).\n\n';
-  nb+='NEGATIVE: realistic human skin with pores or subsurface scattering on the figure in the reference image, individual hair strands or flyaway hair, missing wrist joint rings, missing knee joint rings, realistic human proportions (7 heads tall), waist taper, hip curve, CGI render, anime, cartoon, bokeh, lens flare, identity drift from reference image, soft tissue expression on the face.';
+  nb+='NEGATIVE: realistic human skin with pores or subsurface scattering on the figure in the reference image, individual hair strands or flyaway hair, missing wrist joint rings, knee joint rings visible through closed pant fabric, realistic human proportions (7 heads tall), waist taper, hip curve, CGI render, anime, cartoon, bokeh, lens flare, identity drift from reference image, soft tissue expression on the face.';
   if(isYanissa)nb+='\n'+NEG_YANISSA;
 
   var txt=document.getElementById(outTxtId);if(txt)txt.textContent=nb.trim();
